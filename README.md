@@ -1,6 +1,6 @@
 # braces [![NPM version](https://badge.fury.io/js/braces.svg)](http://badge.fury.io/js/braces)
 
-> Fast brace expansion.
+> Faster brace expansion for file paths.
 
 ## Benchmarks
 
@@ -53,12 +53,12 @@ expand('a{A..E}b')
 Pass a function as the last argument to customize range expansions:
 
 ```js
-var range = expand('a..e', function (str, i) {
+var range = expand('x{a..e}y', function (str, i) {
   return String.fromCharCode(str) + i;
 });
 
 console.log(range);
-//=> ['a0', 'b1', 'c2', 'd3', 'e4']
+//=> ['xa0y', 'xb1y', 'xc2y', 'xd3y', 'xe4y']
 ```
 See [expand-range](https://github.com/jonschlinkert/expand-range) for benchmarks, tests and information related to expanding ranges.
 
