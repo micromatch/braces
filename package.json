@@ -1,7 +1,7 @@
 {
   "name": "braces",
   "description": "Faster brace expansion for file paths.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "homepage": "https://github.com/jonschlinkert/braces",
   "author": {
     "name": "Jon Schlinkert",
@@ -44,12 +44,18 @@
     "brace",
     "expand",
     "expansion",
+    "file",
+    "filepath",
+    "fp",
+    "fs",
     "glob",
+    "globbing",
     "match",
     "matches",
     "matching",
     "number",
     "numerical",
+    "path",
     "range",
     "ranges",
     "sh"

@@ -21,6 +21,11 @@ describe('braces', function () {
       expand('a/b/c{d}e').should.eql(['a/b/cde']);
     });
 
+    it('should work with commas.', function () {
+      expand('a{b,}c').should.eql(['abc', 'ac']);
+      expand('a{,b}c').should.eql(['ac', 'abc']);
+    });
+
     it('should expand sets', function () {
       expand('a/{x,y}/c{d}e').should.eql(['a/x/cde', 'a/y/cde']);
       expand('a/b/c/{x,y}').should.eql(['a/b/c/x', 'a/b/c/y']);
