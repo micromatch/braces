@@ -55,9 +55,9 @@ function braces(str, arr, fn) {
 
   while (len--) {
     fp = splice(str, match[1], paths[i++]);
-
     idx = fp.indexOf('{');
-    if (idx > 0) {
+
+    if (idx !== -1) {
       if (fp.indexOf('}', idx + 2) === -1) {
         throw new Error('imbalanced brace in: ' + str);
       }

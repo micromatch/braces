@@ -21,6 +21,11 @@ describe('braces', function () {
       expand('a/b/c{d}e').should.eql(['a/b/cde']);
     });
 
+    it('should work with nested non-sets', function () {
+      expand('{a-{b,c,d}}').should.eql(['a-b', 'a-c', 'a-d']);
+      expand('{a,{a-{b,c,d}}}').should.eql(['a', 'a-b', 'a-c', 'a-d']);
+    });
+
     it('should work with commas.', function () {
       expand('a{b,}c').should.eql(['abc', 'ac']);
       expand('a{,b}c').should.eql(['ac', 'abc']);

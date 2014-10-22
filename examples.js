@@ -22,4 +22,4 @@ var expand = module.exports = function expand(arr) {
   }, [])
 };
 
-console.log(expand(['{foo,bar}', '{baz,quux}']))
+console.log(expand(['{foo,bar}', '{baz,quux}', '{a,{a-{b,c}}}']));
