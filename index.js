@@ -22,6 +22,14 @@ module.exports = function (str, fn) {
 };
 
 /**
+ * Braces regex.
+ */
+
+function re() {
+  return /.*(\{([^\\}]*)\})/g;
+}
+
+/**
  * Expand `{foo,bar}` or `{1..5}` braces in the
  * give `string`.
  *
@@ -31,7 +39,7 @@ module.exports = function (str, fn) {
  */
 
 function braces(str, arr, fn) {
-  var match = /.*(\{([^\\}]*)\})/g.exec(str);
+  var match = re().exec(str);
   if (match == null) {
     return [str];
   }
@@ -59,7 +67,8 @@ function braces(str, arr, fn) {
 
     if (idx !== -1) {
       if (fp.indexOf('}', idx + 2) === -1) {
-        throw new Error('imbalanced brace in: ' + str);
+        var msg = '[brace expansion] imbalanced brace in: ';
+        throw new Error(msg + str);
       }
       arr = braces(fp, arr);
     } else {
@@ -76,9 +85,10 @@ function braces(str, arr, fn) {
  * Faster alternative to `String.replace()`
  */
 
-function splice(str, pattern, replacement) {
-  var i = str.indexOf(pattern);
+function splice(str, token, replacement) {
+  var i = str.indexOf(token);
+  var end = i + token.length;
   return str.substr(0, i)
     + replacement
-    + str.substr(i + pattern.length, str.length);
+    + str.substr(end, str.length);
 }
