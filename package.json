@@ -1,7 +1,7 @@
 {
   "name": "braces",
-  "description": "Faster brace expansion for file paths.",
-  "version": "0.1.2",
+  "description": "Fastest brace expansion lib. Typically used with file paths, but can be used with any string. Expands comma-separated values (e.g. `foo/{a,b,c}/bar`) and alphabetical or numerical ranges (e.g. `{1..9}`)",
+  "version": "0.1.4",
   "homepage": "https://github.com/jonschlinkert/braces",
   "author": {
     "name": "Jon Schlinkert",
@@ -33,9 +33,7 @@
     "lodash": "^2.4.1",
     "minimatch": "^1.0.0",
     "mocha": "*",
-    "should": "^4.1.0",
-    "verb": ">= 0.2.6",
-    "verb-tag-jscomments": ">= 0.2.0"
+    "should": "^4.1.0"
   },
   "keywords": [
     "alpha",
