@@ -22,16 +22,8 @@ module.exports = function (str, fn) {
 };
 
 /**
- * Braces regex.
- */
-
-function re() {
-  return /.*(\{([^\\}]*)\})/g;
-}
-
-/**
  * Expand `{foo,bar}` or `{1..5}` braces in the
- * give `string`.
+ * given `string`.
  *
  * @param  {String} `str`
  * @param  {Array} `arr`
@@ -39,9 +31,13 @@ function re() {
  */
 
 function braces(str, arr, fn) {
-  var match = re().exec(str);
+  var match = regex().exec(str);
   if (match == null) {
     return [str];
+  }
+
+  if (typeof str !== 'string') {
+    throw new Error('braces expects a string');
   }
 
   if (typeof arr === 'function') {
@@ -59,26 +55,28 @@ function braces(str, arr, fn) {
   }
 
   var len = paths.length;
-  var i = 0, fp, idx;
+  var i = 0, val, idx;
 
   while (len--) {
-    fp = splice(str, match[1], paths[i++]);
-    idx = fp.indexOf('{');
+    val = splice(str, match[1], paths[i++]);
+    idx = val.indexOf('{');
 
     if (idx !== -1) {
-      if (fp.indexOf('}', idx + 2) === -1) {
-        var msg = '[brace expansion] imbalanced brace in: ';
-        throw new Error(msg + str);
-      }
-      arr = braces(fp, arr);
-    } else {
-      if (arr.indexOf(fp) === -1) {
-        arr.push(fp);
-      }
+      arr = braces(val, arr);
+    } else if (arr.indexOf(val) === -1) {
+      arr.push(val);
     }
   }
 
   return arr;
+}
+
+/**
+ * Braces regex.
+ */
+
+function regex() {
+  return /.*(\{([^\\}]*)\})/g;
 }
 
 /**

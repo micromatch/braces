@@ -32,7 +32,7 @@ describe('braces', function () {
     });
 
     it('should expand sets', function () {
-      expand('a/{x,y}/c{d}e').should.eql(['a/x/cde', 'a/y/cde']);
+      expand('a/{x,y}/cde').should.eql(['a/x/cde', 'a/y/cde']);
       expand('a/b/c/{x,y}').should.eql(['a/b/c/x', 'a/b/c/y']);
     });
 
@@ -51,12 +51,6 @@ describe('braces', function () {
     it('should expand with globs.', function () {
       expand('a/**/c{d,e}f*.js').should.eql(['a/**/cdf*.js', 'a/**/cef*.js']);
       expand('a/**/c{d,e}f*.{md,txt}').should.eql(['a/**/cdf*.md', 'a/**/cef*.md', 'a/**/cdf*.txt', 'a/**/cef*.txt']);
-    });
-
-    it('should throw an error when imbalanced braces are found.', function () {
-      (function () {
-        expand('a/{b,c}{d{e,f}g');
-      }).should.throw('[brace expansion] imbalanced brace in: a/{b,c}{deg');
     });
   });
 
@@ -81,8 +75,8 @@ describe('braces', function () {
     });
 
     it('should use a custom function for expansions.', function () {
-      var range = expand('{a..e}', function (str, i) {
-        return String.fromCharCode(str) + i;
+      var range = expand('{a..e}', function (str, ch, i) {
+        return String.fromCharCode(ch) + i;
       });
       range.should.eql(['a0', 'b1', 'c2', 'd3', 'e4']);
     });
@@ -96,4 +90,8 @@ describe('braces', function () {
       expand('a/{x,{1..5},y}/c{d}e').should.eql(['a/x/cde', 'a/1/cde', 'a/y/cde', 'a/2/cde', 'a/3/cde', 'a/4/cde', 'a/5/cde']);
     });
   });
+});
+
+describe('bash 4.3', function () {
+
 });
