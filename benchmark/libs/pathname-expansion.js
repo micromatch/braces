@@ -5,6 +5,8 @@
  * The module is not published on npm, this was just an attempt to see if
  * I should spend time doing PRs or just start from scratch. To that end,
  * some minor changes were made to get this code to work.
+ *
+ * Also note that this does not expand ranges, e.g. `{01..05}`
  */
 
 var _ = require('lodash');
