@@ -8,13 +8,7 @@
 'use strict';
 
 var should = require('should');
-var expand = require('./');
-
-describe('bash 4.3', function () {
-  expand('ff{c,b,a}').should.eql([ 'ffc', 'ffb', 'ffa' ]);
-  expand('f{d,e,f}g').should.eql([ 'fdg', 'feg', 'ffg' ]);
-  expand('{l,n,m}xyz').should.eql([ 'lxyz', 'nxyz', 'mxyz' ]);
-});
+var expand = require('..');
 
 describe('braces', function () {
   describe('brace expansion', function () {
