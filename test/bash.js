@@ -1,53 +1,41 @@
 'use strict';
 
 var path = require('path');
-// var utils = require('./utils');
 var should = require('should');
+var mm = require('minimatch').braceExpand;
 var expand = require('..');
 
-describe('braces', function () {
-  // utils.addSpecTests(path.join(__dirname, 'fixtures/bash/spec.txt'), braces);
+var failing = require('./fixtures/failing');
+var spec = require('./fixtures/spec');
 
-  it('should expand numerical ranges', function () {
-    expand('{1..10.f}').should.eql([ '{1..10.f}' ]);
+// describe('braces: bash 4.3 support (passing)', function () {
+//   spec.forEach(function(test, i) {
+//     it('test: ' + i, function () {
+//       expand(test[0]).should.eql(test[1]);
+//     });
+//   });
+// });
+
+// describe('braces: bash 4.3 support (failing)', function () {
+//   failing.forEach(function(test, i) {
+//     it('test: ' + i, function () {
+//       expand(test[0]).should.eql(test[1]);
+//     });
+//   });
+// });
+
+describe('minimatch: bash 4.3 support (passing)', function () {
+  spec.forEach(function(test, i) {
+    it('test: ' + i, function () {
+      mm(test[0]).should.eql(test[1]);
+    });
   });
-  it('should expand numerical ranges', function () {
-    expand('{1..ff}').should.eql([ '{1..ff}' ]);
-  });
-  it('should expand numerical ranges', function () {
-    expand('{1..10..ff}').should.eql([ '{1..10..ff}' ]);
-  });
-  it('should expand numerical ranges', function () {
-    expand('{1.20..2}').should.eql([ '{1.20..2}' ]);
-  });
-  it('should expand numerical ranges', function () {
-    expand('{1..20..f2}').should.eql([ '{1..20..f2}' ]);
-  });
-  it('should expand numerical ranges', function () {
-    expand('{1..20..2f}').should.eql([ '{1..20..2f}' ]);
-  });
-  it('should expand numerical ranges', function () {
-    expand('{1..2f..2}').should.eql([ '{1..2f..2}' ]);
-  });
-  it('should expand numerical ranges', function () {
-    expand('{1..ff..2}').should.eql([ '{1..ff..2}' ]);
-  });
-  it('should expand numerical ranges', function () {
-    expand('{1..ff}').should.eql([ '{1..ff}' ]);
-  });
-  it('should expand numerical ranges', function () {
-    expand('{1..f}').should.eql([ '{1..f}' ]);
-  });
-  it('should expand numerical ranges', function () {
-    expand('{1..0f}').should.eql([ '{1..0f}' ]);
-  });
-  it('should expand numerical ranges', function () {
-    expand('{1..10f}').should.eql([ '{1..10f}' ]);
-  });
-  it('should expand numerical ranges', function () {
-    expand('{1..10.f}').should.eql([ '{1..10.f}' ]);
-  });
-  it('should expand numerical ranges', function () {
-    expand('{1..10.f}').should.eql([ '{1..10.f}' ]);
+});
+
+describe('minimatch: bash 4.3 support (failing)', function () {
+  failing.forEach(function(test, i) {
+    it('test: ' + i, function () {
+      mm(test[0]).should.eql(test[1]);
+    });
   });
 });

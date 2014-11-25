@@ -22,7 +22,7 @@ module.exports = function (str, fn) {
 };
 
 /**
- * Expand `{foo,bar}` or `{1..5}` braces in the
+ * Expand `{braces,bar}` or `{1..5}` braces in the
  * given `string`.
  *
  * @param  {String} `str`
@@ -33,11 +33,23 @@ module.exports = function (str, fn) {
 function braces(str, arr, fn) {
   var match = regex().exec(str);
   if (match == null) {
+
+    if (/\\,/g.test(str)) {
+      // if comma is escaped, return sans slashes
+      return [str.replace(/\\/, '')];
+    }
+    // if no braces are found, return the string
     return [str];
   }
 
-  if (typeof str !== 'string') {
-    throw new Error('braces expects a string');
+  // return if it looks like a bash or es6 variable
+  if (str.indexOf('${') === 0) {
+    return [str];
+  }
+
+  // if brace is escaped, return sans slashes
+  if (str.indexOf('\\') === 0) {
+    return [str.slice(1)];
   }
 
   if (typeof arr === 'function') {
@@ -47,11 +59,18 @@ function braces(str, arr, fn) {
 
   arr = arr || [];
   var paths;
-  var foo;
 
+  // if `..` exists, pass to [expand-range]
   if (/\.{2}/.test(match[2])) {
     paths = expand(match[2], fn);
+    // return invalid paths on an object
+    if (typeof paths === 'object' && !Array.isArray(paths)) {
+      return paths.bad;
+    }
   } else {
+    if (match[2] === '') {
+      return [str];
+    }
     paths = match[2].split(',');
   }
 
@@ -63,13 +82,12 @@ function braces(str, arr, fn) {
     idx = val.indexOf('{');
 
     if (idx !== -1) {
-      // if (val.indexOf('}', idx + 2) === -1) {
-      //   var msg = '[brace expansion] imbalanced brace in: ';
-      //   throw new Error(msg + str);
-      // }
       arr = braces(val, arr);
-    } else if (arr.indexOf(val) === -1) {
-      arr.push(val);
+    } else {
+      // push into the array, but avoid duplicates
+      if (arr.indexOf(val) === -1) {
+        arr.push(val);
+      }
     }
   }
 
@@ -89,6 +107,7 @@ function regex() {
  */
 
 function splice(str, token, replacement) {
+
   var i = str.indexOf(token);
   var end = i + token.length;
   return str.substr(0, i)

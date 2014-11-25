@@ -13,15 +13,15 @@ function addSpecTests(fp, fn) {
     var pass = [];
     var fail = [];
 
-    str.replace(/^\.\n([\s\S]*?)^\.\n([\s\S]*?)^\.$/gm, function(__, pattern, res, offset, orig) {
+    str.replace(/^\.\n([\s\S]*?)^\.\n([\s\S]*?)^\.$/gm, function(__, pattern, expected, offset, orig) {
       var line = orig.slice(0, offset).split(/\n/g).length;
       var unit = lines[line - 2] + '\n' + __;
 
-      if (res.trim() === fn(pattern).join('').trim()) {
-        // fail.push(new Array(unit.split('\n').length).join('\n'));
+      console.log('expand("' + pattern + '").should.eql([' + expected.split('\n').join(', ') + ']);')
+
+      if (expected.split('\n').sort().join('\n').trim() === fn(pattern).sort().sort().join('').trim()) {
         pass.push(line + ': ' + unit);
       } else {
-        // pass.push(new Array(unit.split('\n').length).join('\n'));
         fail.push(line + ': ' + unit);
       }
     });

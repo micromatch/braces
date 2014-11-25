@@ -28,7 +28,7 @@
     "test": "mocha -R spec"
   },
   "dependencies": {
-    "expand-range": "^0.1.0"
+    "expand-range": "^0.2.1"
   },
   "devDependencies": {
     "benchmarked": "^0.1.1",
@@ -36,7 +36,8 @@
     "lodash": "^2.4.1",
     "minimatch": "^1.0.0",
     "mocha": "*",
-    "should": "^4.1.0"
+    "should": "^4.1.0",
+    "write": "^0.1.1"
   },
   "keywords": [
     "alpha",
