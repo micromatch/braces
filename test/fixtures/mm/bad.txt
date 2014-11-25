@@ -6,7 +6,6 @@ ffc
 ffb
 ffa
 .
-
 Should expand basic sets with both leading and trailing strings.
 .
 f{d,e,f}g
@@ -15,7 +14,6 @@ fdg
 feg
 ffg
 .
-
 Should expand basic sets with a trailing string but no leading string. 
 .
 {l,n,m}xyz
@@ -24,14 +22,12 @@ lxyz
 nxyz
 mxyz
 .
-
 Should honor escaping inside braces
 .
 {abc\,def}
 .
 {abc,def}
 .
-
 Should honor escaping before a brace
 .
 \{a,b,c,d,e}
@@ -46,7 +42,6 @@ x,y
 {abc}
 trie
 .
-
 Should...
 .
 /usr/{ucb/{ex,edit},lib/{ex,how_ex}}
@@ -56,14 +51,6 @@ Should...
 /usr/lib/ex
 /usr/lib/how_ex
 .
-
-Should...
-.
-{}
-.
-{}
-.
-
 Should...
 .
 { }
@@ -71,28 +58,6 @@ Should...
 {
 }
 .
-
-Should...
-.
-}
-.
-}
-.
-
-Should...
-.
-{
-.
-{
-.
-
-Should...
-.
-abcd{efgh
-.
-abcd{efgh
-.
-
 Should...
 .
 foo {1,2} bar
@@ -102,7 +67,6 @@ foo
 2
 bar
 .
-
 Should...
 .
 `zecho foo {1,2} bar`
@@ -112,7 +76,6 @@ foo
 2
 bar
 .
-
 Should...
 .
 $(zecho foo {1,2} bar)
@@ -122,7 +85,6 @@ foo
 2
 bar
 .
-
 Should...
 .
 foo{bar,${var}.}
@@ -130,7 +92,6 @@ foo{bar,${var}.}
 foobar
 foobaz.
 .
-
 Should...
 .
 foo{bar,${var}}
@@ -138,7 +99,6 @@ foo{bar,${var}}
 foobar
 foobaz
 .
-
 Should...
 .
 "${var}"{x,y}
@@ -146,7 +106,6 @@ Should...
 bazx
 bazy
 .
-
 Should...
 .
 $var{x,y}
@@ -154,7 +113,6 @@ $var{x,y}
 vx
 vy
 .
-
 Should...
 .
 ${var}{x,y}
@@ -162,7 +120,6 @@ ${var}{x,y}
 bazx
 bazy
 .
-
 Should...
 .
 {1..10}
@@ -178,7 +135,6 @@ Should...
 9
 10
 .
-
 Should...
 .
 {0..10,braces}
@@ -186,7 +142,6 @@ Should...
 0..10
 braces
 .
-
 Should...
 .
 {{0..10},braces}
@@ -204,7 +159,6 @@ Should...
 10
 braces
 .
-
 Should...
 .
 x{{0..10},braces}y
@@ -222,21 +176,6 @@ x9y
 x10y
 xbracesy
 .
-
-Should...
-.
-{3..3}
-.
-3
-.
-
-Should...
-.
-x{3..3}y
-.
-x3y
-.
-
 Should...
 .
 {10..1}
@@ -252,7 +191,6 @@ Should...
 2
 1
 .
-
 Should...
 .
 {10..1}y
@@ -268,7 +206,6 @@ Should...
 2y
 1y
 .
-
 Should...
 .
 x{10..1}y
@@ -284,7 +221,6 @@ x3y
 x2y
 x1y
 .
-
 Should...
 .
 {a..f}
@@ -296,7 +232,6 @@ d
 e
 f
 .
-
 Should...
 .
 {f..a}
@@ -308,7 +243,6 @@ c
 b
 a
 .
-
 Should...
 .
 {a..A}
@@ -347,7 +281,6 @@ C
 B
 A
 .
-
 Should...
 .
 {A..a}
@@ -386,28 +319,12 @@ _
 `
 a
 .
-
 Should...
 .
 {f..f}
 .
 f
 .
-
-Should...
-.
-{1..f}
-.
-{1..f}
-.
-
-Should...
-.
-{f..1}
-.
-{f..1}
-.
-
 Should...
 .
 0{1..9} {10..20}
@@ -433,7 +350,6 @@ Should...
 19
 20
 .
-
 Should...
 .
 {-1..-10}
@@ -449,7 +365,6 @@ Should...
 -9
 -10
 .
-
 Should...
 .
 {-20..0}
@@ -476,7 +391,6 @@ Should...
 -1
 0
 .
-
 Should...
 .
 a-{b{d,e}}-c
@@ -484,7 +398,6 @@ a-{b{d,e}}-c
 a-{bd}-c
 a-{be}-c
 .
-
 Should...
 .
 a-{bdef-{g,i}-c
@@ -492,7 +405,6 @@ a-{bdef-{g,i}-c
 a-{bdef-g-c
 a-{bdef-i-c
 .
-
 Should...
 .
 {"klklkl"}{1,2,3}
@@ -501,14 +413,12 @@ Should...
 {klklkl}2
 {klklkl}3
 .
-
 Should...
 .
 {"x,x"}
 .
 {x,x}
 .
-
 Should...
 .
 {1..10..2}
@@ -519,7 +429,6 @@ Should...
 7
 9
 .
-
 Should...
 .
 {-1..-10..2}
@@ -530,7 +439,6 @@ Should...
 -7
 -9
 .
-
 Should...
 .
 {-1..-10..-2}
@@ -541,7 +449,6 @@ Should...
 -7
 -9
 .
-
 Should...
 .
 {10..1..-2}
@@ -552,7 +459,6 @@ Should...
 4
 2
 .
-
 Should...
 .
 {10..1..2}
@@ -563,7 +469,6 @@ Should...
 4
 2
 .
-
 Should...
 .
 {1..20..2}
@@ -579,14 +484,12 @@ Should...
 17
 19
 .
-
 Should...
 .
 {1..20..20}
 .
 1
 .
-
 Should...
 .
 {100..0..5}
@@ -613,7 +516,6 @@ Should...
 5
 0
 .
-
 Should...
 .
 {100..0..-5}
@@ -640,7 +542,6 @@ Should...
 5
 0
 .
-
 Should...
 .
 {a..z}
@@ -672,7 +573,6 @@ x
 y
 z
 .
-
 Should...
 .
 {a..z..2}
@@ -691,7 +591,6 @@ u
 w
 y
 .
-
 Should...
 .
 {z..a..-2}
@@ -710,7 +609,6 @@ f
 d
 b
 .
-
 Should...
 .
 {2147483645..2147483649}
@@ -721,7 +619,6 @@ Should...
 2147483648
 2147483649
 .
-
 Should...
 .
 {10..0..2}
@@ -733,7 +630,6 @@ Should...
 2
 0
 .
-
 Should...
 .
 {10..0..-2}
@@ -745,7 +641,6 @@ Should...
 2
 0
 .
-
 Should...
 .
 {-50..-0..5}
@@ -761,102 +656,4 @@ Should...
 -10
 -5
 0
-.
-
-Should...
-.
-{1..10.f}
-.
-{1..10.f}
-.
-
-Should...
-.
-{1..ff}
-.
-{1..ff}
-.
-
-Should...
-.
-{1..10..ff}
-.
-{1..10..ff}
-.
-
-Should...
-.
-{1.20..2}
-.
-{1.20..2}
-.
-
-Should...
-.
-{1..20..f2}
-.
-{1..20..f2}
-.
-
-Should...
-.
-{1..20..2f}
-.
-{1..20..2f}
-.
-
-Should...
-.
-{1..2f..2}
-.
-{1..2f..2}
-.
-
-Should...
-.
-{1..ff..2}
-.
-{1..ff..2}
-.
-
-Should...
-.
-{1..ff}
-.
-{1..ff}
-.
-
-Should...
-.
-{1..f}
-.
-{1..f}
-.
-
-Should...
-.
-{1..0f}
-.
-{1..0f}
-.
-
-Should...
-.
-{1..10f}
-.
-{1..10f}
-.
-
-Should...
-.
-{1..10.f}
-.
-{1..10.f}
-.
-
-Should...
-.
-{1..10.f}
-.
-{1..10.f}
 .
