@@ -1,4 +1,4 @@
-Should expand basic sets with a leading string but no trailing string.
+unit
 .
 ff{c,b,a}
 .
@@ -7,7 +7,7 @@ ffb
 ffa
 .
 
-Should expand basic sets with both leading and trailing strings.
+unit
 .
 f{d,e,f}g
 .
@@ -16,7 +16,7 @@ feg
 ffg
 .
 
-Should expand basic sets with a trailing string but no leading string. 
+unit
 .
 {l,n,m}xyz
 .
@@ -25,20 +25,20 @@ nxyz
 mxyz
 .
 
-Should honor escaping inside braces
+unit
 .
 {abc\,def}
 .
 {abc,def}
 .
 
-Should honor escaping before a brace
+unit
 .
 \{a,b,c,d,e}
 .
 {a,b,c,d,e}
 .
-Should...
+unit
 .
 {x,y,{abc},trie}
 .
@@ -47,7 +47,7 @@ x,y
 trie
 .
 
-Should...
+unit
 .
 /usr/{ucb/{ex,edit},lib/{ex,how_ex}}
 .
@@ -57,14 +57,14 @@ Should...
 /usr/lib/how_ex
 .
 
-Should...
+unit
 .
 {}
 .
 {}
 .
 
-Should...
+unit
 .
 { }
 .
@@ -72,28 +72,28 @@ Should...
 }
 .
 
-Should...
+unit
 .
 }
 .
 }
 .
 
-Should...
+unit
 .
 {
 .
 {
 .
 
-Should...
+unit
 .
 abcd{efgh
 .
 abcd{efgh
 .
 
-Should...
+unit
 .
 foo {1,2} bar
 .
@@ -103,7 +103,7 @@ foo
 bar
 .
 
-Should...
+unit
 .
 `zecho foo {1,2} bar`
 .
@@ -113,7 +113,7 @@ foo
 bar
 .
 
-Should...
+unit
 .
 $(zecho foo {1,2} bar)
 .
@@ -123,7 +123,7 @@ foo
 bar
 .
 
-Should...
+unit
 .
 foo{bar,${var}.}
 .
@@ -131,7 +131,7 @@ foobar
 foobaz.
 .
 
-Should...
+unit
 .
 foo{bar,${var}}
 .
@@ -139,7 +139,7 @@ foobar
 foobaz
 .
 
-Should...
+unit
 .
 "${var}"{x,y}
 .
@@ -147,7 +147,7 @@ bazx
 bazy
 .
 
-Should...
+unit
 .
 $var{x,y}
 .
@@ -155,7 +155,7 @@ vx
 vy
 .
 
-Should...
+unit
 .
 ${var}{x,y}
 .
@@ -163,7 +163,7 @@ bazx
 bazy
 .
 
-Should...
+unit
 .
 {1..10}
 .
@@ -179,7 +179,7 @@ Should...
 10
 .
 
-Should...
+unit
 .
 {0..10,braces}
 .
@@ -187,7 +187,7 @@ Should...
 braces
 .
 
-Should...
+unit
 .
 {{0..10},braces}
 .
@@ -205,7 +205,7 @@ Should...
 braces
 .
 
-Should...
+unit
 .
 x{{0..10},braces}y
 .
@@ -223,21 +223,21 @@ x10y
 xbracesy
 .
 
-Should...
+unit
 .
 {3..3}
 .
 3
 .
 
-Should...
+unit
 .
 x{3..3}y
 .
 x3y
 .
 
-Should...
+unit
 .
 {10..1}
 .
@@ -253,7 +253,7 @@ Should...
 1
 .
 
-Should...
+unit
 .
 {10..1}y
 .
@@ -269,7 +269,7 @@ Should...
 1y
 .
 
-Should...
+unit
 .
 x{10..1}y
 .
@@ -285,7 +285,7 @@ x2y
 x1y
 .
 
-Should...
+unit
 .
 {a..f}
 .
@@ -297,7 +297,7 @@ e
 f
 .
 
-Should...
+unit
 .
 {f..a}
 .
@@ -309,7 +309,7 @@ b
 a
 .
 
-Should...
+unit
 .
 {a..A}
 .
@@ -348,7 +348,7 @@ B
 A
 .
 
-Should...
+unit
 .
 {A..a}
 .
@@ -387,28 +387,28 @@ _
 a
 .
 
-Should...
+unit
 .
 {f..f}
 .
 f
 .
 
-Should...
+unit
 .
 {1..f}
 .
 {1..f}
 .
 
-Should...
+unit
 .
 {f..1}
 .
 {f..1}
 .
 
-Should...
+unit
 .
 0{1..9} {10..20}
 .
@@ -434,7 +434,7 @@ Should...
 20
 .
 
-Should...
+unit
 .
 {-1..-10}
 .
@@ -450,7 +450,7 @@ Should...
 -10
 .
 
-Should...
+unit
 .
 {-20..0}
 .
@@ -477,7 +477,7 @@ Should...
 0
 .
 
-Should...
+unit
 .
 a-{b{d,e}}-c
 .
@@ -485,7 +485,7 @@ a-{bd}-c
 a-{be}-c
 .
 
-Should...
+unit
 .
 a-{bdef-{g,i}-c
 .
@@ -493,7 +493,7 @@ a-{bdef-g-c
 a-{bdef-i-c
 .
 
-Should...
+unit
 .
 {"klklkl"}{1,2,3}
 .
@@ -502,14 +502,14 @@ Should...
 {klklkl}3
 .
 
-Should...
+unit
 .
 {"x,x"}
 .
 {x,x}
 .
 
-Should...
+unit
 .
 {1..10..2}
 .
@@ -520,7 +520,7 @@ Should...
 9
 .
 
-Should...
+unit
 .
 {-1..-10..2}
 .
@@ -531,7 +531,7 @@ Should...
 -9
 .
 
-Should...
+unit
 .
 {-1..-10..-2}
 .
@@ -542,7 +542,7 @@ Should...
 -9
 .
 
-Should...
+unit
 .
 {10..1..-2}
 .
@@ -553,7 +553,7 @@ Should...
 2
 .
 
-Should...
+unit
 .
 {10..1..2}
 .
@@ -564,7 +564,7 @@ Should...
 2
 .
 
-Should...
+unit
 .
 {1..20..2}
 .
@@ -580,14 +580,14 @@ Should...
 19
 .
 
-Should...
+unit
 .
 {1..20..20}
 .
 1
 .
 
-Should...
+unit
 .
 {100..0..5}
 .
@@ -614,7 +614,7 @@ Should...
 0
 .
 
-Should...
+unit
 .
 {100..0..-5}
 .
@@ -641,7 +641,7 @@ Should...
 0
 .
 
-Should...
+unit
 .
 {a..z}
 .
@@ -673,7 +673,7 @@ y
 z
 .
 
-Should...
+unit
 .
 {a..z..2}
 .
@@ -692,7 +692,7 @@ w
 y
 .
 
-Should...
+unit
 .
 {z..a..-2}
 .
@@ -711,7 +711,7 @@ d
 b
 .
 
-Should...
+unit
 .
 {2147483645..2147483649}
 .
@@ -722,7 +722,7 @@ Should...
 2147483649
 .
 
-Should...
+unit
 .
 {10..0..2}
 .
@@ -734,7 +734,7 @@ Should...
 0
 .
 
-Should...
+unit
 .
 {10..0..-2}
 .
@@ -746,7 +746,7 @@ Should...
 0
 .
 
-Should...
+unit
 .
 {-50..-0..5}
 .
@@ -763,98 +763,98 @@ Should...
 0
 .
 
-Should...
+unit
 .
 {1..10.f}
 .
 {1..10.f}
 .
 
-Should...
+unit
 .
 {1..ff}
 .
 {1..ff}
 .
 
-Should...
+unit
 .
 {1..10..ff}
 .
 {1..10..ff}
 .
 
-Should...
+unit
 .
 {1.20..2}
 .
 {1.20..2}
 .
 
-Should...
+unit
 .
 {1..20..f2}
 .
 {1..20..f2}
 .
 
-Should...
+unit
 .
 {1..20..2f}
 .
 {1..20..2f}
 .
 
-Should...
+unit
 .
 {1..2f..2}
 .
 {1..2f..2}
 .
 
-Should...
+unit
 .
 {1..ff..2}
 .
 {1..ff..2}
 .
 
-Should...
+unit
 .
 {1..ff}
 .
 {1..ff}
 .
 
-Should...
+unit
 .
 {1..f}
 .
 {1..f}
 .
 
-Should...
+unit
 .
 {1..0f}
 .
 {1..0f}
 .
 
-Should...
+unit
 .
 {1..10f}
 .
 {1..10f}
 .
 
-Should...
+unit
 .
 {1..10.f}
 .
 {1..10.f}
 .
 
-Should...
+unit
 .
 {1..10.f}
 .

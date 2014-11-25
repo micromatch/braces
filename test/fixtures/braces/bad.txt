@@ -1,16 +1,16 @@
-29: Should honor escaping inside braces
+29: unit
 .
 {abc\,def}
 .
 {abc,def}
 .
-36: Should honor escaping before a brace
+36: unit
 .
 \{a,b,c,d,e}
 .
 {a,b,c,d,e}
 .
-42: Should...
+42: unit
 .
 {x,y,{abc},trie}
 .
@@ -18,20 +18,20 @@ x,y
 {abc}
 trie
 .
-61: Should...
+61: unit
 .
 {}
 .
 {}
 .
-68: Should...
+68: unit
 .
 { }
 .
 {
 }
 .
-97: Should...
+97: unit
 .
 foo {1,2} bar
 .
@@ -40,7 +40,7 @@ foo
 2
 bar
 .
-107: Should...
+107: unit
 .
 `zecho foo {1,2} bar`
 .
@@ -49,7 +49,7 @@ foo
 2
 bar
 .
-117: Should...
+117: unit
 .
 $(zecho foo {1,2} bar)
 .
@@ -58,49 +58,49 @@ foo
 2
 bar
 .
-127: Should...
+127: unit
 .
 foo{bar,${var}.}
 .
 foobar
 foobaz.
 .
-135: Should...
+135: unit
 .
 foo{bar,${var}}
 .
 foobar
 foobaz
 .
-143: Should...
+143: unit
 .
 "${var}"{x,y}
 .
 bazx
 bazy
 .
-151: Should...
+151: unit
 .
 $var{x,y}
 .
 vx
 vy
 .
-159: Should...
+159: unit
 .
 ${var}{x,y}
 .
 bazx
 bazy
 .
-183: Should...
+183: unit
 .
 {0..10,braces}
 .
 0..10
 braces
 .
-313: Should...
+313: unit
 .
 {a..A}
 .
@@ -138,7 +138,7 @@ C
 B
 A
 .
-352: Should...
+352: unit
 .
 {A..a}
 .
@@ -176,7 +176,7 @@ _
 `
 a
 .
-412: Should...
+412: unit
 .
 0{1..9} {10..20}
 .
@@ -201,21 +201,21 @@ a
 19
 20
 .
-481: Should...
+481: unit
 .
 a-{b{d,e}}-c
 .
 a-{bd}-c
 a-{be}-c
 .
-489: Should...
+489: unit
 .
 a-{bdef-{g,i}-c
 .
 a-{bdef-g-c
 a-{bdef-i-c
 .
-497: Should...
+497: unit
 .
 {"klklkl"}{1,2,3}
 .
@@ -223,7 +223,7 @@ a-{bdef-i-c
 {klklkl}2
 {klklkl}3
 .
-506: Should...
+506: unit
 .
 {"x,x"}
 .

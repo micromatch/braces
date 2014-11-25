@@ -1,4 +1,4 @@
-2: Should expand basic sets with a leading string but no trailing string.
+2: unit
 .
 ff{c,b,a}
 .
@@ -6,7 +6,7 @@ ffc
 ffb
 ffa
 .
-11: Should expand basic sets with both leading and trailing strings.
+11: unit
 .
 f{d,e,f}g
 .
@@ -14,7 +14,7 @@ fdg
 feg
 ffg
 .
-20: Should expand basic sets with a trailing string but no leading string. 
+20: unit
 .
 {l,n,m}xyz
 .
@@ -22,7 +22,7 @@ lxyz
 nxyz
 mxyz
 .
-51: Should...
+51: unit
 .
 /usr/{ucb/{ex,edit},lib/{ex,how_ex}}
 .
@@ -31,25 +31,25 @@ mxyz
 /usr/lib/ex
 /usr/lib/how_ex
 .
-76: Should...
+76: unit
 .
 }
 .
 }
 .
-83: Should...
+83: unit
 .
 {
 .
 {
 .
-90: Should...
+90: unit
 .
 abcd{efgh
 .
 abcd{efgh
 .
-167: Should...
+167: unit
 .
 {1..10}
 .
@@ -64,7 +64,7 @@ abcd{efgh
 9
 10
 .
-191: Should...
+191: unit
 .
 {{0..10},braces}
 .
@@ -81,7 +81,7 @@ abcd{efgh
 10
 braces
 .
-209: Should...
+209: unit
 .
 x{{0..10},braces}y
 .
@@ -98,19 +98,19 @@ x9y
 x10y
 xbracesy
 .
-227: Should...
+227: unit
 .
 {3..3}
 .
 3
 .
-234: Should...
+234: unit
 .
 x{3..3}y
 .
 x3y
 .
-241: Should...
+241: unit
 .
 {10..1}
 .
@@ -125,7 +125,7 @@ x3y
 2
 1
 .
-257: Should...
+257: unit
 .
 {10..1}y
 .
@@ -140,7 +140,7 @@ x3y
 2y
 1y
 .
-273: Should...
+273: unit
 .
 x{10..1}y
 .
@@ -155,7 +155,7 @@ x3y
 x2y
 x1y
 .
-289: Should...
+289: unit
 .
 {a..f}
 .
@@ -166,7 +166,7 @@ d
 e
 f
 .
-301: Should...
+301: unit
 .
 {f..a}
 .
@@ -177,25 +177,25 @@ c
 b
 a
 .
-391: Should...
+391: unit
 .
 {f..f}
 .
 f
 .
-398: Should...
+398: unit
 .
 {1..f}
 .
 {1..f}
 .
-405: Should...
+405: unit
 .
 {f..1}
 .
 {f..1}
 .
-438: Should...
+438: unit
 .
 {-1..-10}
 .
@@ -210,7 +210,7 @@ f
 -9
 -10
 .
-454: Should...
+454: unit
 .
 {-20..0}
 .
@@ -236,7 +236,7 @@ f
 -1
 0
 .
-513: Should...
+513: unit
 .
 {1..10..2}
 .
@@ -246,7 +246,7 @@ f
 7
 9
 .
-524: Should...
+524: unit
 .
 {-1..-10..2}
 .
@@ -256,7 +256,7 @@ f
 -7
 -9
 .
-535: Should...
+535: unit
 .
 {-1..-10..-2}
 .
@@ -266,7 +266,7 @@ f
 -7
 -9
 .
-546: Should...
+546: unit
 .
 {10..1..-2}
 .
@@ -276,7 +276,7 @@ f
 4
 2
 .
-557: Should...
+557: unit
 .
 {10..1..2}
 .
@@ -286,7 +286,7 @@ f
 4
 2
 .
-568: Should...
+568: unit
 .
 {1..20..2}
 .
@@ -301,13 +301,13 @@ f
 17
 19
 .
-584: Should...
+584: unit
 .
 {1..20..20}
 .
 1
 .
-591: Should...
+591: unit
 .
 {100..0..5}
 .
@@ -333,7 +333,7 @@ f
 5
 0
 .
-618: Should...
+618: unit
 .
 {100..0..-5}
 .
@@ -359,7 +359,7 @@ f
 5
 0
 .
-645: Should...
+645: unit
 .
 {a..z}
 .
@@ -390,7 +390,7 @@ x
 y
 z
 .
-677: Should...
+677: unit
 .
 {a..z..2}
 .
@@ -408,7 +408,7 @@ u
 w
 y
 .
-696: Should...
+696: unit
 .
 {z..a..-2}
 .
@@ -426,7 +426,7 @@ f
 d
 b
 .
-715: Should...
+715: unit
 .
 {2147483645..2147483649}
 .
@@ -436,7 +436,7 @@ b
 2147483648
 2147483649
 .
-726: Should...
+726: unit
 .
 {10..0..2}
 .
@@ -447,7 +447,7 @@ b
 2
 0
 .
-738: Should...
+738: unit
 .
 {10..0..-2}
 .
@@ -458,7 +458,7 @@ b
 2
 0
 .
-750: Should...
+750: unit
 .
 {-50..-0..5}
 .
@@ -474,85 +474,85 @@ b
 -5
 0
 .
-767: Should...
+767: unit
 .
 {1..10.f}
 .
 {1..10.f}
 .
-774: Should...
+774: unit
 .
 {1..ff}
 .
 {1..ff}
 .
-781: Should...
+781: unit
 .
 {1..10..ff}
 .
 {1..10..ff}
 .
-788: Should...
+788: unit
 .
 {1.20..2}
 .
 {1.20..2}
 .
-795: Should...
+795: unit
 .
 {1..20..f2}
 .
 {1..20..f2}
 .
-802: Should...
+802: unit
 .
 {1..20..2f}
 .
 {1..20..2f}
 .
-809: Should...
+809: unit
 .
 {1..2f..2}
 .
 {1..2f..2}
 .
-816: Should...
+816: unit
 .
 {1..ff..2}
 .
 {1..ff..2}
 .
-823: Should...
+823: unit
 .
 {1..ff}
 .
 {1..ff}
 .
-830: Should...
+830: unit
 .
 {1..f}
 .
 {1..f}
 .
-837: Should...
+837: unit
 .
 {1..0f}
 .
 {1..0f}
 .
-844: Should...
+844: unit
 .
 {1..10f}
 .
 {1..10f}
 .
-851: Should...
+851: unit
 .
 {1..10.f}
 .
 {1..10.f}
 .
-858: Should...
+858: unit
 .
 {1..10.f}
 .
