@@ -47,6 +47,7 @@ function braces(str, arr, fn) {
 
   arr = arr || [];
   var paths;
+  var foo;
 
   if (/\.{2}/.test(match[2])) {
     paths = expand(match[2], fn);
@@ -62,6 +63,10 @@ function braces(str, arr, fn) {
     idx = val.indexOf('{');
 
     if (idx !== -1) {
+      // if (val.indexOf('}', idx + 2) === -1) {
+      //   var msg = '[brace expansion] imbalanced brace in: ';
+      //   throw new Error(msg + str);
+      // }
       arr = braces(val, arr);
     } else if (arr.indexOf(val) === -1) {
       arr.push(val);

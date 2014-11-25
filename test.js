@@ -10,6 +10,12 @@
 var should = require('should');
 var expand = require('./');
 
+describe('bash 4.3', function () {
+  expand('ff{c,b,a}').should.eql([ 'ffc', 'ffb', 'ffa' ]);
+  expand('f{d,e,f}g').should.eql([ 'fdg', 'feg', 'ffg' ]);
+  expand('{l,n,m}xyz').should.eql([ 'lxyz', 'nxyz', 'mxyz' ]);
+});
+
 describe('braces', function () {
   describe('brace expansion', function () {
     it('should work with no braces', function () {
@@ -63,25 +69,44 @@ describe('braces', function () {
       expand('0{a..d}0').should.not.eql(['0a0', '0b0', '0c0']);
     });
 
-    it('should honor padding', function () {
-      expand('{00..05}').should.eql(['00', '01', '02', '03', '04', '05']);
-      expand('{01..03}').should.eql(['01', '02', '03']);
-      expand('{000..005}').should.eql(['000', '001', '002', '003', '004', '005']);
+    it('should work with dots in file paths', function () {
+      expand('../{1..3}/../foo').should.eql(['../1/../foo', '../2/../foo', '../3/../foo']);
     });
 
     it('should expand alphabetical ranges', function () {
       expand('{a..e}').should.eql(['a', 'b', 'c', 'd', 'e']);
       expand('{A..E}').should.eql(['A', 'B', 'C', 'D', 'E']);
     });
-
-    it('should use a custom function for expansions.', function () {
-      var range = expand('{a..e}', function (str, ch, i) {
-        return String.fromCharCode(ch) + i;
-      });
-      range.should.eql(['a0', 'b1', 'c2', 'd3', 'e4']);
-    });
   });
 
+  describe('custom functions', function () {
+    it('should expose the current value as the first param.', function () {
+      var res = expand('{1..5}', function (val, isLetter, i) {
+        return val;
+      });
+      res.should.eql(['1', '2', '3', '4', '5']);
+    });
+
+    it('should expose the `isLetter` boolean as the second param.', function () {
+      var res = expand('{a..e}', function (val, isLetter, i) {
+        if (isLetter) {
+          return String.fromCharCode(val);
+        }
+        return val;
+      });
+      res.should.eql(['a', 'b', 'c', 'd', 'e']);
+    });
+
+    it('should expose the index as the third param.', function () {
+      var res = expand('{a..e}', function (val, isLetter, i) {
+        if (isLetter) {
+          return String.fromCharCode(val) + i;
+        }
+        return val;
+      });
+      res.should.eql(['a0', 'b1', 'c2', 'd3', 'e4']);
+    });
+  });
   describe('complex', function () {
     it('should expand a complex combination of ranges and sets:', function () {
       expand('a/{x,y}/{1..5}c{d,e}f.{md,txt}').should.eql([ 'a/x/1cdf.md', 'a/y/1cdf.md', 'a/x/2cdf.md', 'a/y/2cdf.md', 'a/x/3cdf.md', 'a/y/3cdf.md', 'a/x/4cdf.md', 'a/y/4cdf.md', 'a/x/5cdf.md', 'a/y/5cdf.md', 'a/x/1cef.md', 'a/y/1cef.md', 'a/x/2cef.md', 'a/y/2cef.md', 'a/x/3cef.md', 'a/y/3cef.md', 'a/x/4cef.md', 'a/y/4cef.md', 'a/x/5cef.md', 'a/y/5cef.md', 'a/x/1cdf.txt', 'a/y/1cdf.txt', 'a/x/2cdf.txt', 'a/y/2cdf.txt', 'a/x/3cdf.txt', 'a/y/3cdf.txt', 'a/x/4cdf.txt', 'a/y/4cdf.txt', 'a/x/5cdf.txt', 'a/y/5cdf.txt', 'a/x/1cef.txt', 'a/y/1cef.txt', 'a/x/2cef.txt', 'a/y/2cef.txt', 'a/x/3cef.txt', 'a/y/3cef.txt', 'a/x/4cef.txt', 'a/y/4cef.txt', 'a/x/5cef.txt', 'a/y/5cef.txt' ]);
@@ -92,6 +117,85 @@ describe('braces', function () {
   });
 });
 
-describe('bash 4.3', function () {
 
+describe('ranges', function () {
+ it('should expand numerical ranges', function () {
+    expand('{1..3}').should.eql(['1', '2', '3']);
+    expand('{5..8}').should.eql(['5', '6', '7', '8']);
+  });
+
+  it('should expand negative ranges', function () {
+    expand('{0..-5}').should.eql(['0', '-1', '-2', '-3', '-4', '-5']);
+  });
+
+  it('should expand alphabetical ranges', function () {
+    expand('{a..e}').should.eql(['a', 'b', 'c', 'd', 'e']);
+    expand('{A..E}').should.eql(['A', 'B', 'C', 'D', 'E']);
+  });
+
+  it('should fill in numerical ranges', function () {
+    expand('{1..3}').should.eql(['1', '2', '3']);
+    expand('{5..8}').should.eql(['5', '6', '7', '8']);
+  });
+
+  it('should fill in numerical ranges when numbers are passed as strings', function () {
+    expand('{1..3}').should.eql(['1', '2', '3']);
+    expand('{5..8}').should.eql(['5', '6', '7', '8']);
+  });
+
+  it('should fill in negative ranges', function () {
+    expand('{0..-5}').should.eql([ '0', '-1', '-2', '-3', '-4', '-5' ]);
+    expand('{0..-5}').should.eql([ '0', '-1', '-2', '-3', '-4', '-5' ]);
+    expand('{9..-4}').should.eql([ '9', '8', '7', '6', '5', '4', '3', '2', '1', '0', '-1', '-2', '-3', '-4' ]);
+    expand('{-10..-1}').should.eql([ '-10', '-9', '-8', '-7', '-6', '-5', '-4', '-3', '-2', '-1' ]);
+  });
+
+  it('should fill in rangines using the given increment', function () {
+    expand('{1..10}').should.eql([ '1', '2', '3', '4', '5', '6', '7', '8', '9', '10' ]);
+    expand('{1..10..1}').should.eql([ '1', '2', '3', '4', '5', '6', '7', '8', '9', '10' ]);
+    expand('{1..10..2}').should.eql([ '1', '3', '5', '7', '9' ]);
+    expand('{1..10..2}').should.eql([ '1', '3', '5', '7', '9' ]);
+    expand('{1..10..2}').should.eql([ '1', '3', '5', '7', '9' ]);
+    expand('{1..20..2}').should.eql([ '1', '3', '5', '7', '9', '11', '13', '15', '17', '19' ]);
+    expand('{1..20..20}').should.eql([ '1' ]);
+    expand('{10..1..-2}').should.eql([ '10', '8', '6', '4', '2' ]);
+    expand('{10..1..2}').should.eql([ '10', '8', '6', '4', '2' ]);
+    expand('{1..9}').should.eql([ '1', '2', '3', '4', '5', '6', '7', '8', '9' ]);
+    expand('{2..10..2}').should.eql([ '2', '4', '6', '8', '10' ]);
+    expand('{2..10..1}').should.eql([ '2', '3', '4', '5', '6', '7', '8', '9', '10' ]);
+    expand('{2..10..2}').should.eql([ '2', '4', '6', '8', '10' ]);
+    expand('{2..10..3}').should.eql([ '2', '5', '8' ]);
+  });
+
+  it('should fill in negative ranges using the given increment', function () {
+    expand('{-1..-10..-2}').should.eql([ '-1', '-3', '-5', '-7', '-9' ]);
+    expand('{-1..-10..2}').should.eql([ '-1', '-3', '-5', '-7', '-9' ]);
+    expand('{10..1..-2}').should.eql([ '10', '8', '6', '4', '2' ]);
+    expand('{-10..-2..2}').should.eql([ '-10', '-8', '-6', '-4', '-2' ]);
+    expand('{-2..-10..1}').should.eql([ '-2', '-3', '-4', '-5', '-6', '-7', '-8', '-9', '-10' ]);
+    expand('{-2..-10..2}').should.eql([ '-2', '-4', '-6', '-8', '-10' ]);
+    expand('{-2..-10..3}').should.eql([ '-2', '-5', '-8' ]);
+    expand('{-9..9..3}').should.eql([ '-9', '-6', '-3', '0', '3', '6', '9' ]);
+  });
+
+  it('should fill in negative ranges using the given increment', function () {
+    expand('{1..10..2}').should.eql([ '1', '3', '5', '7', '9' ]);
+    expand('{-1..-10..2}').should.eql([ '-1', '-3', '-5', '-7', '-9' ]);
+    expand('{-1..-10..-2}').should.eql([ '-1', '-3', '-5', '-7', '-9' ]);
+    expand('{10..1..-2}').should.eql([ '10', '8', '6', '4', '2' ]);
+    expand('{10..1..2}').should.eql([ '10', '8', '6', '4', '2' ]);
+    expand('{1..20..2}').should.eql([ '1', '3', '5', '7', '9', '11', '13', '15', '17', '19' ]);
+    expand('{1..20..20}').should.eql([ '1' ]);
+  });
+
+  it('should fill in alphabetical ranges', function () {
+    expand('{a..e}').should.eql(['a', 'b', 'c', 'd', 'e']);
+    expand('{A..E}').should.eql(['A', 'B', 'C', 'D', 'E']);
+    expand('{E..A}').should.eql(['E', 'D', 'C', 'B', 'A']);
+  });
+
+  it('should use increments with alphabetical ranges', function () {
+    expand('{a..e..2}').should.eql(['a','c', 'e']);
+    expand('{E..A..2}').should.eql(['E', 'C', 'A']);
+  });
 });
