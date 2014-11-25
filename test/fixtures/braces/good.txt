@@ -22,6 +22,18 @@ lxyz
 nxyz
 mxyz
 .
+29: unit
+.
+{abc\,def}
+.
+{abc,def}
+.
+36: unit
+.
+\{a,b,c,d,e}
+.
+{a,b,c,d,e}
+.
 51: unit
 .
 /usr/{ucb/{ex,edit},lib/{ex,how_ex}}
