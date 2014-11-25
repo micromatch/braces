@@ -22,6 +22,15 @@ lxyz
 nxyz
 mxyz
 .
+51: Should...
+.
+/usr/{ucb/{ex,edit},lib/{ex,how_ex}}
+.
+/usr/ucb/ex
+/usr/ucb/edit
+/usr/lib/ex
+/usr/lib/how_ex
+.
 76: Should...
 .
 }
@@ -54,6 +63,40 @@ abcd{efgh
 8
 9
 10
+.
+191: Should...
+.
+{{0..10},braces}
+.
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+braces
+.
+209: Should...
+.
+x{{0..10},braces}y
+.
+x0y
+x1y
+x2y
+x3y
+x4y
+x5y
+x6y
+x7y
+x8y
+x9y
+x10y
+xbracesy
 .
 227: Should...
 .
@@ -467,6 +510,12 @@ b
 .
 {1..20..2f}
 .
+809: Should...
+.
+{1..2f..2}
+.
+{1..2f..2}
+.
 816: Should...
 .
 {1..ff..2}
@@ -484,6 +533,18 @@ b
 {1..f}
 .
 {1..f}
+.
+837: Should...
+.
+{1..0f}
+.
+{1..0f}
+.
+844: Should...
+.
+{1..10f}
+.
+{1..10f}
 .
 851: Should...
 .

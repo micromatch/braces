@@ -18,15 +18,6 @@ x,y
 {abc}
 trie
 .
-51: Should...
-.
-/usr/{ucb/{ex,edit},lib/{ex,how_ex}}
-.
-/usr/ucb/ex
-/usr/ucb/edit
-/usr/lib/ex
-/usr/lib/how_ex
-.
 61: Should...
 .
 {}
@@ -108,40 +99,6 @@ bazy
 .
 0..10
 braces
-.
-191: Should...
-.
-{{0..10},braces}
-.
-0
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-braces
-.
-209: Should...
-.
-x{{0..10},braces}y
-.
-x0y
-x1y
-x2y
-x3y
-x4y
-x5y
-x6y
-x7y
-x8y
-x9y
-x10y
-xbracesy
 .
 313: Should...
 .
@@ -271,22 +228,4 @@ a-{bdef-i-c
 {"x,x"}
 .
 {x,x}
-.
-809: Should...
-.
-{1..2f..2}
-.
-{1..2f..2}
-.
-837: Should...
-.
-{1..0f}
-.
-{1..0f}
-.
-844: Should...
-.
-{1..10f}
-.
-{1..10f}
 .
