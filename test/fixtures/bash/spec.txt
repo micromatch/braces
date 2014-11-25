@@ -27,14 +27,14 @@ mxyz
 
 unit
 .
-{abc\\,def}
+{abc\,def}
 .
 {abc,def}
 .
 
 unit
 .
-\\{a,b,c,d,e}
+\{a,b,c,d,e}
 .
 {a,b,c,d,e}
 .

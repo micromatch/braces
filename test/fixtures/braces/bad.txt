@@ -1,12 +1,12 @@
 29: unit
 .
-{abc\\,def}
+{abc\,def}
 .
 {abc,def}
 .
 36: unit
 .
-\\{a,b,c,d,e}
+\{a,b,c,d,e}
 .
 {a,b,c,d,e}
 .
