@@ -1,16 +1,16 @@
-Should honor escaping inside braces
+29: Should honor escaping inside braces
 .
 {abc\,def}
 .
 {abc,def}
 .
-Should honor escaping before a brace
+36: Should honor escaping before a brace
 .
 \{a,b,c,d,e}
 .
 {a,b,c,d,e}
 .
-Should...
+42: Should...
 .
 {x,y,{abc},trie}
 .
@@ -18,7 +18,7 @@ x,y
 {abc}
 trie
 .
-Should...
+51: Should...
 .
 /usr/{ucb/{ex,edit},lib/{ex,how_ex}}
 .
@@ -27,20 +27,20 @@ Should...
 /usr/lib/ex
 /usr/lib/how_ex
 .
-Should...
+61: Should...
 .
 {}
 .
 {}
 .
-Should...
+68: Should...
 .
 { }
 .
 {
 }
 .
-Should...
+97: Should...
 .
 foo {1,2} bar
 .
@@ -49,7 +49,7 @@ foo
 2
 bar
 .
-Should...
+107: Should...
 .
 `zecho foo {1,2} bar`
 .
@@ -58,7 +58,7 @@ foo
 2
 bar
 .
-Should...
+117: Should...
 .
 $(zecho foo {1,2} bar)
 .
@@ -67,49 +67,49 @@ foo
 2
 bar
 .
-Should...
+127: Should...
 .
 foo{bar,${var}.}
 .
 foobar
 foobaz.
 .
-Should...
+135: Should...
 .
 foo{bar,${var}}
 .
 foobar
 foobaz
 .
-Should...
+143: Should...
 .
 "${var}"{x,y}
 .
 bazx
 bazy
 .
-Should...
+151: Should...
 .
 $var{x,y}
 .
 vx
 vy
 .
-Should...
+159: Should...
 .
 ${var}{x,y}
 .
 bazx
 bazy
 .
-Should...
+183: Should...
 .
 {0..10,braces}
 .
 0..10
 braces
 .
-Should...
+191: Should...
 .
 {{0..10},braces}
 .
@@ -126,7 +126,7 @@ Should...
 10
 braces
 .
-Should...
+209: Should...
 .
 x{{0..10},braces}y
 .
@@ -143,7 +143,7 @@ x9y
 x10y
 xbracesy
 .
-Should...
+313: Should...
 .
 {a..A}
 .
@@ -181,7 +181,7 @@ C
 B
 A
 .
-Should...
+352: Should...
 .
 {A..a}
 .
@@ -219,7 +219,7 @@ _
 `
 a
 .
-Should...
+412: Should...
 .
 0{1..9} {10..20}
 .
@@ -244,21 +244,21 @@ Should...
 19
 20
 .
-Should...
+481: Should...
 .
 a-{b{d,e}}-c
 .
 a-{bd}-c
 a-{be}-c
 .
-Should...
+489: Should...
 .
 a-{bdef-{g,i}-c
 .
 a-{bdef-g-c
 a-{bdef-i-c
 .
-Should...
+497: Should...
 .
 {"klklkl"}{1,2,3}
 .
@@ -266,25 +266,25 @@ Should...
 {klklkl}2
 {klklkl}3
 .
-Should...
+506: Should...
 .
 {"x,x"}
 .
 {x,x}
 .
-Should...
+809: Should...
 .
 {1..2f..2}
 .
 {1..2f..2}
 .
-Should...
+837: Should...
 .
 {1..0f}
 .
 {1..0f}
 .
-Should...
+844: Should...
 .
 {1..10f}
 .

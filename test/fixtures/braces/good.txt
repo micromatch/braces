@@ -1,4 +1,4 @@
-Should expand basic sets with a leading string but no trailing string.
+2: Should expand basic sets with a leading string but no trailing string.
 .
 ff{c,b,a}
 .
@@ -6,7 +6,7 @@ ffc
 ffb
 ffa
 .
-Should expand basic sets with both leading and trailing strings.
+11: Should expand basic sets with both leading and trailing strings.
 .
 f{d,e,f}g
 .
@@ -14,7 +14,7 @@ fdg
 feg
 ffg
 .
-Should expand basic sets with a trailing string but no leading string. 
+20: Should expand basic sets with a trailing string but no leading string. 
 .
 {l,n,m}xyz
 .
@@ -22,25 +22,25 @@ lxyz
 nxyz
 mxyz
 .
-Should...
+76: Should...
 .
 }
 .
 }
 .
-Should...
+83: Should...
 .
 {
 .
 {
 .
-Should...
+90: Should...
 .
 abcd{efgh
 .
 abcd{efgh
 .
-Should...
+167: Should...
 .
 {1..10}
 .
@@ -55,19 +55,19 @@ Should...
 9
 10
 .
-Should...
+227: Should...
 .
 {3..3}
 .
 3
 .
-Should...
+234: Should...
 .
 x{3..3}y
 .
 x3y
 .
-Should...
+241: Should...
 .
 {10..1}
 .
@@ -82,7 +82,7 @@ Should...
 2
 1
 .
-Should...
+257: Should...
 .
 {10..1}y
 .
@@ -97,7 +97,7 @@ Should...
 2y
 1y
 .
-Should...
+273: Should...
 .
 x{10..1}y
 .
@@ -112,7 +112,7 @@ x3y
 x2y
 x1y
 .
-Should...
+289: Should...
 .
 {a..f}
 .
@@ -123,7 +123,7 @@ d
 e
 f
 .
-Should...
+301: Should...
 .
 {f..a}
 .
@@ -134,25 +134,25 @@ c
 b
 a
 .
-Should...
+391: Should...
 .
 {f..f}
 .
 f
 .
-Should...
+398: Should...
 .
 {1..f}
 .
 {1..f}
 .
-Should...
+405: Should...
 .
 {f..1}
 .
 {f..1}
 .
-Should...
+438: Should...
 .
 {-1..-10}
 .
@@ -167,7 +167,7 @@ Should...
 -9
 -10
 .
-Should...
+454: Should...
 .
 {-20..0}
 .
@@ -193,7 +193,7 @@ Should...
 -1
 0
 .
-Should...
+513: Should...
 .
 {1..10..2}
 .
@@ -203,7 +203,7 @@ Should...
 7
 9
 .
-Should...
+524: Should...
 .
 {-1..-10..2}
 .
@@ -213,7 +213,7 @@ Should...
 -7
 -9
 .
-Should...
+535: Should...
 .
 {-1..-10..-2}
 .
@@ -223,7 +223,7 @@ Should...
 -7
 -9
 .
-Should...
+546: Should...
 .
 {10..1..-2}
 .
@@ -233,7 +233,7 @@ Should...
 4
 2
 .
-Should...
+557: Should...
 .
 {10..1..2}
 .
@@ -243,7 +243,7 @@ Should...
 4
 2
 .
-Should...
+568: Should...
 .
 {1..20..2}
 .
@@ -258,13 +258,13 @@ Should...
 17
 19
 .
-Should...
+584: Should...
 .
 {1..20..20}
 .
 1
 .
-Should...
+591: Should...
 .
 {100..0..5}
 .
@@ -290,7 +290,7 @@ Should...
 5
 0
 .
-Should...
+618: Should...
 .
 {100..0..-5}
 .
@@ -316,7 +316,7 @@ Should...
 5
 0
 .
-Should...
+645: Should...
 .
 {a..z}
 .
@@ -347,7 +347,7 @@ x
 y
 z
 .
-Should...
+677: Should...
 .
 {a..z..2}
 .
@@ -365,7 +365,7 @@ u
 w
 y
 .
-Should...
+696: Should...
 .
 {z..a..-2}
 .
@@ -383,7 +383,7 @@ f
 d
 b
 .
-Should...
+715: Should...
 .
 {2147483645..2147483649}
 .
@@ -393,7 +393,7 @@ Should...
 2147483648
 2147483649
 .
-Should...
+726: Should...
 .
 {10..0..2}
 .
@@ -404,7 +404,7 @@ Should...
 2
 0
 .
-Should...
+738: Should...
 .
 {10..0..-2}
 .
@@ -415,7 +415,7 @@ Should...
 2
 0
 .
-Should...
+750: Should...
 .
 {-50..-0..5}
 .
@@ -431,67 +431,67 @@ Should...
 -5
 0
 .
-Should...
+767: Should...
 .
 {1..10.f}
 .
 {1..10.f}
 .
-Should...
+774: Should...
 .
 {1..ff}
 .
 {1..ff}
 .
-Should...
+781: Should...
 .
 {1..10..ff}
 .
 {1..10..ff}
 .
-Should...
+788: Should...
 .
 {1.20..2}
 .
 {1.20..2}
 .
-Should...
+795: Should...
 .
 {1..20..f2}
 .
 {1..20..f2}
 .
-Should...
+802: Should...
 .
 {1..20..2f}
 .
 {1..20..2f}
 .
-Should...
+816: Should...
 .
 {1..ff..2}
 .
 {1..ff..2}
 .
-Should...
+823: Should...
 .
 {1..ff}
 .
 {1..ff}
 .
-Should...
+830: Should...
 .
 {1..f}
 .
 {1..f}
 .
-Should...
+851: Should...
 .
 {1..10.f}
 .
 {1..10.f}
 .
-Should...
+858: Should...
 .
 {1..10.f}
 .

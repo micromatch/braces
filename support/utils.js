@@ -19,10 +19,10 @@ function addSpecTests(fp, fn) {
 
       if (res.trim() === fn(pattern).join('').trim()) {
         // fail.push(new Array(unit.split('\n').length).join('\n'));
-        pass.push(unit);
+        pass.push(line + ': ' + unit);
       } else {
         // pass.push(new Array(unit.split('\n').length).join('\n'));
-        fail.push(unit);
+        fail.push(line + ': ' + unit);
       }
     });
 
