@@ -42,6 +42,14 @@ function braces(str, arr, fn) {
     return [str];
   }
 
+  if (/[ \t]/.test(str)) {
+    var segs = str.split(' ');
+    return segs.reduce(function (acc, ele) {
+      acc = acc.concat(braces(ele))
+      return acc
+    }, []);
+  }
+
   // return if it looks like a bash or es6 variable
   if (str.indexOf('${') === 0) {
     return [str];
@@ -51,6 +59,18 @@ function braces(str, arr, fn) {
   if (str.indexOf('\\') === 0) {
     return [str.slice(1)];
   }
+
+
+  // var left = str.indexOf('{"');
+  // var right = str.indexOf('"}');
+  // if (left !== -1 && right !== -1) {
+  //   str = splice(str, '"', '');
+  //   str = splice(str, '"', '');
+  //   str = '\\' + str;
+  //   console.log(str);
+  //   // var res = '{' + str.substr(left + 2, right - 3) + '}';
+  //   // return braces(res + str.substr(right));
+  // }
 
   if (typeof arr === 'function') {
     fn = arr;
@@ -71,6 +91,7 @@ function braces(str, arr, fn) {
     if (match[2] === '') {
       return [str];
     }
+
     paths = match[2].split(',');
   }
 
@@ -114,3 +135,5 @@ function splice(str, token, replacement) {
     + replacement
     + str.substr(end, str.length);
 }
+
+// console.log(braces("{a,b}{{a,b},a,b}"))
