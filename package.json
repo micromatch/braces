@@ -1,7 +1,7 @@
 {
   "name": "braces",
-  "description": "Fastest brace expansion lib. Typically used with file paths, but can be used with any string. Expands comma-separated values (e.g. `foo/{a,b,c}/bar`) and alphabetical or numerical ranges (e.g. `{1..9}`)",
-  "version": "0.1.4",
+  "description": "Fastest brace expansion lib, with the most complete implementation of the Bash 4.3 spec.",
+  "version": "1.0.0",
   "homepage": "https://github.com/jonschlinkert/braces",
   "author": {
     "name": "Jon Schlinkert",
@@ -14,12 +14,10 @@
   "bugs": {
     "url": "https://github.com/jonschlinkert/braces/issues"
   },
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "https://github.com/jonschlinkert/braces/blob/master/LICENSE-MIT"
-    }
-  ],
+  "license": {
+    "type": "MIT",
+    "url": "https://github.com/jonschlinkert/braces/blob/master/LICENSE-MIT"
+  },
   "main": "index.js",
   "engines": {
     "node": ">=0.10.0"
