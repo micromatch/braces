@@ -60,17 +60,6 @@ function braces(str, arr, fn) {
     return [str.slice(1)];
   }
 
-  // var left = str.indexOf('{"');
-  // var right = str.indexOf('"}');
-  // if (left !== -1 && right !== -1) {
-  //   str = splice(str, '"', '');
-  //   str = splice(str, '"', '');
-  //   str = '\\' + str;
-  //   console.log(str);
-  //   // var res = '{' + str.substr(left + 2, right - 3) + '}';
-  //   // return braces(res + str.substr(right));
-  // }
-
   if (typeof arr === 'function') {
     fn = arr;
     arr = [];
