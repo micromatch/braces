@@ -32,8 +32,8 @@ module.exports = function (str, fn) {
 
 function braces(str, arr, fn) {
   var match = regex().exec(str);
-  if (match == null) {
 
+  if (match == null) {
     if (/\\,/g.test(str)) {
       // if comma is escaped, return sans slashes
       return [str.replace(/\\/, '')];
