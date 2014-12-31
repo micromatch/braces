@@ -60,6 +60,11 @@ module.exports = function braces(str, arr, fn) {
     }
 
     if (m === '..') {
+
+    }
+
+    if (m === '{') {
+
     }
   }
 

@@ -9,7 +9,7 @@
 
 var argv = require('minimist')(process.argv.slice(2));
 var should = require('should');
-var expand = require('../temp.js');
+var expand = require('..');
 
 if ('minimatch' in argv) {
   expand = require('minimatch').braceExpand;
@@ -50,6 +50,20 @@ describe('braces', function () {
       expand('{,}b').should.eql(['b']);
       expand('a{,}b').should.eql(['ab']);
       expand('a{b}c').should.eql(['abc']);
+
+      // expand('a{b{c{d,e}f{x,y{{g}h').should.eql(['a{b{cdf{x,y{{g}h','a{b{cef{x,y{{g}h']);
+      // expand('a{b{c{d,e}f{x,y{}g}h').should.eql(['a{b{cdfxh','a{b{cdfy{}gh','a{b{cefxh','a{b{cefy{}gh']);
+      // expand('a{b{c{d,e}f{x,y}}g}h').should.eql(['abcdfxgh', 'abcefxgh', 'abcdfygh', 'abcefygh']);
+      // expand('a{b{c{d,e}f}g}h').should.eql(['abcdfgh', 'abcefgh']);
+      // expand('a{{x,y},z}b').should.eql(['axb','azb','ayb']);
+      // expand('f{x,y{g,z}}h').should.eql(['fxh','fygh','fyzh']);
+      // expand('f{x,y{{g,z}}h').should.eql(['f{x,ygh','f{x,yzh']);
+      // expand('f{x,y{{g,z}}h}').should.eql(['fx','fy{g}h','fy{z}h']);
+      // expand('f{x,y{{g}h').should.eql(['f{x,y{{g}h']);
+      // expand('f{x,y{{g}}h').should.eql(['f{x,y{{g}}h']);
+      // expand('f{x,y{}g}h').should.eql(['fxh','fy{}gh']);
+      // expand('z{a,b{,c}d').should.eql(['z{a,bcd','z{a,bd']);
+      // expand('z{a,b},c}d').should.eql(['za,c}d','zb,c}d']);
     });
 
     it('should not expand quoted strings.', function () {
@@ -60,6 +74,7 @@ describe('braces', function () {
     it('should not expand strings with es6/bash-like variables.', function () {
       expand('abc/${ddd}/xyz').should.eql(['abc/${ddd}/xyz']);
       expand('a${b}c').should.eql(['a${b}c']);
+      expand('a/{${b},c}/d').should.eql(['a/${b}/d', 'a/c/d']);
       expand('a${b,d}/{foo,bar}c').should.eql(['a${b,d}/fooc', 'a${b,d}/barc']);
     });
 
@@ -99,24 +114,11 @@ describe('braces', function () {
       expand('a{b,c}d{e,f}g').should.eql(['abdeg', 'acdeg', 'abdfg', 'acdfg']);
     });
 
-    it.only('should expand nested sets', function () {
-      // expand('a{b{c{d,e}f{x,y{{g}h').should.eql(['a{b{cdf{x,y{{g}h','a{b{cef{x,y{{g}h']);
-      // expand('a{b{c{d,e}f{x,y{}g}h').should.eql(['a{b{cdfxh','a{b{cdfy{}gh','a{b{cefxh','a{b{cefy{}gh']);
-      // expand('a{b{c{d,e}f{x,y}}g}h').should.eql(['abcdfxgh', 'abcefxgh', 'abcdfygh', 'abcefygh']);
-      // expand('a{b{c{d,e}f}g}h').should.eql(['abcdfgh', 'abcefgh']);
-      // expand('a{{x,y},z}b').should.eql(['axb','azb','ayb']);
-      // expand('f{x,y{g,z}}h').should.eql(['fxh','fygh','fyzh']);
-      // expand('f{x,y{{g,z}}h').should.eql(['f{x,ygh','f{x,yzh']);
-      expand('f{x,y{{g,z}}h}').should.eql(['fx','fy{g}h','fy{z}h']);
-      expand('f{x,y{{g}h').should.eql(['f{x,y{{g}h']);
-      expand('f{x,y{{g}}h').should.eql(['f{x,y{{g}}h']);
-      // expand('f{x,y{}g}h').should.eql(['fxh','fy{}gh']);
-      // expand('z{a,b{,c}d').should.eql(['z{a,bcd','z{a,bd']);
-      // expand('z{a,b},c}d').should.eql(['za,c}d','zb,c}d']);
-      // expand('a{b,c{d,e},h}x/z').should.eql(['abx/z', 'acdx/z', 'ahx/z', 'acex/z']);
-      // expand('a{b,c{d,e},h}x{y,z}').should.eql(['abxy', 'acdxy', 'ahxy', 'acexy', 'abxz', 'acdxz', 'ahxz', 'acexz']);
-      // expand('a{b,c{d,e},{f,g}h}x{y,z}').should.eql([ 'abxy', 'acdxy', 'afhxy', 'acexy', 'aghxy', 'abxz', 'acdxz', 'afhxz', 'acexz', 'aghxz' ]);
-      // expand('a/{x,y}/c{d,e}f.{md,txt}').should.eql([ 'a/x/cdf.md', 'a/y/cdf.md', 'a/x/cef.md', 'a/y/cef.md', 'a/x/cdf.txt', 'a/y/cdf.txt', 'a/x/cef.txt', 'a/y/cef.txt' ]);
+    it('should expand nested sets', function () {
+      expand('a{b,c{d,e},h}x/z').should.eql(['abx/z', 'acdx/z', 'ahx/z', 'acex/z']);
+      expand('a{b,c{d,e},h}x{y,z}').should.eql(['abxy', 'acdxy', 'ahxy', 'acexy', 'abxz', 'acdxz', 'ahxz', 'acexz']);
+      expand('a{b,c{d,e},{f,g}h}x{y,z}').should.eql([ 'abxy', 'acdxy', 'afhxy', 'acexy', 'aghxy', 'abxz', 'acdxz', 'afhxz', 'acexz', 'aghxz' ]);
+      expand('a/{x,y}/c{d,e}f.{md,txt}').should.eql([ 'a/x/cdf.md', 'a/y/cdf.md', 'a/x/cef.md', 'a/y/cef.md', 'a/x/cdf.txt', 'a/y/cdf.txt', 'a/x/cef.txt', 'a/y/cef.txt' ]);
     });
 
     it('should expand with globs.', function () {
