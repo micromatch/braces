@@ -68,4 +68,25 @@ module.exports = [
   ['{1.20..2}', [ '{1.20..2}' ]],
   ["{{0..10},braces}", ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'braces']],
   ["x{{0..10},braces}y", ['x0y', 'x1y', 'x2y', 'x3y', 'x4y', 'x5y', 'x6y', 'x7y', 'x8y', 'x9y', 'x10y', 'xbracesy']],
+
+  // minimatch passes this one
+  ["{0..10,braces}", ['0..10', 'braces']],
+
+  // minimatch passes this one
+  // braces => ['a-bd-c', 'a-be-c']
+  ["a-{b{d,e}}-c", ['a-{bd}-c', 'a-{be}-c']],
+
+  // I have no idea why this is considered a good, expected result in bash
+  ["a-{bdef-{g,i}-c", ['a-{bdef-g-c', 'a-{bdef-i-c']],
+  ["{0..10,braces}", ['0..10', 'braces']],
+
+  ['{"klklkl"}{1,2,3}', ['{klklkl}1', '{klklkl}2', '{klklkl}3']],
+  ['{"x,x"}', ['{x,x}']],
+
+  // braces => [ 'x', 'y', 'abc', 'trie' ]
+  ["{x,y,{abc},trie}", ['x,y', '{abc}', 'trie']],
+
+  ["{a,b}{{a,b},a,b}", ['aa ab aa ab ba bb ba bb']],
+
+  // minimatch passes
 ];
