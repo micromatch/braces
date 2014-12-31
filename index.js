@@ -11,54 +11,62 @@
  * Module dependencies
  */
 
-var expand = require('expand-range');
+var expandRange = require('expand-range');
 
 /**
- * Expose `braces`
- */
-
-module.exports = function (str, fn) {
-  return braces(str, fn);
-};
-
-/**
- * Expand `{braces,bar}` or `{1..5}` braces in the
- * given `string`.
+ * Expand brace patterns in the given `string`.
  *
- * @param  {String} `str`
- * @param  {Array} `arr`
+ * @param  {String} `string`
+ * @param  {Function} `fn`
  * @return {Array}
  */
 
-function braces(str, arr, fn) {
-  var match = regex().exec(str);
-  if (match == null) {
+module.exports = function braces(str, arr, fn) {
+  if (typeof str !== 'string') {
+    throw new TypeError('braces expects a string as the first argument.');
+  }
 
-    if (/\\,/g.test(str)) {
-      // if comma is escaped, return sans slashes
-      return [str.replace(/\\/, '')];
+  var matches = /\\|\$\{|(?:[\\\/]\.)|['"]|\.\./.exec(str);
+  if (matches) {
+    var first = matches[0];
+    var idx = matches.index;
+
+    if (first === '\'' || first === '"') {
+
     }
-    // if no braces are found, return the string
+    if (first === '\\') {
+      str = replaceAll(str, idx, 1, '', '\\');
+      return [str];
+    }
+    if (first === '${') {
+      return [str];
+  // console.log(matches)
+    }
+    if (first === '/.') {
+
+    }
+  }
+
+  // if brace is escaped, return without slashes
+  // var slashes = str.indexOf('\\');
+  // if (slashes !== -1) {
+  //   str = replaceAll(str, slashes, 1, '', '\\');
+  //   return [str];
+  // }
+
+  var match = str.match(bracesRegex());
+  // if (match == null || /\$\{/.test(match[0])) {
+  if (match == null) {
     return [str];
   }
 
-  if (/[ \t]/.test(str)) {
-    var segs = str.split(' ');
-    return segs.reduce(function (acc, ele) {
-      acc = acc.concat(braces(ele))
-      return acc
-    }, []);
-  }
-
-  // return if it looks like a bash or es6 variable
-  if (str.indexOf('${') === 0) {
-    return [str];
-  }
-
-  // if brace is escaped, return sans slashes
-  if (str.indexOf('\\') === 0) {
-    return [str.slice(1)];
-  }
+  // var commentRe = /^'([^'\\]*\\.)*[^']*'|"([^"\\]*\\.)*[^"]*"/;
+  // var comment = commentRe.exec(str);
+  // // console.log(comment)
+  // // if (comment !== -1) {
+  // //   str = replaceAll(str, comment, 1, '', '\\');
+  // //   return [str];
+  // // }
 
   if (typeof arr === 'function') {
     fn = arr;
@@ -67,20 +75,21 @@ function braces(str, arr, fn) {
 
   arr = arr || [];
   var paths;
+  var inner = match[2];
+  var dots = inner.indexOf('..');
 
   // if `..` exists, pass to [expand-range]
-  if (/\.{2}/.test(match[2])) {
-    paths = expand(match[2], fn);
-    // return invalid paths on an object
-    if (typeof paths === 'object' && !Array.isArray(paths)) {
-      return paths.bad;
-    }
+  if (dots !== -1 && !/[\\\/]\./.test(inner)) {
+    paths = expandRange(inner, fn);
+  } else if (inner === '') {
+    return [str];
   } else {
-    if (match[2] === '') {
-      return [str];
-    }
+    paths = inner.split(',');
+  }
 
-    paths = match[2].split(',');
+  // return invalid paths on an object
+  if (typeof paths === 'object' && !Array.isArray(paths)) {
+    return paths.bad;
   }
 
   var len = paths.length;
@@ -99,16 +108,48 @@ function braces(str, arr, fn) {
       }
     }
   }
-
   return arr;
-}
+};
 
 /**
  * Braces regex.
  */
 
-function regex() {
-  return /.*(\{([^\\}]*)\})/g;
+function bracesRegex() {
+  return /^.*(\{([^}]*)\})/;
+}
+
+/**
+ * Expand brace patterns with spaces. In command line
+ * applications, like Bash, spaces are used as parameter
+ * separators. But in file paths we can't make the same
+ * assumption.
+ *
+ * @param {String} `str`
+ * @return {Array} Array of expanded strings
+ */
+
+function expandSpaces(str, options) {
+  // var segments = str.split(/[ \t]/);
+  // if (segments.length) {
+  //   var len = segments.length;
+  //   var i = 0;
+
+  //   while (len--) {
+  //     var segment = segments[i++];
+  //     arr = arr.concat(braces(segment, arr));
+  //   }
+  //   return arr;
+  //   // return expandSpaces(segments);
+  // }
+  console.log(str)
+
+  return str.split(' ')
+    .reduce(function (acc, ele) {
+      console.log(arguments)
+      acc = acc.concat(braces(ele, arr))
+      return acc
+    }, []);
 }
 
 /**
@@ -120,5 +161,29 @@ function splice(str, token, replacement) {
   var end = i + token.length;
   return str.substr(0, i)
     + replacement
-    + str.substr(end, str.length);
+    + str.substr(end);
+}
+
+/**
+ * Faster alternative to `String.replace()`
+ */
+
+function replace(str, i, len, replacement) {
+  var end = i + len;
+  return str.substr(0, i)
+    + replacement
+    + str.substr(end);
+}
+
+/**
+ * Faster alternative to `String.replace()`
+ */
+
+function replaceAll(str, i, len, replacement, token) {
+  str = replace(str, i, len, replacement);
+  i = str.indexOf(token);
+  if (i !== -1) {
+    return replaceAll(str, i, len, replacement, token);
+  }
+  return str;
 }
