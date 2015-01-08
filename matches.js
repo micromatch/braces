@@ -41,163 +41,158 @@ function braces(str, arr, fn) {
 
   // var matches = /\\|\$\{|(?:[\\\/]\.)|['"]|\.\.|([^$]\{([^}]*)\})/.exec(str);
   // var matches = /\\|(?:[\\\/]\.)|['"]|(.*[^$]*(\{([^}]*\.\.[^}]*)\}))|(.*[^$]*(\{([^}]*)\}))/.exec(str);
-
+  // console.log(matches[4])
   var matches = /.*(?:[^$]*)((.|^)(\{([^}]*)\}))/.exec(str);
-  if (matches) {
-    var inner = matches[4];
+  // console.log(matches)
+  // if (matches) {
+  //   var inner = matches[4];
 
-    if (inner === '' || inner == null) {
-      return [str];
-    }
+  //   if (inner === '' || inner == null) {
+  //     return [str];
+  //   }
 
-    var tokens = /(,|\.\.)/.exec(inner);
-    if (tokens) {
-      var token = tokens[0];
+  //   var tokens = /(,|\.\.)/.exec(inner);
+  //   if (tokens) {
+  //     var token = tokens[0];
 
-      if (token === '..') {
+  //     if (token === '..') {
 
-      }
+  //     }
 
-      if (token === ',') {
-        var paths = inner.split(',');
-        var len = paths.length;
-        var i = 0, val, idx;
+  //     if (token === ',') {
+  //       var paths = inner.split(',');
+  //       var len = paths.length;
+  //       var i = 0, val, idx;
 
-        while (len--) {
-          var path = paths[i++];
-          if (!path) {
-            return [str];
-          }
+  //       while (len--) {
+  //         var path = paths[i++];
+  //         if (!path) {
+  //           return [str];
+  //         }
 
-          val = splice(str, matches[3], path);
-        console.log(val)
-          idx = val.indexOf('{');
+  //         val = splice(str, matches[3], path);
+  //       console.log(val)
+  //         idx = val.indexOf('{');
 
-          if (idx !== -1) {
-            arr = braces(val, arr);
-          } else {
-            // push into the array, but avoid duplicates
-            if (arr.indexOf(val) === -1) {
-              arr.push(val);
-            }
-          }
-        }
-        return arr;
-      }
-    }
-    // console.log(matches)
-    // var m = matches[0];
-    // var idx = matches.index;
-    // var paths;
+  //         if (idx !== -1) {
+  //           arr = braces(val, arr);
+  //         } else {
+  //           // push into the array, but avoid duplicates
+  //           if (arr.indexOf(val) === -1) {
+  //             arr.push(val);
+  //           }
+  //         }
+  //       }
+  //       return arr;
+  //     }
+  //   }
+  //   // console.log(matches)
+  //   // var m = matches[0];
+  //   // var idx = matches.index;
+  //   // var paths;
 
-    // if (m === '\'' || m === '"') {
-    //   var commentRe = /^'([^'\\]*\\.)*[^']*'|"([^"\\]*\\.)*[^"]*"/;
-    //   var comment = commentRe.exec(str);
-    //   console.log(comment)
-    //   if (comment !== -1) {
-    //     str = replaceAll(str, comment, 1, '', '\\');
-    //     return [str];
-    //   }
-    // }
+  //   // if (m === '\'' || m === '"') {
+  //   //   var commentRe = /^'([^'\\]*\\.)*[^']*'|"([^"\\]*\\.)*[^"]*"/;
+  //   //   var comment = commentRe.exec(str);
+  //   //   console.log(comment)
+  //   //   if (comment !== -1) {
+  //   //     str = replaceAll(str, comment, 1, '', '\\');
+  //   //     return [str];
+  //   //   }
+  //   // }
 
-    // if (m === '\\') {
-    //   str = replaceAll(str, idx, 1, '', '\\');
-    //   return [str];
-    // }
+  //   // if (m === '\\') {
+  //   //   str = replaceAll(str, idx, 1, '', '\\');
+  //   //   return [str];
+  //   // }
 
-    // // if (m === '${') {
-    // //   return [str];
-    // // }
+  //   // // if (m === '${') {
+  //   // //   return [str];
+  //   // // }
 
-    // if (m === '/.') {
+  //   // if (m === '/.') {
 
-    // }
+  //   // }
 
-    //   console.log(matches)
-    // if (matches[3]) {
-    //   paths = expandRange(str, fn);
-    // }
+  //   //   console.log(matches)
+  //   // if (matches[3]) {
+  //   //   paths = expandRange(str, fn);
+  //   // }
 
-    // if (matches[5] && matches[5][0] === '{') {
-    //   var inner = matches[6];
-    //   arr = arr || [];
+  //   // if (matches[5] && matches[5][0] === '{') {
+  //   //   var inner = matches[6];
+  //   //   arr = arr || [];
 
-    //   if (inner === '') {
-    //     return [str];
-    //   } else {
-    //     paths = inner.split(',');
-    //   }
+  //   //   if (inner === '') {
+  //   //     return [str];
+  //   //   } else {
+  //   //     paths = inner.split(',');
+  //   //   }
 
-    //   // return invalid paths on an object
-    //   if (typeof paths === 'object' && !Array.isArray(paths)) {
-    //     return paths.bad;
-    //   }
+  //   //   // return invalid paths on an object
+  //   //   if (typeof paths === 'object' && !Array.isArray(paths)) {
+  //   //     return paths.bad;
+  //   //   }
 
-    //   var len = paths.length;
-    //   var i = 0, val, idx;
+  //   //   var len = paths.length;
+  //   //   var i = 0, val, idx;
 
-    //   while (len--) {
-    //     val = splice(str, matches[5], paths[i++]);
-    //     idx = val.indexOf('{');
+  //   //   while (len--) {
+  //   //     val = splice(str, matches[5], paths[i++]);
+  //   //     idx = val.indexOf('{');
 
-    //     if (idx !== -1) {
-    //       arr = braces(val, arr);
-    //     } else {
-    //       // push into the array, but avoid duplicates
-    //       if (arr.indexOf(val) === -1) {
-    //         arr.push(val);
-    //       }
-    //     }
-    //   }
-    //   return arr;
-    // }
-  } else {
+  //   //     if (idx !== -1) {
+  //   //       arr = braces(val, arr);
+  //   //     } else {
+  //   //       // push into the array, but avoid duplicates
+  //   //       if (arr.indexOf(val) === -1) {
+  //   //         arr.push(val);
+  //   //       }
+  //   //     }
+  //   //   }
+  //   //   return arr;
+  //   // }
+  // } else {
+  //   return [str];
+  // }
+
+  var match = str.match(bracesRegex());
+  // console.log(match)
+  if (match == null) {
     return [str];
   }
 
-  // var match = str.match(bracesRegex());
-  // console.log(match)
-  // if (match == null) {
-  //   return [str];
-  // }
 
+  arr = arr || [];
+  var paths;
+  var inner = match[2];
 
-  // arr = arr || [];
-  // var paths;
-  // var inner = match[2];
-  // var dots = inner.indexOf('..');
+  // if `..` exists, pass to [expand-range]
+  if (/[^\\\/]\.\./.test(inner)) {
+    paths = expandRange(inner, fn);
+  } else if (inner === '') {
+    return [str];
+  } else {
+    paths = inner.split(',');
+  }
 
-  // // if `..` exists, pass to [expand-range]
-  // if (dots !== -1 && !/[\\\/]\./.test(inner)) {
-  //   paths = expandRange(inner, fn);
-  // } else if (inner === '') {
-  //   return [str];
-  // } else {
-  //   paths = inner.split(',');
-  // }
+  var len = paths.length;
+  var i = 0, val, idx;
 
-  // // return invalid paths on an object
-  // if (typeof paths === 'object' && !Array.isArray(paths)) {
-  //   return paths.bad;
-  // }
+  while (len--) {
+    val = splice(str, match[1], paths[i++]);
+    idx = val.indexOf('{');
 
-  // var len = paths.length;
-  // var i = 0, val, idx;
-
-  // while (len--) {
-  //   val = splice(str, match[1], paths[i++]);
-  //   idx = val.indexOf('{');
-
-  //   if (idx !== -1) {
-  //     arr = braces(val, arr);
-  //   } else {
-  //     // push into the array, but avoid duplicates
-  //     if (arr.indexOf(val) === -1) {
-  //       arr.push(val);
-  //     }
-  //   }
-  // }
-  // return arr;
+    if (idx !== -1) {
+      arr = braces(val, arr);
+    } else {
+      // push into the array, but avoid duplicates
+      if (arr.indexOf(val) === -1) {
+        arr.push(val);
+      }
+    }
+  }
+  return arr;
 }
 
 /**

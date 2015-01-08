@@ -30,21 +30,30 @@ module.exports = function braces(str, arr, fn) {
     fn = arr;
     arr = [];
   }
+  arr = arr || [];
+
 
   var matches = /\\|\$\{|(?:[\\\/]\.)|['"]|\.\./.exec(str);
   if (matches) {
     var m = matches[0];
     var idx = matches.index;
 
-    if (m === '\'' || m === '"') {
-      var commentRe = /^'([^'\\]*\\.)*[^']*'|"([^"\\]*\\.)*[^"]*"/;
-      var comment = commentRe.exec(str);
-      console.log(comment)
-      if (comment !== -1) {
-        str = replaceAll(str, comment, 1, '', '\\');
-        return [str];
-      }
-    }
+    // if (m === '\'' || m === '"') {
+    //   var commentRe = /^'([^'\\]*\\.)*([^']*)'|"([^"\\]*\\.)*([^"]*)"/;
+    //   var comment = commentRe.exec(str);
+    //   console.log(comment)
+    //   if (comment) {
+    //     // str = replaceAll(str, comment, 1, '', '\\');
+    //     str = str.replace('{' + comment[0] + '}', '\\{' + comment[4] + '}');
+    //     return arr.concat(braces(str, arr));
+    //   }
+
+    //   // if (match[2][0] === '\'' || match[2][0] === '"') {
+    //   //   var inner = match[2].slice(1, match[2].length - 1);
+    //   //   var foo = str.replace(match[2], '\\{' + inner + '}');w
+    //   //   return arr.concat(braces(foo, arr));
+    //   // }
+    // }
 
     if (m === '\\') {
       str = replaceAll(str, idx, 1, '', '\\');
@@ -68,7 +77,6 @@ module.exports = function braces(str, arr, fn) {
     return [str];
   }
 
-  arr = arr || [];
   var paths;
   var inner = match[2];
   var dots = inner.indexOf('..');
@@ -112,6 +120,39 @@ module.exports = function braces(str, arr, fn) {
 
 function bracesRegex() {
   return /^.*(\{([^}]*)\})/;
+}
+
+/**
+ * Expand brace patterns with spaces. In command line
+ * applications, like Bash, spaces are used as parameter
+ * separators. But in file paths we can't make the same
+ * assumption.
+ *
+ * @param {String} `str`
+ * @return {Array} Array of expanded strings
+ */
+
+function expandSpaces(str, options) {
+  // var segments = str.split(/[ \t]/);
+  // if (segments.length) {
+  //   var len = segments.length;
+  //   var i = 0;
+
+  //   while (len--) {
+  //     var segment = segments[i++];
+  //     arr = arr.concat(braces(segment, arr));
+  //   }
+  //   return arr;
+  //   // return expandSpaces(segments);
+  // }
+  console.log(str)
+
+  return str.split(' ')
+    .reduce(function (acc, ele) {
+      console.log(arguments)
+      acc = acc.concat(braces(ele, arr))
+      return acc
+    }, []);
 }
 
 /**
