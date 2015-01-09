@@ -17,8 +17,8 @@ var expandRange = require('expand-range');
  * Expose `braces`
  */
 
-module.exports = function (str, fn) {
-  return braces(str, fn);
+module.exports = function (str, options) {
+  return braces(str, options);
 };
 
 /**
@@ -30,17 +30,26 @@ module.exports = function (str, fn) {
  * @return {Array}
  */
 
-function braces(str, arr, fn) {
+function braces(str, arr, options) {
   if (typeof str !== 'string') {
     throw new Error('braces expects a string');
   }
 
+  if (!Array.isArray(arr)) {
+    options = arr;
+    arr = [];
+  }
+
+  var fn = typeof options === 'function'
+    ? options
+    : options && options.fn;
+
+  options = options || {};
   arr = arr || [];
 
   var matches = str.match(/\$|\}[ \t]\{|\\\{|['"]|[\\\/]\.\.|\\,/) || [];
   // var matches = str.match(/\$| |\\\{|['"]|[\\\/]\.\.|\\,/) || [];
   var m = matches[0];
-  var range = false;
   var cache = {};
   var c = 0;
 
@@ -48,10 +57,10 @@ function braces(str, arr, fn) {
     if (!/\{[^{]*\{/.test(str)) {
       return arr.concat(str);
     } else {
-      var match = es6Regex().exec(str);
-      cache[c] = match;
+      var mm = es6Regex().exec(str);
+      cache[c] = mm;
       // replace variable with a heuristic
-      str = str.replace(match[0], '__ID' + c + '__');
+      str = str.replace(mm[0], '__ID' + c + '__');
       c++;
     }
   }
@@ -75,11 +84,6 @@ function braces(str, arr, fn) {
   var match = regex().exec(str);
   if (match == null) {
     return [str];
-  }
-
-  if (typeof arr === 'function') {
-    fn = arr;
-    arr = [];
   }
 
   var outter = match[2];
@@ -115,11 +119,17 @@ function braces(str, arr, fn) {
     } else if (arr.indexOf(val) === -1) {
       var id = val.match(/__ID(\d*)/);
       if (id) {
-        var re = new RegExp('__ID' + id[1] + '__', 'g');
-        val = val.replace(re, cache[id[1]][0]);
+        var idRegex = new RegExp('__ID' + id[1] + '__', 'g');
+        val = val.replace(idRegex, cache[id[1]][0]);
       }
       arr.push(val);
     }
+  }
+
+  if (options.clean) {
+    return arr.filter(function (ele) {
+      return ele !== '\\';
+    }).filter(Boolean);
   }
   return arr;
 }
@@ -134,15 +144,8 @@ function expandSpaces(str, arr) {
       var segment = segments[i++];
       arr = arr.concat(braces(segment, arr));
     }
-  console.log(arr)
     return arr;
-    // return expandSpaces(segments);
   }
-
-  // return str.split(' ')
-  //   .reduce(function (acc, ele) {
-  //     return acc.concat(braces(ele, acc))
-  //   }, []);
 }
 
 /**
@@ -167,24 +170,6 @@ function es6Regex() {
 
 function wrap(str) {
   return '{' + str + '}';
-}
-
-/**
- * Braces regex.
- */
-
-function escape(str, outter) {
-  return str.replace(outter, '__^' + outter + '^__');
-}
-
-/**
- * Braces regex.
- */
-
-function unescape(val) {
-  val = splice(val, '__^', '{');
-  val = splice(val, '^__', '}');
-  return val
 }
 
 /**
