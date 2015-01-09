@@ -4,4 +4,4 @@
  * braces
  */
 
-module.exports = require('../../temp.js');
+module.exports = require('../..');

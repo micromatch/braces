@@ -9,7 +9,7 @@ var mm;
 if ('minimatch' in argv) {
   mm = require('minimatch').braceExpand;
 } else {
-  mm = require('../temp');
+  mm = require('..');
 }
 
 if (argv.t) {

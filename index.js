@@ -14,104 +14,162 @@
 var expandRange = require('expand-range');
 
 /**
- * Expand brace patterns in the given `string`.
+ * Expose `braces`
+ */
+
+module.exports = function (str, options) {
+  return braces(str, options);
+};
+
+/**
+ * Expand `{foo,bar}` or `{1..5}` braces in the
+ * given `string`.
  *
- * @param  {String} `string`
- * @param  {Function} `fn`
+ * @param  {String} `str`
+ * @param  {Array} `arr`
  * @return {Array}
  */
 
-module.exports = function braces(str, arr, fn) {
+function braces(str, arr, options) {
   if (typeof str !== 'string') {
-    throw new TypeError('braces expects a string as the first argument.');
+    throw new Error('braces expects a string');
   }
 
-  if (typeof arr === 'function') {
-    fn = arr;
+  if (!Array.isArray(arr)) {
+    options = arr;
     arr = [];
   }
 
-  var matches = /\\|\$\{|(?:[\\\/]\.)|['"]|\.\./.exec(str);
-  if (matches) {
-    var m = matches[0];
-    var idx = matches.index;
+  var fn = typeof options === 'function'
+    ? options
+    : options && options.fn;
 
-    if (m === '\'' || m === '"') {
-      var commentRe = /^'([^'\\]*\\.)*[^']*'|"([^"\\]*\\.)*[^"]*"/;
-      var comment = commentRe.exec(str);
-      console.log(comment)
-      if (comment !== -1) {
-        str = replaceAll(str, comment, 1, '', '\\');
-        return [str];
-      }
-    }
+  options = options || {};
+  arr = arr || [];
 
-    if (m === '\\') {
-      str = replaceAll(str, idx, 1, '', '\\');
-      return [str];
-    }
+  var matches = str.match(/\$|\}[ \t]\{|\\\{|['"]|[\\\/]\.\.|\\,/) || [];
+  // var matches = str.match(/\$| |\\\{|['"]|[\\\/]\.\.|\\,/) || [];
+  var m = matches[0];
+  var cache = {};
+  var c = 0;
 
-    if (m === '${') {
-      return [str];
-    }
-
-    if (m === '/.') {
-
-    }
-
-    if (m === '..') {
+  if (m === '$') {
+    if (!/\{[^{]*\{/.test(str)) {
+      return arr.concat(str);
+    } else {
+      var mm = es6Regex().exec(str);
+      cache[c] = mm;
+      // replace variable with a heuristic
+      str = str.replace(mm[0], '__ID' + c + '__');
+      c++;
     }
   }
 
-  var match = str.match(bracesRegex());
+  if (m === '\\{') {
+    return arr.concat(str.slice(1));
+  }
+
+  if (m === '} {') {
+    return arr.concat(braces(wrap(str.replace(' ', ','), arr)).sort());
+  }
+
+  // if (m === ' ') {
+  //   return arr.concat(expandSpaces(str, arr));
+  // }
+
+  if (m === '\\,') {
+    return [replaceAll(str, matches.index, 1, '', '\\')];
+  }
+
+  var match = regex().exec(str);
   if (match == null) {
     return [str];
   }
 
-  arr = arr || [];
+  var outter = match[2];
+  var inner = match[3];
   var paths;
-  var inner = match[2];
-  var dots = inner.indexOf('..');
 
-  // if `..` exists, pass to [expand-range]
-  if (dots !== -1 && !/[\\\/]\./.test(inner)) {
-    paths = expandRange(inner, fn);
+  if (/[^\\\/]\.\./.test(inner)) {
+    try {
+      paths = expandRange(inner, fn);
+    } catch(err) {
+      return [str];
+    }
   } else if (inner === '') {
     return [str];
+  } else if (inner[0] === '"' || inner[0] === '\'') {
+    var re = /^'(?:[^'\\]*\\.)*([^']*)'|"(?:[^"\\]*\\.)*([^"]*)"/;
+    var comment = re.exec(str);
+    str = splice(str, wrap(comment[0]), '\\' + wrap(comment[2]));
+    return braces(str, arr);
   } else {
     paths = inner.split(',');
   }
 
-  // return invalid paths on an object
-  if (typeof paths === 'object' && !Array.isArray(paths)) {
-    return paths.bad;
-  }
-
   var len = paths.length;
-  var i = 0, val, idx;
+  var i = 0, val;
 
   while (len--) {
-    val = splice(str, match[1], paths[i++]);
-    idx = val.indexOf('{');
+    var path = paths[i++];
+    val = splice(str, outter, path);
 
-    if (idx !== -1) {
+    if (/\{.*\}/.test(val)) {
       arr = braces(val, arr);
-    } else {
-      // push into the array, but avoid duplicates
-      if (arr.indexOf(val) === -1) {
-        arr.push(val);
+    } else if (arr.indexOf(val) === -1) {
+      var id = val.match(/__ID(\d*)/);
+      if (id) {
+        var idRegex = new RegExp('__ID' + id[1] + '__', 'g');
+        val = val.replace(idRegex, cache[id[1]][0]);
       }
+      arr.push(val);
     }
   }
+
+  if (options.clean) {
+    return arr.filter(function (ele) {
+      return ele !== '\\';
+    }).filter(Boolean);
+  }
   return arr;
-};
+}
+
+function expandSpaces(str, arr) {
+  var segments = str.split(/[ \t]/);
+  if (segments.length) {
+    var len = segments.length;
+    var i = 0;
+
+    while (len--) {
+      var segment = segments[i++];
+      arr = arr.concat(braces(segment, arr));
+    }
+    return arr;
+  }
+}
 
 /**
  * Braces regex.
  */
 
-function bracesRegex() {
-  return /^.*(\{([^}]*)\})/;
+function regex() {
+  return /(.*)(\{([^{}]*)\})/;
+}
+
+/**
+ * Braces regex.
+ */
+
+function es6Regex() {
+  return /\$\{([^\\}]*)\}/;
+}
+
+/**
+ * Wrap the given string with braces.
+ */
+
+function wrap(str) {
+  return '{' + str + '}';
 }
 
 /**
@@ -120,10 +178,14 @@ function bracesRegex() {
 
 function splice(str, token, replacement) {
   var i = str.indexOf(token);
+  if (i === -1) {
+    return str;
+  }
+
   var end = i + token.length;
   return str.substr(0, i)
     + replacement
-    + str.substr(end);
+    + str.substr(end, str.length);
 }
 
 /**
