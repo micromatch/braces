@@ -47,18 +47,19 @@ function braces(str, arr, options) {
   options = options || {};
   arr = arr || [];
 
-  var matches = str.match(/\$|\}[ \t]\{|[ \t]|\\\{|['"]|[\\\/]\.\.|\\,/) || [];
+  var matches = str.match(patternRe()) || [];
   var m = matches[0];
-  var cache = {};
+  var cache = null;
   var c = 0;
 
   if (m === '$') {
     if (!/\{[^{]*\{/.test(str)) {
       return arr.concat(str);
     } else {
+      // str = makeId(str, cache, c);
       var mm = es6Regex().exec(str);
+      cache = cache || {};
       cache[c] = mm;
-      // replace variable with a heuristic
       str = str.replace(mm[0], '__ID' + c + '__');
       c++;
     }
@@ -85,23 +86,20 @@ function braces(str, arr, options) {
     return [str];
   }
 
-  var outter = match[2];
-  var inner = match[3];
+  var outter = match[1];
+  var inner = match[2];
   var paths;
 
-  if (/[^\\\/]\.\./.test(inner)) {
+  if (/[^\\\/]\.{2}/.test(inner)) {
     try {
-      paths = expandRange(inner, fn);
+      paths = expandRange(inner, options);
     } catch(err) {
       return [str];
     }
   } else if (inner === '') {
     return [str];
   } else if (inner[0] === '"' || inner[0] === '\'') {
-    var re = /^'(?:[^'\\]*\\.)*([^']*)'|"(?:[^"\\]*\\.)*([^"]*)"/;
-    var comment = re.exec(str);
-    str = splice(str, wrap(comment[0]), '\\' + wrap(comment[2]));
-    return braces(str, arr);
+    return braces(escapeComment(str), arr);
   } else {
     paths = inner.split(',');
   }
@@ -116,29 +114,28 @@ function braces(str, arr, options) {
     if (/\{.*\}/.test(val)) {
       arr = braces(val, arr);
     } else if (arr.indexOf(val) === -1) {
-      var id = val.match(/__ID(\d*)/);
-      if (id) {
-        var idRegex = new RegExp('__ID' + id[1] + '__', 'g');
-        val = val.replace(idRegex, cache[id[1]][0]);
+      if (cache) {
+        val = replaceId(val, cache);
       }
       arr.push(val);
     }
   }
 
   if (options.strict) {
-    return arr.filter(function (ele) {
+    arr = arr.filter(function (ele) {
       return ele !== '\\';
     }).filter(Boolean);
   }
+
+  // if (options.regexString) {
+  //   return '(' + arr.join('|') + ')';
+  // }
+
   return arr;
 }
 
 /**
  * Expand spaces into brace expressions.
- *
- * @param  {String} str
- * @param  {Array} arr
- * @return {Array}
  */
 
 function expandSpaces(str, arr) {
@@ -156,15 +153,65 @@ function expandSpaces(str, arr) {
 }
 
 /**
- * Braces regex.
+ * Escape commented patterns.
  */
 
-function regex() {
-  return /(.*)(\{([^{}]*)\})/;
+function escapeComment(str) {
+  var comment = commentRe().exec(str);
+  return splice(str, wrap(comment[0]), '\\' + wrap(comment[2]));
+}
+
+/**
+ * Create a heuristic ID to temporarily replace
+ * the variable
+ */
+
+function makeId(str, cache, c) {
+  var mm = es6Regex().exec(str);
+  cache = cache || {};
+  cache[c] = mm;
+  return str.replace(mm[0], '__ID' + c + '__');
+}
+
+/**
+ * Replace heuristics with the original brace string.
+ */
+
+function replaceId(val, cache) {
+  var id = val.match(/__ID(\d*)/);
+  if (id) {
+    var idRegex = new RegExp('__ID' + id[1] + '__', 'g');
+    val = val.replace(idRegex, cache[id[1]][0]);
+  }
+  return val;
+}
+
+/**
+ * Regex for common patterns
+ */
+
+function commentRe() {
+  return /^'(?:[^'\\]*\\.)*([^']*)'|"(?:[^"\\]*\\.)*([^"]*)"/;
+}
+
+/**
+ * Regex for common patterns
+ */
+
+function patternRe() {
+  return /\$|\}[ \t]\{|\{['"]|\\\{|\\,/;
 }
 
 /**
  * Braces regex.
+ */
+
+function regex() {
+  return /.*(\{([^}]*)\})/;
+}
+
+/**
+ * es6 delimiter regex.
  */
 
 function es6Regex() {
@@ -180,7 +227,8 @@ function wrap(str) {
 }
 
 /**
- * Faster alternative to `String.replace()`
+ * Faster alternative to `String.replace()` when the
+ * index of the token to be replaces can't be supplied
  */
 
 function splice(str, token, replacement) {
@@ -196,7 +244,8 @@ function splice(str, token, replacement) {
 }
 
 /**
- * Faster alternative to `String.replace()`
+ * Faster alternative to `String.replace()` when the
+ * index of the string can be supplied.
  */
 
 function replace(str, i, len, replacement) {
@@ -207,7 +256,7 @@ function replace(str, i, len, replacement) {
 }
 
 /**
- * Faster alternative to `String.replace()`
+ * Faster alternative to `String.replace()` with `g` flag
  */
 
 function replaceAll(str, i, len, replacement, token) {
