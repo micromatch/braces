@@ -60,6 +60,11 @@ module.exports = function braces(str, arr, fn) {
     }
 
     if (m === '..') {
+
+    }
+
+    if (m === '{') {
+
     }
   }
 
@@ -67,6 +72,7 @@ module.exports = function braces(str, arr, fn) {
   if (match == null) {
     return [str];
   }
+
 
   arr = arr || [];
   var paths;
@@ -112,6 +118,39 @@ module.exports = function braces(str, arr, fn) {
 
 function bracesRegex() {
   return /^.*(\{([^}]*)\})/;
+}
+
+/**
+ * Expand brace patterns with spaces. In command line
+ * applications, like Bash, spaces are used as parameter
+ * separators. But in file paths we can't make the same
+ * assumption.
+ *
+ * @param {String} `str`
+ * @return {Array} Array of expanded strings
+ */
+
+function expandSpaces(str, options) {
+  // var segments = str.split(/[ \t]/);
+  // if (segments.length) {
+  //   var len = segments.length;
+  //   var i = 0;
+
+  //   while (len--) {
+  //     var segment = segments[i++];
+  //     arr = arr.concat(braces(segment, arr));
+  //   }
+  //   return arr;
+  //   // return expandSpaces(segments);
+  // }
+  console.log(str)
+
+  return str.split(' ')
+    .reduce(function (acc, ele) {
+      console.log(arguments)
+      acc = acc.concat(braces(ele, arr))
+      return acc
+    }, []);
 }
 
 /**
