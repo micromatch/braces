@@ -47,8 +47,7 @@ function braces(str, arr, options) {
   options = options || {};
   arr = arr || [];
 
-  var matches = str.match(/\$|\}[ \t]\{|\\\{|['"]|[\\\/]\.\.|\\,/) || [];
-  // var matches = str.match(/\$| |\\\{|['"]|[\\\/]\.\.|\\,/) || [];
+  var matches = str.match(/\$|\}[ \t]\{|[ \t]|\\\{|['"]|[\\\/]\.\.|\\,/) || [];
   var m = matches[0];
   var cache = {};
   var c = 0;
@@ -126,13 +125,21 @@ function braces(str, arr, options) {
     }
   }
 
-  if (options.clean) {
+  if (options.strict) {
     return arr.filter(function (ele) {
       return ele !== '\\';
     }).filter(Boolean);
   }
   return arr;
 }
+
+/**
+ * Expand spaces into brace expressions.
+ *
+ * @param  {String} str
+ * @param  {Array} arr
+ * @return {Array}
+ */
 
 function expandSpaces(str, arr) {
   var segments = str.split(/[ \t]/);
