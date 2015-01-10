@@ -24,7 +24,7 @@ describe('bash', function () {
   describe('bash 4.3 support', function () {
     fixtures.forEach(function(test, i) {
       // adjust i for line numbers
-      it('test: ' + (i + 3), function () {
+      it('test: ' + (i + 2), function () {
         mm(test[0], {strict: true}).sort().should.eql(test[1].sort());
       });
     });

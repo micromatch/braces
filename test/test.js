@@ -72,7 +72,7 @@ describe('braces', function () {
     });
 
     it('should return invalid braces:', function () {
-      expand('{0..10,braces}').should.eql(['{0..10,braces}']); // Bash expects ['0..10', 'braces']
+      expand('{0..10,braces}').should.eql(['0..10', 'braces']);
     });
 
     it('should not expand quoted strings.', function () {
@@ -111,14 +111,22 @@ describe('braces', function () {
     });
 
     it('should not expand escaped commas.', function () {
-      expand('a{b\\,c}d').should.eql(['a{b,c}d']);
-      expand('a{b\\,c\\,d}e').should.eql(['a{b,c,d}e']);
-      expand('{abc\\,def}').should.eql(['{abc,def}']);
+      // expand('a{b\\,c}d').should.eql(['ab,cd']); // Bash expects ['a{b,c}d']
+      // expand('a{b\\,c\\,d}e').should.eql(['ab,c,de']); // Bash expects ['a{b,c,d}e']
+      // expand('{abc\\,def}').should.eql(['abc,def']); // Bash expects ['{abc,def}']
+      expand('a{b\\,c}d').should.eql(['a{b,c}d']); // Bash expects ['a{b,c}d']
+      expand('a{b\\,c\\,d}e').should.eql(['a{b,c,d}e']); // Bash expects ['a{b,c,d}e']
+      expand('{abc\\,def}').should.eql(['{abc,def}']); // Bash expects ['{abc,def}']
     });
 
     it('should not expand escaped braces.', function () {
+      // expand('{a,b\\}c,d}').should.eql(['a','b}c','d']);
       expand('\\{a,b,c,d,e}').should.eql(['{a,b,c,d,e}']);
-      // expand('a/\\{b,c}/{d,e}/f').should.eql(['{a,b,c,d,e}']);
+      expand('a/\\{b,c}/{d,e}/f').should.eql(['a/{b,c}/d/f', 'a/{b,c}/e/f']);
+    });
+
+    it('should not expand escaped braces or commas.', function () {
+      expand('{x\\,y,\\{abc\\},trie}').should.eql(['x,y','{abc}','trie']);
     });
 
     it('should expand sets', function () {
@@ -171,6 +179,11 @@ describe('braces', function () {
       expand('../{1..3}/../foo').should.eql(['../1/../foo', '../2/../foo', '../3/../foo']);
     });
 
+    it('should make a regex-string when `options.makeRe` is defined:', function () {
+      expand('../{1..3}/../foo', {makeRe: true}).should.eql(['../[1-3]/../foo']);
+      expand('../{2..10..2}/../foo', {makeRe: true}).should.eql(['../(2|4|6|8|10)/../foo']);
+    });
+
     it('should expand alphabetical ranges', function () {
       expand('0{a..d}0').should.eql(['0a0', '0b0', '0c0', '0d0']);
       expand('0{a..d}0').should.not.eql(['0a0', '0b0', '0c0']);
@@ -187,7 +200,6 @@ describe('braces', function () {
       expand('{1..10..2}').should.eql(['1', '3', '5', '7', '9']);
       expand('{1..20..20}').should.eql(['1']);
       expand('{1..20..2}').should.eql(['1', '3', '5', '7', '9', '11', '13', '15', '17', '19']);
-      expand('{1.20..2}', ['{1.20..2}']);
       expand('{10..0..-2}').should.eql(['10', '8', '6', '4', '2', '0']);
       expand('{10..0..2}').should.eql(['10', '8', '6', '4', '2', '0']);
       expand('{10..1..-2}').should.eql(['10', '8', '6', '4', '2']);
@@ -210,6 +222,7 @@ describe('braces', function () {
       expand('{2147483645..2147483649}').should.eql(['2147483645', '2147483646', '2147483647', '2147483648', '2147483649']);
     });
     it('should return invalid ranges:', function () {
+      expand('{1.20..2}').should.eql(['{1.20..2}']);
       expand('{1..0f}').should.eql(['{1..0f}']);
       expand('{1..10..ff}').should.eql(['{1..10..ff}']);
       expand('{1..10.f}').should.eql(['{1..10.f}']);
@@ -220,7 +233,6 @@ describe('braces', function () {
       expand('{1..ff..2}').should.eql(['{1..ff..2}']);
       expand('{1..ff}').should.eql(['{1..ff}']);
       expand('{1..f}').should.eql(['{1..f}']);
-      expand('{1.20..2}').should.eql(['{1.20..2}']);
       expand('{f..1}').should.eql(['{f..1}']);
     });
   });
