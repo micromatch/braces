@@ -18,7 +18,24 @@ if ('minimatch' in argv) {
 describe('braces', function () {
   describe('brace expansion', function () {
     it('should return an empty array when no braces are found', function () {
-      expand('').should.eql(['']);
+      expand('').should.eql([]);
+    });
+
+    it('should repeat strings followed by {,}', function () {
+      expand('a{,}', {nodupes: false}).should.eql(['a', 'a']);
+      expand('a{,}{,}', {nodupes: false}).should.eql(['a', 'a', 'a', 'a']);
+      expand('a{,}{,}{,}', {nodupes: false}).should.eql(['a', 'a', 'a', 'a', 'a', 'a', 'a', 'a']);
+      expand('{a,b{,}{,}{,}}', {nodupes: false}).should.eql(['a', 'b', 'b', 'b', 'b', 'b', 'b', 'b', 'b']);
+      expand('{a,b{,}{,}{,},c}d', {nodupes: false}).should.eql(['ad', 'bd', 'bd', 'bd', 'bd', 'bd', 'bd', 'bd', 'bd', 'cd']);
+    });
+
+    it('should eliminate dupes in repeated strings when `nodupes` is true', function () {
+      expand('a{,}', {nodupes: true}).should.eql(['a']);
+      expand('a{,}{,}', {nodupes: true}).should.eql(['a']);
+      expand('a{,}{,}{,}', {nodupes: true}).should.eql(['a']);
+      expand('{a,b{,}{,}{,}}', {nodupes: true}).should.eql(['a', 'b']);
+      expand('{a,b{,}{,}{,},c}d', {nodupes: true}).should.eql(['ad', 'bd', 'cd']);
+      expand('{a,b{,}{,}{,},c}d', {nodupes: true}).should.eql(['ad', 'bd', 'cd']);
     });
 
     it('should work with no braces', function () {
@@ -43,7 +60,7 @@ describe('braces', function () {
       expand('{}').should.eql(['{}']);
       expand('}').should.eql(['}']);
       expand('{').should.eql(['{']);
-      expand('{,}').should.eql(['']);
+      expand('{,}').should.eql([]);
     });
 
     it('should handle imbalanced braces', function () {
@@ -79,14 +96,6 @@ describe('braces', function () {
       expand('{"x,x"}').should.eql(['{x,x}']);
       expand('{"klklkl"}{1,2,3}').should.eql(['{klklkl}1', '{klklkl}2', '{klklkl}3']);
     });
-
-    it('should not expand strings with es6/bash-like variables.', function () {
-      expand('abc/${ddd}/xyz').should.eql(['abc/${ddd}/xyz']);
-      expand('a${b}c').should.eql(['a${b}c']);
-      expand('a/{${b},c}/d').should.eql(['a/${b}/d', 'a/c/d']);
-      expand('a${b,d}/{foo,bar}c').should.eql(['a${b,d}/fooc', 'a${b,d}/barc']);
-    });
-
     // note that Bash returns the value without removing braces. This makes no sense in node.
     it('should work with one value', function () {
       expand('a{b}c').should.eql(['abc']);
@@ -108,25 +117,6 @@ describe('braces', function () {
     it('should work with commas.', function () {
       expand('a{b,}c').should.eql(['abc', 'ac']);
       expand('a{,b}c').should.eql(['ac', 'abc']);
-    });
-
-    it('should not expand escaped commas.', function () {
-      // expand('a{b\\,c}d').should.eql(['ab,cd']); // Bash expects ['a{b,c}d']
-      // expand('a{b\\,c\\,d}e').should.eql(['ab,c,de']); // Bash expects ['a{b,c,d}e']
-      // expand('{abc\\,def}').should.eql(['abc,def']); // Bash expects ['{abc,def}']
-      expand('a{b\\,c}d').should.eql(['a{b,c}d']); // Bash expects ['a{b,c}d']
-      expand('a{b\\,c\\,d}e').should.eql(['a{b,c,d}e']); // Bash expects ['a{b,c,d}e']
-      expand('{abc\\,def}').should.eql(['{abc,def}']); // Bash expects ['{abc,def}']
-    });
-
-    it('should not expand escaped braces.', function () {
-      // expand('{a,b\\}c,d}').should.eql(['a','b}c','d']);
-      expand('\\{a,b,c,d,e}').should.eql(['{a,b,c,d,e}']);
-      expand('a/\\{b,c}/{d,e}/f').should.eql(['a/{b,c}/d/f', 'a/{b,c}/e/f']);
-    });
-
-    it('should not expand escaped braces or commas.', function () {
-      expand('{x\\,y,\\{abc\\},trie}').should.eql(['x,y','{abc}','trie']);
     });
 
     it('should expand sets', function () {
@@ -159,6 +149,33 @@ describe('braces', function () {
     it('should expand with globs.', function () {
       expand('a/**/c{d,e}f*.js').should.eql(['a/**/cdf*.js', 'a/**/cef*.js']);
       expand('a/**/c{d,e}f*.{md,txt}').should.eql(['a/**/cdf*.md', 'a/**/cef*.md', 'a/**/cdf*.txt', 'a/**/cef*.txt']);
+    });
+  });
+
+  describe('escaping:', function () {
+    it('should not expand strings with es6/bash-like variables.', function () {
+      expand('abc/${ddd}/xyz').should.eql(['abc/${ddd}/xyz']);
+      expand('a${b}c').should.eql(['a${b}c']);
+      expand('a/{${b},c}/d').should.eql(['a/${b}/d', 'a/c/d']);
+      expand('a${b,d}/{foo,bar}c').should.eql(['a${b,d}/fooc', 'a${b,d}/barc']);
+    });
+
+    it('should not expand escaped commas.', function () {
+      expand('a{b\\,c}d').should.eql(['a{b,c}d']); // Bash expects ['a{b,c}d']
+      expand('a{b\\,c\\,d}e').should.eql(['a{b,c,d}e']); // Bash expects ['a{b,c,d}e']
+      expand('{abc\\,def}').should.eql(['{abc,def}']); // Bash expects ['{abc,def}']
+      expand('{abc\\,def,ghi}').should.eql(['abc,def', 'ghi']); // Bash expects ['{abc,def}']
+      // expand('a/{b,c}/{x\\,y}/d/e').should.eql(['a/b/{x,y}/d/e', 'a/c/{x,y}/d/e']);
+    });
+
+    it('should not expand escaped braces.', function () {
+      // expand('{a,b\\}c,d}').should.eql(['a','b}c','d']);
+      expand('\\{a,b,c,d,e}').should.eql(['{a,b,c,d,e}']);
+      expand('a/\\{b,c}/{d,e}/f').should.eql(['a/{b,c}/d/f', 'a/{b,c}/e/f']);
+    });
+
+    it('should not expand escaped braces or commas.', function () {
+      expand('{x\\,y,\\{abc\\},trie}').should.eql(['x,y','{abc}','trie']);
     });
   });
 
