@@ -1,7 +1,7 @@
 'use strict';
 
-/**
- * braces
- */
+var braces = require('../..');
 
-module.exports = require('../..');
+module.exports = function(str) {
+  return braces(str, {makeRe: true});
+};

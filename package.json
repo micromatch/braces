@@ -28,7 +28,9 @@
     "all": "npm run test && npm run docs"
   },
   "dependencies": {
-    "expand-range": "^1.0.0"
+    "arr-filter": "^1.0.0",
+    "expand-range": "^1.0.0",
+    "preserve": "^0.2.0"
   },
   "devDependencies": {
     "benchmarked": "^0.1.3",
