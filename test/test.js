@@ -79,13 +79,12 @@ describe('braces', function () {
       expand('f{x,y{{g,z}}h').should.eql(['f{x,ygh','f{x,yzh']);
       expand('f{x,y{{g,z}}h}').should.eql(['fx','fygh','fyzh']); // Bash expects ['fx','fy{g}h','fy{z}h']
       expand('z{a,b},c}d').should.eql(['za,c}d','zb,c}d']);
-
-      // expand('a{b{c{d,e}f{x,y{{g}h').should.eql(['a{b{cdf{x,y{gh','a{b{cef{x,y{gh']);
-      // expand('a{b{c{d,e}f{x,y{}g}h').should.eql(['a{b{cdfxh','a{b{cdfy{}gh','a{b{cefxh','a{b{cefy{}gh']);
-      // expand('f{x,y{{g}h').should.eql(['f{x,y{{g}h']);
-      // expand('f{x,y{{g}}h').should.eql(['f{x,y{{g}}h']);
-      // expand('f{x,y{}g}h').should.eql(['fxh','fy{}gh']);
-      // expand('z{a,b{,c}d').should.eql(['z{a,bcd','z{a,bd']);
+      expand('a{b{c{d,e}f{x,y{{g}h').should.eql(['a{b{cdf{x,y{gh','a{b{cef{x,y{gh']);
+      expand('f{x,y{{g}h').should.eql(['f{x,y{gh']); // Bash expects ['f{x,y{{g}h']
+      expand('f{x,y{{g}}h').should.eql(['f{x,ygh']); // Bash expects ['f{x,y{{g}}h']
+      expand('a{b{c{d,e}f{x,y{}g}h').should.eql(['a{b{cdfxh','a{b{cefxh','a{b{cdfy{}gh','a{b{cefy{}gh']);
+      expand('f{x,y{}g}h').should.eql(['fxh','fy{}gh']);
+      expand('z{a,b{,c}d').should.eql(['z{a,bd', 'z{a,bcd']);
     });
 
     it('should return invalid braces:', function () {
@@ -165,92 +164,19 @@ describe('braces', function () {
       expand('a{b\\,c\\,d}e').should.eql(['a{b,c,d}e']); // Bash expects ['a{b,c,d}e']
       expand('{abc\\,def}').should.eql(['{abc,def}']); // Bash expects ['{abc,def}']
       expand('{abc\\,def,ghi}').should.eql(['abc,def', 'ghi']); // Bash expects ['{abc,def}']
-      // expand('a/{b,c}/{x\\,y}/d/e').should.eql(['a/b/{x,y}/d/e', 'a/c/{x,y}/d/e']);
+      expand('a/{b,c}/{x\\,y}/d/e').should.eql(['a/b/x,y/d/e', 'a/c/x,y/d/e']); // Bash expects ['a/b/{x,y}/d/e', 'a/c/{x,y}/d/e']
     });
 
     it('should not expand escaped braces.', function () {
-      // expand('{a,b\\}c,d}').should.eql(['a','b}c','d']);
+      expand('{a,b\\}c,d}').should.eql(['{a,b}c,d}']); // Bash expects ['a','b}c','d']
       expand('\\{a,b,c,d,e}').should.eql(['{a,b,c,d,e}']);
+      expand('a/{b,\\{a,b,c,d,e}/d').should.eql(['a/b/d','a/{a/d','a/c/d','a/d/d','a/e/d']);
+      expand('a/{b,\\{a,b,c,d,e}/d', {nodupes: false}).should.eql(['a/b/d','a/{a/d','a/b/d','a/c/d','a/d/d','a/e/d']);
       expand('a/\\{b,c}/{d,e}/f').should.eql(['a/{b,c}/d/f', 'a/{b,c}/e/f']);
     });
 
     it('should not expand escaped braces or commas.', function () {
       expand('{x\\,y,\\{abc\\},trie}').should.eql(['x,y','{abc}','trie']);
-    });
-  });
-
-  describe('range expansion', function () {
-    it('should expand numerical ranges', function () {
-      expand('a{0..3}d').should.eql(['a0d', 'a1d', 'a2d', 'a3d']);
-      expand('x{10..1}y').should.eql(['x10y', 'x9y', 'x8y', 'x7y', 'x6y', 'x5y', 'x4y', 'x3y', 'x2y', 'x1y']);
-      expand('x{3..3}y').should.eql(['x3y']);
-      expand('{-1..-10}').should.eql(['-1', '-2', '-3', '-4', '-5', '-6', '-7', '-8', '-9', '-10']);
-      expand('{-20..0}').should.eql(['-20', '-19', '-18', '-17', '-16', '-15', '-14', '-13', '-12', '-11', '-10', '-9', '-8', '-7', '-6', '-5', '-4', '-3', '-2', '-1', '0']);
-      expand('{1..10}').should.eql(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']);
-      expand('{1..3}').should.eql(['1', '2', '3']);
-      expand('{3..3}').should.eql(['3']);
-      expand('{5..8}').should.eql(['5', '6', '7', '8']);
-    });
-
-    it('should work with dots in file paths', function () {
-      expand('../{1..3}/../foo').should.eql(['../1/../foo', '../2/../foo', '../3/../foo']);
-    });
-
-    it('should make a regex-string when `options.makeRe` is defined:', function () {
-      expand('../{1..3}/../foo', {makeRe: true}).should.eql(['../[1-3]/../foo']);
-      expand('../{2..10..2}/../foo', {makeRe: true}).should.eql(['../(2|4|6|8|10)/../foo']);
-    });
-
-    it('should expand alphabetical ranges', function () {
-      expand('0{a..d}0').should.eql(['0a0', '0b0', '0c0', '0d0']);
-      expand('0{a..d}0').should.not.eql(['0a0', '0b0', '0c0']);
-      expand('{A..a}').should.eql(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', '\\', ']', '^', '_', '`', 'a']);
-      expand('{a..e}').should.eql(['a', 'b', 'c', 'd', 'e']);
-      expand('{A..E}').should.eql(['A', 'B', 'C', 'D', 'E']);
-      expand('{z..a..-2}').should.eql(['z', 'x', 'v', 't', 'r', 'p', 'n', 'l', 'j', 'h', 'f', 'd', 'b']);
-    });
-
-    it('should use steps', function () {
-      expand('{-1..-10..-2}').should.eql(['-1', '-3', '-5', '-7', '-9']);
-      expand('{-1..-10..2}').should.eql(['-1', '-3', '-5', '-7', '-9']);
-      expand('{-50..-0..5}').should.eql(['-50', '-45', '-40', '-35', '-30', '-25', '-20', '-15', '-10', '-5', '0']);
-      expand('{1..10..2}').should.eql(['1', '3', '5', '7', '9']);
-      expand('{1..20..20}').should.eql(['1']);
-      expand('{1..20..2}').should.eql(['1', '3', '5', '7', '9', '11', '13', '15', '17', '19']);
-      expand('{10..0..-2}').should.eql(['10', '8', '6', '4', '2', '0']);
-      expand('{10..0..2}').should.eql(['10', '8', '6', '4', '2', '0']);
-      expand('{10..1..-2}').should.eql(['10', '8', '6', '4', '2']);
-      expand('{10..1..2}').should.eql(['10', '8', '6', '4', '2']);
-      expand('{10..1}').should.eql(['10', '9', '8', '7', '6', '5', '4', '3', '2', '1']);
-      expand('{10..1}y').should.eql(['10y', '9y', '8y', '7y', '6y', '5y', '4y', '3y', '2y', '1y']);
-      expand('{100..0..-5}').should.eql(['100', '95', '90', '85', '80', '75', '70', '65', '60', '55', '50', '45', '40', '35', '30', '25', '20', '15', '10', '5', '0']);
-      expand('{100..0..5}').should.eql(['100', '95', '90', '85', '80', '75', '70', '65', '60', '55', '50', '45', '40', '35', '30', '25', '20', '15', '10', '5', '0']);
-      expand('{a..A}').should.eql(['a', '`', '_', '^', ']', '\\', '[', 'Z', 'Y', 'X', 'W', 'V', 'U', 'T', 'S', 'R', 'Q', 'P', 'O', 'N', 'M', 'L', 'K', 'J', 'I', 'H', 'G', 'F', 'E', 'D', 'C', 'B', 'A']);
-      expand('{a..f}').should.eql(['a', 'b', 'c', 'd', 'e', 'f']);
-      expand('{a..z..2}').should.eql(['a', 'c', 'e', 'g', 'i', 'k', 'm', 'o', 'q', 's', 'u', 'w', 'y']);
-      expand('{a..z}').should.eql(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']);
-      expand('{f..a}').should.eql(['f', 'e', 'd', 'c', 'b', 'a']);
-      expand('{f..f}').should.eql(['f']);
-    });
-
-    it('should expand mixed ranges and sets:', function () {
-      expand('x{{0..10},braces}y').should.eql(['x0y', 'xbracesy', 'x1y', 'x2y', 'x3y', 'x4y', 'x5y', 'x6y', 'x7y', 'x8y', 'x9y', 'x10y']);
-      expand('{{0..10},braces}').should.eql(['0', 'braces', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']);
-      expand('{2147483645..2147483649}').should.eql(['2147483645', '2147483646', '2147483647', '2147483648', '2147483649']);
-    });
-    it('should return invalid ranges:', function () {
-      expand('{1.20..2}').should.eql(['{1.20..2}']);
-      expand('{1..0f}').should.eql(['{1..0f}']);
-      expand('{1..10..ff}').should.eql(['{1..10..ff}']);
-      expand('{1..10.f}').should.eql(['{1..10.f}']);
-      expand('{1..10f}').should.eql(['{1..10f}']);
-      expand('{1..20..2f}').should.eql(['{1..20..2f}']);
-      expand('{1..20..f2}').should.eql(['{1..20..f2}']);
-      expand('{1..2f..2}').should.eql(['{1..2f..2}']);
-      expand('{1..ff..2}').should.eql(['{1..ff..2}']);
-      expand('{1..ff}').should.eql(['{1..ff}']);
-      expand('{1..f}').should.eql(['{1..f}']);
-      expand('{f..1}').should.eql(['{f..1}']);
     });
   });
 
@@ -299,54 +225,92 @@ describe('braces', function () {
   });
 });
 
-
-describe('ranges', function () {
- it('should expand numerical ranges', function () {
+describe('range expansion', function () {
+  it('should expand numerical ranges', function () {
+    expand('a{0..3}d').should.eql(['a0d', 'a1d', 'a2d', 'a3d']);
+    expand('x{10..1}y').should.eql(['x10y', 'x9y', 'x8y', 'x7y', 'x6y', 'x5y', 'x4y', 'x3y', 'x2y', 'x1y']);
+    expand('x{3..3}y').should.eql(['x3y']);
+    expand('{-1..-10}').should.eql(['-1', '-2', '-3', '-4', '-5', '-6', '-7', '-8', '-9', '-10']);
+    expand('{-20..0}').should.eql(['-20', '-19', '-18', '-17', '-16', '-15', '-14', '-13', '-12', '-11', '-10', '-9', '-8', '-7', '-6', '-5', '-4', '-3', '-2', '-1', '0']);
+    expand('{1..10}').should.eql(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']);
     expand('{1..3}').should.eql(['1', '2', '3']);
+    expand('{1..9}').should.eql(['1', '2', '3', '4', '5', '6', '7', '8', '9']);
+    expand('{3..3}').should.eql(['3']);
     expand('{5..8}').should.eql(['5', '6', '7', '8']);
-  });
-
-  it('should expand negative ranges', function () {
-    expand('{0..-5}').should.eql(['0', '-1', '-2', '-3', '-4', '-5']);
   });
 
   it('should expand alphabetical ranges', function () {
+    expand('0{a..d}0').should.eql(['0a0', '0b0', '0c0', '0d0']);
+    expand('0{a..d}0').should.not.eql(['0a0', '0b0', '0c0']);
+    expand('a/{b..d}/e').should.eql(['a/b/e', 'a/c/e', 'a/d/e']);
+    expand('{a..A}').should.eql(['a', '`', '_', '^', ']', '\\', '[', 'Z', 'Y', 'X', 'W', 'V', 'U', 'T', 'S', 'R', 'Q', 'P', 'O', 'N', 'M', 'L', 'K', 'J', 'I', 'H', 'G', 'F', 'E', 'D', 'C', 'B', 'A']);
+    expand('{A..a}').should.eql(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', '\\', ']', '^', '_', '`', 'a']);
     expand('{a..e}').should.eql(['a', 'b', 'c', 'd', 'e']);
     expand('{A..E}').should.eql(['A', 'B', 'C', 'D', 'E']);
+    expand('{a..f}').should.eql(['a', 'b', 'c', 'd', 'e', 'f']);
+    expand('{a..z}').should.eql(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']);
+    expand('{E..A}').should.eql(['E', 'D', 'C', 'B', 'A']);
+    expand('{f..a}').should.eql(['f', 'e', 'd', 'c', 'b', 'a']);
+    expand('{f..f}').should.eql(['f']);
   });
 
-  it('should fill in numerical ranges', function () {
-    expand('{1..3}').should.eql(['1', '2', '3']);
-    expand('{5..8}').should.eql(['5', '6', '7', '8']);
+  it('should use steps with alphabetical ranges', function () {
+    expand('{a..e..2}').should.eql(['a','c', 'e']);
+    expand('{E..A..2}').should.eql(['E', 'C', 'A']);
   });
 
-  it('should fill in numerical ranges when numbers are passed as strings', function () {
-    expand('{1..3}').should.eql(['1', '2', '3']);
-    expand('{5..8}').should.eql(['5', '6', '7', '8']);
-    expand('{1..9}').should.eql(['1', '2', '3', '4', '5', '6', '7', '8', '9']);
-    expand('{1..10}').should.eql(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']);
-  });
-
-  it('should fill in negative ranges', function () {
-    expand('{0..-5}').should.eql(['0', '-1', '-2', '-3', '-4', '-5']);
+  it('should expand negative ranges', function () {
+    expand('{z..a..-2}').should.eql(['z', 'x', 'v', 't', 'r', 'p', 'n', 'l', 'j', 'h', 'f', 'd', 'b']);
+    expand('{-10..-1}').should.eql(['-10', '-9', '-8', '-7', '-6', '-5', '-4', '-3', '-2', '-1']);
     expand('{0..-5}').should.eql(['0', '-1', '-2', '-3', '-4', '-5']);
     expand('{9..-4}').should.eql(['9', '8', '7', '6', '5', '4', '3', '2', '1', '0', '-1', '-2', '-3', '-4']);
-    expand('{-10..-1}').should.eql(['-10', '-9', '-8', '-7', '-6', '-5', '-4', '-3', '-2', '-1']);
   });
 
-  it('should fill in ranges using the given step', function () {
+  it('should expand multiple ranges:', function () {
+    expand('a/{b..d}/e/{f..h}').should.eql(['a/b/e/f', 'a/c/e/f', 'a/d/e/f', 'a/b/e/g', 'a/c/e/g', 'a/d/e/g', 'a/b/e/h', 'a/c/e/h', 'a/d/e/h']);
+  });
+
+  it('should work with dots in file paths', function () {
+    expand('../{1..3}/../foo').should.eql(['../1/../foo', '../2/../foo', '../3/../foo']);
+  });
+
+  it('should make a regex-string when `options.makeRe` is defined:', function () {
+    expand('../{1..3}/../foo', {makeRe: true}).should.eql(['../[1-3]/../foo']);
+    expand('../{2..10..2}/../foo', {makeRe: true}).should.eql(['../(2|4|6|8|10)/../foo']);
+    expand('../{1..3}/../{a,b,c}/foo', {makeRe: true}).should.eql(['../[1-3]/../(a|b|c)/foo']);
+    expand('./{a..z..3}/', {makeRe: true}).should.eql(['./(a|d|g|j|m|p|s|v|y)/']);
+    expand('./{"x,y"}/{a..z..3}/', {makeRe: true}).should.eql(['./{x,y}/(a|d|g|j|m|p|s|v|y)/']);
+    expand('./\\{x,y}/{a..z..3}/', {makeRe: true}).should.eql(['./{x,y}/(a|d|g|j|m|p|s|v|y)/']);
+  });
+
+  it('should expand ranges using steps:', function () {
+    expand('{-1..-10..-2}').should.eql(['-1', '-3', '-5', '-7', '-9']);
+    expand('{-1..-10..2}').should.eql(['-1', '-3', '-5', '-7', '-9']);
+    expand('{-50..-0..5}').should.eql(['-50', '-45', '-40', '-35', '-30', '-25', '-20', '-15', '-10', '-5', '0']);
+    expand('{1..10..2}').should.eql(['1', '3', '5', '7', '9']);
+    expand('{1..20..20}').should.eql(['1']);
+    expand('{1..20..2}').should.eql(['1', '3', '5', '7', '9', '11', '13', '15', '17', '19']);
+    expand('{10..0..-2}').should.eql(['10', '8', '6', '4', '2', '0']);
+    expand('{10..0..2}').should.eql(['10', '8', '6', '4', '2', '0']);
+    expand('{10..1..-2}').should.eql(['10', '8', '6', '4', '2']);
+    expand('{10..1..2}').should.eql(['10', '8', '6', '4', '2']);
+    expand('{10..1}').should.eql(['10', '9', '8', '7', '6', '5', '4', '3', '2', '1']);
+    expand('{10..1}y').should.eql(['10y', '9y', '8y', '7y', '6y', '5y', '4y', '3y', '2y', '1y']);
+    expand('{100..0..-5}').should.eql(['100', '95', '90', '85', '80', '75', '70', '65', '60', '55', '50', '45', '40', '35', '30', '25', '20', '15', '10', '5', '0']);
+    expand('{100..0..5}').should.eql(['100', '95', '90', '85', '80', '75', '70', '65', '60', '55', '50', '45', '40', '35', '30', '25', '20', '15', '10', '5', '0']);
+    expand('{a..z..2}').should.eql(['a', 'c', 'e', 'g', 'i', 'k', 'm', 'o', 'q', 's', 'u', 'w', 'y']);
     expand('{1..10..1}').should.eql(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']);
     expand('{1..10..2}').should.eql(['1', '3', '5', '7', '9']);
     expand('{1..20..20}').should.eql(['1']);
     expand('{1..20..2}').should.eql(['1', '3', '5', '7', '9', '11', '13', '15', '17', '19']);
-    expand('{10..1..2}').should.eql(['10', '8', '6', '4', '2']);
     expand('{10..1..-2}').should.eql(['10', '8', '6', '4', '2']);
+    expand('{10..1..2}').should.eql(['10', '8', '6', '4', '2']);
     expand('{2..10..1}').should.eql(['2', '3', '4', '5', '6', '7', '8', '9', '10']);
     expand('{2..10..2}').should.eql(['2', '4', '6', '8', '10']);
     expand('{2..10..3}').should.eql(['2', '5', '8']);
   });
 
-  it('should fill in negative ranges using the given step', function () {
+  it('should expand negative ranges using steps:', function () {
     expand('{-1..-10..-2}').should.eql(['-1', '-3', '-5', '-7', '-9']);
     expand('{-1..-10..2}').should.eql(['-1', '-3', '-5', '-7', '-9']);
     expand('{-10..-2..2}').should.eql(['-10', '-8', '-6', '-4', '-2']);
@@ -356,14 +320,28 @@ describe('ranges', function () {
     expand('{-9..9..3}').should.eql(['-9', '-6', '-3', '0', '3', '6', '9']);
   });
 
-  it('should fill in alphabetical ranges', function () {
-    expand('{a..e}').should.eql(['a', 'b', 'c', 'd', 'e']);
-    expand('{A..E}').should.eql(['A', 'B', 'C', 'D', 'E']);
-    expand('{E..A}').should.eql(['E', 'D', 'C', 'B', 'A']);
+  it('should expand mixed ranges and sets:', function () {
+    expand('x{{0..10},braces}y').should.eql(['x0y', 'xbracesy', 'x1y', 'x2y', 'x3y', 'x4y', 'x5y', 'x6y', 'x7y', 'x8y', 'x9y', 'x10y']);
+    expand('{{0..10},braces}').should.eql(['0', 'braces', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']);
+    expand('{2147483645..2147483649}').should.eql(['2147483645', '2147483646', '2147483647', '2147483648', '2147483649']);
   });
 
-  it('should use steps with alphabetical ranges', function () {
-    expand('{a..e..2}').should.eql(['a','c', 'e']);
-    expand('{E..A..2}').should.eql(['E', 'C', 'A']);
+  it('should return invalid ranges:', function () {
+    expand('{1.20..2}').should.eql(['{1.20..2}']);
+    expand('{1..0f}').should.eql(['{1..0f}']);
+    expand('{1..10..ff}').should.eql(['{1..10..ff}']);
+    expand('{1..10.f}').should.eql(['{1..10.f}']);
+    expand('{1..10f}').should.eql(['{1..10f}']);
+    expand('{1..20..2f}').should.eql(['{1..20..2f}']);
+    expand('{1..20..f2}').should.eql(['{1..20..f2}']);
+    expand('{1..2f..2}').should.eql(['{1..2f..2}']);
+    expand('{1..ff..2}').should.eql(['{1..ff..2}']);
+    expand('{1..ff}').should.eql(['{1..ff}']);
+    expand('{1..f}').should.eql(['{1..f}']);
+    expand('{f..1}').should.eql(['{f..1}']);
+  });
+
+  it('should handle special characters:', function () {
+
   });
 });
