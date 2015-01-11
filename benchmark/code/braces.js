@@ -3,5 +3,5 @@
 var braces = require('../..');
 
 module.exports = function(str) {
-  return braces(str, {nodupes: false});
+  return braces(str, {makeRe: true});
 };

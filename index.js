@@ -20,6 +20,14 @@ var tokens = require('preserve');
  */
 
 module.exports = function (str, options) {
+  if (typeof str !== 'string') {
+    throw new Error('braces expects a string');
+  }
+
+  if (options && options.makeRe) {
+    str = makeRegexString(str);
+  }
+
   return braces(str, options);
 };
 
@@ -29,14 +37,11 @@ module.exports = function (str, options) {
  *
  * @param  {String} `str`
  * @param  {Array} `arr`
+ * @param  {Object} `options`
  * @return {Array}
  */
 
 function braces(str, arr, options) {
-  if (typeof str !== 'string') {
-    throw new Error('braces expects a string');
-  }
-
   if (str === '') {
     return [];
   }
@@ -46,19 +51,19 @@ function braces(str, arr, options) {
     arr = [];
   }
 
-  options = options || {};
+  var opts = options || {};
   arr = arr || [];
 
-  if (typeof options.nodupes === 'undefined') {
-    options.nodupes = true;
+  if (typeof opts.nodupes === 'undefined') {
+    opts.nodupes = true;
   }
 
-  var fn = options.fn;
+  var fn = opts.fn;
   var es6;
 
-  if (typeof options === 'function') {
-    fn = options;
-    options = {};
+  if (typeof opts === 'function') {
+    fn = opts;
+    opts = {};
   }
 
   if (!(patternRe instanceof RegExp)) {
@@ -70,18 +75,18 @@ function braces(str, arr, options) {
 
   switch(m) {
     case '\\,':
-      return escapeCommas(str, arr);
+      return escapeCommas(str, arr, opts);
     case '\\.':
-      return escapeDots(str, arr);
+      return escapeDots(str, arr, opts);
     case '} {':
-      return splitWhitespace(str, arr);
+      return splitWhitespace(str);
     case '{,}':
-      return rangeify(str, options);
+      return rangeify(str, opts);
     case '{}':
-      return emptyBraces(str, arr);
+      return emptyBraces(str, arr, opts);
     case '\\{':
     case '\\}':
-      return escapeBraces(str, arr);
+      return escapeBraces(str, arr, opts);
     case '${':
       if (!/\{[^{]+\{/.test(str)) {
         return arr.concat(str);
@@ -106,7 +111,7 @@ function braces(str, arr, options) {
 
   if (/[^\\\/]\.{2}/.test(inner)) {
     try {
-      paths = expandRange(inner, fn || options.makeRe);
+      paths = expandRange(inner, fn || opts.makeRe);
     } catch(err) {
       if (/,/.test(str)) {
         return str.replace(/\{|\}/g, '').split(',');
@@ -133,9 +138,9 @@ function braces(str, arr, options) {
 
     val = splice(str, outter, path);
     if (/\{.+\}/.test(val)) {
-      arr = braces(val, arr);
+      arr = braces(val, arr, opts);
     } else if (val !== '') {
-      if (options.nodupes && arr.indexOf(val) !== -1) {
+      if (opts.nodupes && arr.indexOf(val) !== -1) {
         continue;
       }
 
@@ -143,7 +148,7 @@ function braces(str, arr, options) {
     }
   }
 
-  if (options.strict) {
+  if (opts.strict) {
     return filter(arr, function (ele) {
       return ele !== '\\' && ele !== '' && ele != null;
     });
@@ -155,33 +160,38 @@ function braces(str, arr, options) {
  * Handle empty braces: `{}`
  */
 
-function emptyBraces(str, arr) {
-  str = str.replace(/\{\}/g, '##');
-  return map(braces(str, arr), function (ele) {
-    return ele.replace(/##/g, '{}');
-  });
+function emptyBraces(str, arr, opts) {
+  return braces(str.replace(/\{}/g, '\\{\\}'), arr, opts);
 }
 
 /**
  * Handle patterns with whitespace
  */
 
-function splitWhitespace(str, arr) {
-  var res = braces(wrap(str.replace(' ', ','), arr));
-  return arr.concat(res).sort();
+function splitWhitespace(str) {
+  var paths = str.split(' ');
+  var len = paths.length;
+  var res = [];
+  var i = 0;
+
+  while (len--) {
+    res.push.apply(res, braces(paths[i++]));
+  }
+
+  return res;
 }
 
 /**
  * Handle escaped braces: `\\{foo,bar}`
  */
 
-function escapeBraces(str, arr) {
+function escapeBraces(str, arr, opts) {
   if (!/\{[^{]+\{/.test(str)) {
     return arr.concat(str.replace(/\\/g, ''));
   } else {
     str = str.replace(/\\{/g, '%#~');
     str = str.replace(/\\}/g, '~#%');
-    return map(braces(str, arr), function (ele) {
+    return map(braces(str, arr, opts), function (ele) {
       ele = ele.replace(/%#~/g, '{');
       return ele.replace(/~#%/g, '}');
     });
@@ -192,12 +202,12 @@ function escapeBraces(str, arr) {
  * Handle escaped dots: `{1\\.2}`
  */
 
-function escapeDots(str, arr) {
+function escapeDots(str, arr, opts) {
   if (!/[^\\]\..+\\\./.test(str)) {
     return arr.concat(str.replace(/\\/g, ''));
   } else {
     str = str.replace(/\\\./g, '%~~');
-    return map(braces(str, arr), function (ele) {
+    return map(braces(str, arr, opts), function (ele) {
       return ele.replace(/%~~/g, '.');
     });
   }
@@ -207,12 +217,12 @@ function escapeDots(str, arr) {
  * Handle escaped commas: `{a\\,b}`
  */
 
-function escapeCommas(str, arr) {
+function escapeCommas(str, arr, opts) {
   if (!/\w,/.test(str)) {
     return arr.concat(str.replace(/\\/g, ''));
   } else {
     str = str.replace(/\\,/g, '%~%');
-    return map(braces(str, arr), function (ele) {
+    return map(braces(str, arr, opts), function (ele) {
       return ele.replace(/%~%/g, ',');
     });
   }
@@ -223,9 +233,9 @@ function escapeCommas(str, arr) {
  */
 
 function rangeify(str, options) {
-  options = options || {};
+  var opts = options || {};
   var rep = str.replace(/\{,}/g, '0x27740x27000x2775');
-  var res = braces(rep, options);
+  var res = braces(rep, opts);
   var len = res.length;
   var i = 0;
   var arr = [];
@@ -239,7 +249,7 @@ function rangeify(str, options) {
     var match = ele.match(powRe);
     if (match) {
       ele = ele.replace(powRe, '');
-      if (options.nodupes && ele != '') {
+      if (opts.nodupes && ele != '') {
         arr.push(ele);
       } else {
         var num = Math.pow(2, match.length);
@@ -255,6 +265,48 @@ function rangeify(str, options) {
 }
 
 /**
+ * Make a regex-ready string. Example:
+ *
+ * ```js
+ * makeRegexString('foo/{a..z}/bar');
+ * //=> 'foo/[a-z]/bar'
+ * ```
+ */
+
+function makeRegexString(str) {
+  var matches = str.match(/\\?\{([^{}]+)*\}/g);
+  if (matches) {
+    var len = matches.length;
+
+    while (len--) {
+      var match = matches[len];
+      var res;
+
+      if (!match || match === '{,}' || /["']|\\[,.]/.test(match)) {
+        continue;
+      }
+
+      if (match[0] === '\\') {
+        res = '{"' + match.slice(2, match.length - 1) + '"}';
+        return str.replace(match, res);
+      }
+
+      var dots = match.match(/\.\./g);
+      if (!dots) {
+        res = match.slice(1, match.length - 1);
+        res = '(' + res.replace(/,/g, '|') + ')';
+        str = str.replace(match, res);
+      } else if (dots && dots.length < 2) {
+        res = match.slice(1, match.length - 1);
+        res = '[' + res.replace(/\.\./g, '-') + ']';
+        str = str.replace(match, res);
+      }
+    }
+  }
+  return str;
+}
+
+/**
  * Regex for common patterns
  */
 
@@ -267,7 +319,7 @@ function patternRegex() {
  */
 
 function braceRegex() {
-  return /.*(\{([^}]+)\})/;
+  return /.*(\\?\{([^}]+)\})/;
 }
 
 /**
@@ -295,14 +347,6 @@ var braceRe;
 var patternRe;
 
 /**
- * Wrap the given string with braces.
- */
-
-function wrap(str) {
-  return '{' + str + '}';
-}
-
-/**
  * Faster alternative to `String.replace()` when the
  * index of the token to be replaces can't be supplied
  */
@@ -319,7 +363,7 @@ function splice(str, token, replacement) {
 
 function map(arr, fn) {
   if (arr == null) {
-    return res;
+    return [];
   }
 
   var len = arr.length;
