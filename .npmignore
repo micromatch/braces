@@ -8,6 +8,8 @@ test/actual
 tmp
 TODO.md
 vendor
+*.DS_Store
+
 
 # npmignore
 benchmark
