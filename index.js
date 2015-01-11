@@ -23,8 +23,6 @@ module.exports = function (str, options) {
   return braces(str, options);
 };
 
-var cache;
-
 /**
  * Expand `{foo,bar}` or `{1..5}` braces in the
  * given `string`.
@@ -33,7 +31,6 @@ var cache;
  * @param  {Array} `arr`
  * @return {Array}
  */
-var escaped;
 
 function braces(str, arr, options) {
   if (typeof str !== 'string') {
@@ -57,14 +54,14 @@ function braces(str, arr, options) {
   }
 
   var fn = options.fn;
-  var es6, comma;
+  var es6;
 
   if (typeof options === 'function') {
     fn = options;
     options = {};
   }
 
-  var matches = str.match(/\$\{|} {|{}|{,}|\\,|\\\.|\\{|\\}/) || [];
+  var matches = str.match(patternRe()) || [];
   var m = matches[0];
 
   if (m === '{,}') {
@@ -236,30 +233,6 @@ function rangeify(str, options) {
   return arr;
 }
 
-function heuristic(re, str, out) {
-  cache = cache || {};
-  var id = rand();
-  return str.replace(re + (cache[id] = out), '__ID' + id + '__');
-}
-
-function uncache(val) {
-  return val.replace(/__ID([0-9]*)__/, function (match, $1) {
-    return match.replace(match, '$' + cache[$1]);
-  });
-}
-
-function rand() {
-  return Math.random().toString().slice(2, 7);
-}
-/**
- * Escape commented patterns.
- */
-
-function escapeComment(str) {
-  var comment = commentRe().exec(str);
-  return splice(str, wrap(comment[0]), '\\' + wrap(comment[2]));
-}
-
 /**
  * Regex for common patterns
  */
@@ -269,19 +242,11 @@ function commentRe() {
 }
 
 /**
- * Regex for exponent Power syntax
- */
-
-function powRe() {
-  return /0x27740x27000x2775/g;
-}
-
-/**
  * Regex for common patterns
  */
 
 function patternRe() {
-  return /\$|\} \{|\{['"]|\\\{|\\\}|\\,|\\\./;
+  return /\$\{|} {|{}|{,}|\\,|\\\.|\\{|\\}/;
 }
 
 /**
@@ -289,7 +254,7 @@ function patternRe() {
  */
 
 function regex() {
-  return /.*(\{([^}]*)\})/;
+  return /.*(\{([^}]+)\})/;
 }
 
 /**
@@ -297,7 +262,15 @@ function regex() {
  */
 
 function es6Regex() {
-  return /\$\{([^\\}]*)\}/;
+  return /\$\{([^}]+)\}/;
+}
+
+/**
+ * Regex for exponent Power syntax
+ */
+
+function powRe() {
+  return /0x27740x27000x2775/g;
 }
 
 /**
