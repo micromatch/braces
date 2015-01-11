@@ -11,6 +11,7 @@
  * Module dependencies
  */
 
+var filter = require('arr-filter');
 var expandRange = require('expand-range');
 var tokens = require('preserve');
 
@@ -22,6 +23,8 @@ module.exports = function (str, options) {
   return braces(str, options);
 };
 
+var cache;
+
 /**
  * Expand `{foo,bar}` or `{1..5}` braces in the
  * given `string`.
@@ -30,10 +33,15 @@ module.exports = function (str, options) {
  * @param  {Array} `arr`
  * @return {Array}
  */
+var escaped;
 
 function braces(str, arr, options) {
   if (typeof str !== 'string') {
     throw new Error('braces expects a string');
+  }
+
+  if (str === '') {
+    return [];
   }
 
   if (!Array.isArray(arr)) {
@@ -42,84 +50,54 @@ function braces(str, arr, options) {
   }
 
   options = options || {};
+  arr = arr || [];
+
+  if (typeof options.nodupes === 'undefined') {
+    options.nodupes = true;
+  }
+
   var fn = options.fn;
+  var es6, comma;
 
   if (typeof options === 'function') {
     fn = options;
     options = {};
   }
 
-  arr = arr || [];
-
-  var matches = str.match(patternRe()) || [];
+  var matches = str.match(/\$\{|} {|{}|{,}|\\,|\\\.|\\{|\\}/) || [];
   var m = matches[0];
-  var es6, comma;
 
-  if (m === '$') {
+  if (m === '{,}') {
+    return rangeify(str, options);
+  }
+
+  if (m === '{}') {
+    return emptyBraces(str, arr);
+  }
+
+  if (m === '\\,') {
+    return escapeCommas(str, arr);
+  }
+
+  if (m === '\\.') {
+    return escapeDots(str, arr);
+  }
+
+  if (m === '\\{' || m === '\\}') {
+    return escapeBraces(str, arr);
+  }
+
+  if (m === '} {') {
+    return splitWhitespace(str, arr);
+  }
+
+  if (m === '${') {
     if (!/\{[^{]*\{/.test(str)) {
       return arr.concat(str);
     } else {
       es6 = true;
       str = tokens.before(str, es6Regex());
     }
-  }
-
-  if (m === '\\,') {
-    // var escBraceRe = /\\*\{([^,.]*)\\,([^}]*)\\*\}/g;
-    var parts = braces(str.replace(/\\*\{([^,.]*)\\,([^}]*)\\*\}/g, '\\{$1__^__$2}'));
-    return parts.map(function (ele) {
-      return ele.replace(/__\^__/g, ',');
-    });
-    console.log(parts)
-
-    //   console.log(str)
-    // var res = braces(tokens.before(str, escBraceRe), arr);
-    // return res.map(function (ele) {
-    //   return tokens.after(ele).replace(/\\/g, '');
-    // });
-  }
-
-  if (m === '\\{' || m === '\\}' || m === '\\.') {
-    var escBraceRe = /\\\{[^{}]+?\}|\{[^{}]+?\\\}|\\\./g;
-    var res = braces(tokens.before(str, escBraceRe), arr);
-    return res.map(function (ele) {
-      // console.log(ele)
-      return tokens.after(ele).replace(/\\/g, '');
-    });
-  }
-
-  // if (m === '\\{' || m === '\\}' || m === '\\,' || m === '\\.') {
-  //   var escBraceRe = /\\\{[^{}]+?\}|\{[^{}]+?\\\}|\\[,.]/g;
-  //   // var escBraceRe = /\\\{[^{}]+?\}|\{[^{}]+?\\\}|\{[^,.]*\\[,.][^}]*\}/g;
-  //   var res = braces(tokens.before(str, escBraceRe), arr);
-  //   return res.map(function (ele) {
-  //     console.log(ele)
-  //     return tokens.after(ele).replace(/\\/g, '');
-  //   });
-  // }
-
-  // if (m === '\\{' || m === '\\}' || m === '\\,' || m === '\\.') {
-  //   var escBraceRe = /\\\{[^{}]+?\}|\{[^{}]+?\\\}|\\[,.]/g;
-  //   str = str.replace(/\\?\{(.*\\[,.].*)\}/g, '\\{$1}');
-  //   str = str.replace(/\{(.*\\[,.].*)\\?\}/g, '\\{$1}');
-
-  //   str = braces(tokens.before(str, escBraceRe), arr);
-  //   return str.map(function (ele) {
-  //     return tokens.after(ele).replace(/\\/g, '');
-  //   });
-  // }
-  // if (m === '\\{' || m === '\\}' || m === '\\,' || m === '\\.') {
-  //   var escBraceRe = /\\\{[^{}]+?\}|\{[^{}]+?\\\}|\{()\}|\\\./g;
-  //   var matches = str.match(escBraceRe);
-  //   console.log(matches)
-  //   str = braces(tokens.before(str, escBraceRe), arr);
-  //   return str.map(function (ele) {
-  //     return tokens.after(ele).replace(/\\/g, '');
-  //   });
-  // }
-
-  if (m === '} {') {
-    return arr.concat(braces(wrap(str.replace(' ', ','), arr)).sort());
   }
 
   var match = regex().exec(str);
@@ -153,14 +131,20 @@ function braces(str, arr, options) {
 
   while (len--) {
     var path = paths[i++];
+
     if (/\.[^.\\\/]/.test(path)) {
       return [str];
     }
 
     val = splice(str, outter, path);
+
     if (/\{.*\}/.test(val)) {
       arr = braces(val, arr);
-    } else if (arr.indexOf(val) === -1) {
+    } else if (val !== '') {
+      if (options.nodupes && arr.indexOf(val) !== -1) {
+        continue;
+      }
+
       if (es6) {
         val = tokens.after(val);
       }
@@ -169,14 +153,104 @@ function braces(str, arr, options) {
   }
 
   if (options.strict) {
-    arr = arr.filter(function (ele) {
-      return ele !== '\\';
-    }).filter(Boolean);
+    return filter(arr, function (ele) {
+      return ele !== '\\' && ele !== '' && ele != null;
+    });
   }
-
   return arr;
 }
 
+function emptyBraces(str, arr) {
+  str = str.replace(/\{\}/g, '##');
+  return braces(str, arr).map(function (ele) {
+    return ele.replace(/##/g, '{}');
+  });
+}
+
+function splitWhitespace(str, arr) {
+  var res = braces(wrap(str.replace(' ', ','), arr));
+  return arr.concat(res).sort();
+}
+
+function escapeBraces(str, arr) {
+  if (!/\{[^{]*\{/.test(str)) {
+    return arr.concat(str.replace(/\\/g, ''));
+  } else {
+    str = str.replace(/\\{/g, '%#');
+    str = str.replace(/\\}/g, '#%');
+
+    return braces(str, arr).map(function (ele) {
+      ele = ele.replace(/%#/g, '{');
+      ele = ele.replace(/#%/g, '}');
+      return ele;
+    });
+  }
+}
+
+function escapeDots(str, arr) {
+  if (!/[^\\]\..*\\\./.test(str)) {
+    return arr.concat(str.replace(/\\/g, ''));
+  } else {
+    str = str.replace(/\\\./g, '%~');
+    return braces(str, arr).map(function (ele) {
+      return ele.replace(/%~/g, '.');
+    });
+  }
+}
+
+function escapeCommas(str, arr) {
+  if (!/\w,/.test(str)) {
+    return arr.concat(str.replace(/\\/g, ''));
+  } else {
+    str = str.replace(/\\,/g, '%%');
+    return braces(str, arr).map(function (ele) {
+      return ele.replace(/%%/g, ',');
+    });
+  }
+}
+
+function makeRange(str, num) {
+  return '{' + str + '..' + num + '..+}';
+}
+
+function rangeify(str, options) {
+  options = options || {};
+  var rep = str.replace(/\{,}/g, '0x27740x27000x2775');
+  var res = braces(rep, options);
+  var len = res.length;
+  var i = 0;
+  var re = powRe();
+  var arr = [];
+
+  while (len--) {
+    var ele = res[i++];
+    var match = ele.match(re);
+    if (match) {
+      var num = Math.pow(2, match.length);
+      ele = makeRange(ele.replace(re, ''), num);
+      arr.push.apply(arr, braces(ele, options));
+    } else {
+      arr.push(ele);
+    }
+  }
+  return arr;
+}
+
+function heuristic(re, str, out) {
+  cache = cache || {};
+  var id = rand();
+  return str.replace(re + (cache[id] = out), '__ID' + id + '__');
+}
+
+function uncache(val) {
+  return val.replace(/__ID([0-9]*)__/, function (match, $1) {
+    return match.replace(match, '$' + cache[$1]);
+  });
+}
+
+function rand() {
+  return Math.random().toString().slice(2, 7);
+}
 /**
  * Escape commented patterns.
  */
@@ -195,11 +269,19 @@ function commentRe() {
 }
 
 /**
+ * Regex for exponent Power syntax
+ */
+
+function powRe() {
+  return /0x27740x27000x2775/g;
+}
+
+/**
  * Regex for common patterns
  */
 
 function patternRe() {
-  return /\$|\}[ \t]\{|\{['"]|\\\{|\\\}|\\,|\\\./;
+  return /\$|\} \{|\{['"]|\\\{|\\\}|\\,|\\\./;
 }
 
 /**
