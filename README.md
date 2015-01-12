@@ -1,6 +1,6 @@
 # braces [![NPM version](https://badge.fury.io/js/braces.svg)](http://badge.fury.io/js/braces)
 
-> Fastest brace expansion lib, with the most complete implementation of the Bash 4.3 spec.
+> Fastest brace expansion for node.js, with more complete support of Bash 4.3 than minimatch.
 
  - Expands comma-separated values: `a/{b,c}/d` => `['a/b/d', 'a/c/d']`
  - Expands alphabetical or numerical ranges: `{1..3}` => `['1', '2', '3']`
