@@ -1,7 +1,7 @@
 {
   "name": "braces",
-  "description": "Fastest brace expansion lib, with the most complete implementation of the Bash 4.3 spec.",
-  "version": "1.0.0",
+  "description": "Fastest brace expansion for node.js, with more complete support of Bash 4.3 than minimatch.",
+  "version": "1.1.0",
   "homepage": "https://github.com/jonschlinkert/braces",
   "author": {
     "name": "Jon Schlinkert",
@@ -16,20 +16,18 @@
   },
   "license": {
     "type": "MIT",
-    "url": "https://github.com/jonschlinkert/braces/blob/master/LICENSE-MIT"
+    "url": "https://github.com/jonschlinkert/braces/blob/master/LICENSE"
   },
   "main": "index.js",
   "engines": {
     "node": ">=0.10.0"
   },
   "scripts": {
-    "test": "mocha -R spec",
-    "docs": "update && license && npmignore && deps && verb",
-    "all": "npm run test && npm run docs"
+    "test": "mocha -R spec"
   },
   "dependencies": {
     "arr-filter": "^1.0.0",
-    "expand-range": "^1.0.0",
+    "expand-range": "^1.1.0",
     "preserve": "^0.2.0"
   },
   "devDependencies": {
@@ -38,8 +36,8 @@
     "chalk": "^0.5.1",
     "minimatch": "^2.0.1",
     "minimist": "^1.1.0",
-    "mocha": "^2.1.0",
-    "should": "^4.4.1",
+    "mocha": "*",
+    "should": "*",
     "write": "^0.1.1"
   },
   "keywords": [
@@ -49,12 +47,12 @@
     "brace",
     "expand",
     "expansion",
-    "file",
     "filepath",
-    "fp",
+    "fill",
     "fs",
     "glob",
     "globbing",
+    "letter",
     "match",
     "matches",
     "matching",
