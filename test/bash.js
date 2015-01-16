@@ -25,7 +25,7 @@ describe('bash', function () {
     fixtures.forEach(function(test, i) {
       // adjust i for line numbers
       it('test: ' + (i + 2), function () {
-        mm(test[0], {strict: true}).sort().should.eql(test[1].sort());
+        mm(test[0], test[2] || {strict: true}).sort().should.eql(test[1].sort());
       });
     });
   });

@@ -276,11 +276,11 @@ describe('range expansion', function () {
 
   it('should make a regex-string when `options.makeRe` is defined:', function () {
     expand('../{1..3}/../foo', {makeRe: true}).should.eql(['../[1-3]/../foo']);
-    expand('../{2..10..2}/../foo', {makeRe: true}).should.eql(['../(2|4|6|8|10)/../foo']);
-    expand('../{1..3}/../{a,b,c}/foo', {makeRe: true}).should.eql(['../[1-3]/../(a|b|c)/foo']);
-    expand('./{a..z..3}/', {makeRe: true}).should.eql(['./(a|d|g|j|m|p|s|v|y)/']);
-    expand('./{"x,y"}/{a..z..3}/', {makeRe: true}).should.eql(['./{x,y}/(a|d|g|j|m|p|s|v|y)/']);
-    expand('./\\{x,y}/{a..z..3}/', {makeRe: true}).should.eql(['./{x,y}/(a|d|g|j|m|p|s|v|y)/']);
+    expand('../{2..10..2}/../foo', {makeRe: true}).should.eql(['../(?:2|4|6|8|10)/../foo']);
+    expand('../{1..3}/../{a,b,c}/foo', {makeRe: true}).should.eql(['../[1-3]/../(?:a|b|c)/foo']);
+    expand('./{a..z..3}/', {makeRe: true}).should.eql(['./(?:a|d|g|j|m|p|s|v|y)/']);
+    expand('./{"x,y"}/{a..z..3}/', {makeRe: true}).should.eql(['./{x,y}/(?:a|d|g|j|m|p|s|v|y)/']);
+    expand('./\\{x,y}/{a..z..3}/', {makeRe: true}).should.eql(['./{x,y}/(?:a|d|g|j|m|p|s|v|y)/']);
   });
 
   it('should expand ranges using steps:', function () {

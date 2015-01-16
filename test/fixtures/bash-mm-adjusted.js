@@ -1,6 +1,8 @@
 module.exports = [
   ['', []],
-  ['foo{,}', ['foo']],
+  ['foo{,}', ['foo', 'foo'], {nodupes: false}],
+  ['foo{,}{,}', ['foo', 'foo', 'foo', 'foo'], {nodupes: false}],
+  ['a/b/c/${d}/e.js', ['a/b/c/${d}/e.js']],
   ['\\{a,b}{{a,b},a,b}', ['{a,b}a','{a,b}b']],
   ['a,\\{b,c}', ['a,{b,c}']],
   ['a-{bdef-{g,i}-c', ['a-{bdef-g-c','a-{bdef-i-c']],
