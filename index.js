@@ -294,7 +294,7 @@ function makeRegexString(str) {
       var dots = match.match(/\.\./g);
       if (!dots) {
         res = match.slice(1, match.length - 1);
-        res = '(' + res.replace(/,/g, '|') + ')';
+        res = '(?:' + res.replace(/,/g, '|') + ')';
         str = str.replace(match, res);
       } else if (dots && dots.length < 2) {
         res = match.slice(1, match.length - 1);
