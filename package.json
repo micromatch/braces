@@ -1,7 +1,7 @@
 {
   "name": "braces",
   "description": "Fastest brace expansion for node.js, with more complete support of Bash 4.3 than minimatch.",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "homepage": "https://github.com/jonschlinkert/braces",
   "author": {
     "name": "Jon Schlinkert",
@@ -26,8 +26,8 @@
     "test": "mocha -R spec"
   },
   "dependencies": {
-    "arr-filter": "^1.0.0",
-    "expand-range": "^1.1.0",
+    "arr-filter": "^1.0.2",
+    "expand-range": "^1.2.0",
     "preserve": "^0.2.0"
   },
   "devDependencies": {
