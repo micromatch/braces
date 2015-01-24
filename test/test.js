@@ -173,6 +173,7 @@ describe('braces', function () {
       expand('a/{b,\\{a,b,c,d,e}/d').should.eql(['a/b/d','a/{a/d','a/c/d','a/d/d','a/e/d']);
       expand('a/{b,\\{a,b,c,d,e}/d', {nodupes: false}).should.eql(['a/b/d','a/{a/d','a/b/d','a/c/d','a/d/d','a/e/d']);
       expand('a/\\{b,c}/{d,e}/f').should.eql(['a/{b,c}/d/f', 'a/{b,c}/e/f']);
+      expand('./\\{x,y}/{a..z..3}/', {makeRe: true}).should.eql(['./{x,y}/(?:a|d|g|j|m|p|s|v|y)/']);
     });
 
     it('should not expand escaped braces or commas.', function () {
@@ -280,7 +281,6 @@ describe('range expansion', function () {
     expand('../{1..3}/../{a,b,c}/foo', {makeRe: true}).should.eql(['../[1-3]/../(?:a|b|c)/foo']);
     expand('./{a..z..3}/', {makeRe: true}).should.eql(['./(?:a|d|g|j|m|p|s|v|y)/']);
     expand('./{"x,y"}/{a..z..3}/', {makeRe: true}).should.eql(['./{x,y}/(?:a|d|g|j|m|p|s|v|y)/']);
-    expand('./\\{x,y}/{a..z..3}/', {makeRe: true}).should.eql(['./{x,y}/(?:a|d|g|j|m|p|s|v|y)/']);
   });
 
   it('should expand ranges using steps:', function () {
