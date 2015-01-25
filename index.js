@@ -113,9 +113,7 @@ function braces(str, arr, options) {
     try {
       paths = expandRange(inner, fn || opts.makeRe);
     } catch(err) {
-      if (/,/.test(str)) {
-        return str.replace(/\{|\}/g, '').split(',');
-      }
+      if (/,/.test(str)) { return str.replace(/\{|\}/g, '').split(','); }
       return [str];
     }
   } else if (inner === '') {
@@ -132,18 +130,14 @@ function braces(str, arr, options) {
   while (len--) {
     var path = paths[i++];
 
-    if (/\.[^.\\\/]/.test(path)) {
-      return [str];
-    }
-
+    if (/\.[^.\\\/]/.test(path)) { return [str]; }
     val = splice(str, outter, path);
+
     if (/\{.+\}/.test(val)) {
       arr = braces(val, arr, opts);
     } else if (val !== '') {
-      if (opts.nodupes && arr.indexOf(val) !== -1) {
-        continue;
-      }
 
+      if (opts.nodupes && arr.indexOf(val) !== -1) { continue; }
       arr.push(es6 ? tokens.after(val) : val);
     }
   }
@@ -189,11 +183,11 @@ function escapeBraces(str, arr, opts) {
   if (!/\{[^{]+\{/.test(str)) {
     return arr.concat(str.replace(/\\/g, ''));
   } else {
-    str = str.replace(/\\{/g, '%#~');
-    str = str.replace(/\\}/g, '~#%');
+    str = str.replace(/\\{/g, '__LT_BRACE__');
+    str = str.replace(/\\}/g, '__RT_BRACE__');
     return map(braces(str, arr, opts), function (ele) {
-      ele = ele.replace(/%#~/g, '{');
-      return ele.replace(/~#%/g, '}');
+      ele = ele.replace(/__LT_BRACE__/g, '{');
+      return ele.replace(/__RT_BRACE__/g, '}');
     });
   }
 }
@@ -206,9 +200,9 @@ function escapeDots(str, arr, opts) {
   if (!/[^\\]\..+\\\./.test(str)) {
     return arr.concat(str.replace(/\\/g, ''));
   } else {
-    str = str.replace(/\\\./g, '%~~');
+    str = str.replace(/\\\./g, '__ESC_DOT__');
     return map(braces(str, arr, opts), function (ele) {
-      return ele.replace(/%~~/g, '.');
+      return ele.replace(/__ESC_DOT__/g, '.');
     });
   }
 }
@@ -221,9 +215,9 @@ function escapeCommas(str, arr, opts) {
   if (!/\w,/.test(str)) {
     return arr.concat(str.replace(/\\/g, ''));
   } else {
-    str = str.replace(/\\,/g, '%~%');
+    str = str.replace(/\\,/g, '__ESC_COMMA__');
     return map(braces(str, arr, opts), function (ele) {
-      return ele.replace(/%~%/g, ',');
+      return ele.replace(/__ESC_COMMA__/g, ',');
     });
   }
 }
@@ -234,27 +228,23 @@ function escapeCommas(str, arr, opts) {
 
 function rangeify(str, options) {
   var opts = options || {};
-  var rep = str.replace(/\{,}/g, '0x27740x27000x2775');
+  var rep = str.replace(/\{,}/g, '__ESC_EXP__');
   var res = braces(rep, opts);
   var len = res.length;
   var i = 0;
   var arr = [];
 
-  if (!(powRe instanceof RegExp)) {
-    powRe = powRegex();
-  }
-
   while (len--) {
     var ele = res[i++];
-    var match = ele.match(powRe);
+    var match = ele.match(powRegex());
     if (match) {
-      ele = ele.replace(powRe, '');
+      ele = ele.replace(powRegex(), '');
       if (opts.nodupes && ele != '') {
         arr.push(ele);
       } else {
         var num = Math.pow(2, match.length);
         while (num--) {
-          if (ele != '') arr.push(ele);
+          if (ele != '') { arr.push(ele); }
         }
       }
     } else {
@@ -294,7 +284,7 @@ function makeRegexString(str) {
       var dots = match.match(/\.\./g);
       if (!dots) {
         res = match.slice(1, match.length - 1);
-        res = '(?:' + res.replace(/,/g, '|') + ')';
+        res = '(' + res.replace(/,/g, '|') + ')';
         str = str.replace(match, res);
       } else if (dots && dots.length < 2) {
         res = match.slice(1, match.length - 1);
@@ -335,7 +325,7 @@ function es6Regex() {
  */
 
 function powRegex() {
-  return /0x27740x27000x2775/g;
+  return /__ESC_EXP__/g;
 }
 
 /**
