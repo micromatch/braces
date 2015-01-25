@@ -1,6 +1,6 @@
 'use strict';
 
-var braces = require('../../tmp/example');
+var braces = require('../..');
 
 module.exports = function(str) {
   return braces(str, {makeRe: true});
