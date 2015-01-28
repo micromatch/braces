@@ -53,12 +53,12 @@ describe('braces', function () {
 
     it('should handle spaces', function () {
       expand('0{1..9} {10..20}').should.eql(['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20']);
-      expand('a{ ,c{d, },h}x').should.eql(['a x', 'acdx', 'ahx', 'ac x']);
-      expand('a{ ,c{d, },h} ').should.eql(['a  ', 'acd ', 'ah ', 'ac  ']);
+      expand('a{ ,c{d, },h}x').should.eql(['a{',',c{d,','},h}x']);
+      expand('a{ ,c{d, },h} ').should.eql(['a{', ',c{d,', '},h}']);
     });
 
     it('should handle empty braces', function () {
-      expand('{ }').should.eql([' ']); // Bash expects ['{', '}']
+      expand('{ }').should.eql(['{', '}']);
       expand('{}').should.eql(['{}']);
       expand('}').should.eql(['}']);
       expand('{').should.eql(['{']);
@@ -105,7 +105,7 @@ describe('braces', function () {
     });
 
     it('should work with nested non-sets', function () {
-      expand('foo {1,2} bar').should.eql(['foo 1 bar', 'foo 2 bar']); // Bash expects ['foo', '1', '2', 'bar']
+      expand('foo {1,2} bar').should.eql(['foo', '1', '2', 'bar']);
       expand('{a-{b,c,d}}').should.eql(['a-b', 'a-c', 'a-d']);
       expand('{a,{a-{b,c,d}}}').should.eql(['a', 'a-b', 'a-c', 'a-d']);
     });
