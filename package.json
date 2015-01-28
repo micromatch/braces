@@ -31,7 +31,9 @@
   "dependencies": {
     "arr-filter": "^1.0.2",
     "expand-range": "^1.5.0",
-    "preserve": "^0.2.0"
+    "kind-of": "^1.0.0",
+    "preserve": "^0.2.0",
+    "repeat-element": "^1.1.0"
   },
   "devDependencies": {
     "benchmarked": "^0.1.3",

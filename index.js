@@ -11,24 +11,20 @@
  * Module dependencies
  */
 
+var typeOf = require('kind-of');
 var filter = require('arr-filter');
-var expandRange = require('expand-range');
+var expand = require('expand-range');
 var tokens = require('preserve');
 
 /**
  * Expose `braces`
  */
 
-module.exports = function (str, options) {
+module.exports = function (str, options, fn) {
   if (typeof str !== 'string') {
     throw new Error('braces expects a string');
   }
-
-  if (options && options.makeRe) {
-    str = makeRegexString(str);
-  }
-
-  return braces(str, options);
+  return braces(str, options, fn);
 };
 
 /**
@@ -41,29 +37,24 @@ module.exports = function (str, options) {
  * @return {Array}
  */
 
-function braces(str, arr, options) {
-  if (str === '') {
-    return [];
+function braces(str, opts, fn, arr) {
+  if (str === '') { return []; }
+
+  if (typeOf(opts) !== 'object') {
+    arr = fn; fn = opts; opts = {};
   }
 
-  if (!Array.isArray(arr)) {
-    options = arr;
-    arr = [];
+  if (typeOf(fn) !== 'function') {
+    arr = fn; fn = null;
   }
 
-  var opts = options || {};
+  opts = opts || {};
   arr = arr || [];
+  fn = fn || opts.fn;
+  var es6;
 
   if (typeof opts.nodupes === 'undefined') {
     opts.nodupes = true;
-  }
-
-  var fn = opts.fn;
-  var es6;
-
-  if (typeof opts === 'function') {
-    fn = opts;
-    opts = {};
   }
 
   if (!(patternRe instanceof RegExp)) {
@@ -75,18 +66,18 @@ function braces(str, arr, options) {
 
   switch(m) {
     case '\\,':
-      return escapeCommas(str, arr, opts);
+      return escapeCommas(str, opts, arr);
     case '\\.':
-      return escapeDots(str, arr, opts);
+      return escapeDots(str, opts, arr);
     case '} {':
-      return splitWhitespace(str);
+      return splitWhitespace(str, opts, arr);
     case '{,}':
-      return rangeify(str, opts);
+      return rangeify(str, opts, arr);
     case '{}':
-      return emptyBraces(str, arr, opts);
+      return emptyBraces(str, opts, arr);
     case '\\{':
     case '\\}':
-      return escapeBraces(str, arr, opts);
+      return escapeBraces(str, opts, arr);
     case '${':
       if (!/\{[^{]+\{/.test(str)) {
         return arr.concat(str);
@@ -107,21 +98,22 @@ function braces(str, arr, options) {
 
   var outter = match[1];
   var inner = match[2];
+  if (inner === '') {
+    return [str];
+  }
+
   var paths;
 
   if (/[^\\\/]\.{2}/.test(inner)) {
-    try {
-      paths = expandRange(inner, fn || opts.makeRe);
-    } catch(err) {
-      if (/,/.test(str)) { return str.replace(/\{|\}/g, '').split(','); }
-      return [str];
-    }
-  } else if (inner === '') {
-    return [str];
+    paths = expand(inner, opts, fn) || inner.split(',');
   } else if (inner[0] === '"' || inner[0] === '\'') {
     return arr.concat(str.replace(/['"]/g, ''));
   } else {
     paths = inner.split(',');
+    if (opts.makeRe) {
+      var res = wrap(paths, '|');
+      return braces(str.replace(outter, res), opts);
+    }
   }
 
   var len = paths.length;
@@ -130,11 +122,17 @@ function braces(str, arr, options) {
   while (len--) {
     var path = paths[i++];
 
-    if (/\.[^.\\\/]/.test(path)) { return [str]; }
+    if (/\.[^.\\\/]/.test(path)) {
+      if (paths.length > 1) {
+        return paths;
+      }
+      return [str];
+    }
+
     val = splice(str, outter, path);
 
     if (/\{.+\}/.test(val)) {
-      arr = braces(val, arr, opts);
+      arr = braces(val, opts, arr);
     } else if (val !== '') {
 
       if (opts.nodupes && arr.indexOf(val) !== -1) { continue; }
@@ -150,11 +148,38 @@ function braces(str, arr, options) {
   return arr;
 }
 
+function wrap(arr, sep) {
+  if (sep === '|') {
+    return '(' + arr.join(sep) + ')';
+  }
+  if (sep === ',') {
+    return '{' + arr.join(sep) + '}';
+  }
+  if (sep === '-') {
+    return '[' + arr.join(sep) + ']';
+  }
+}
+
+/**
+ * Expand ranges
+ */
+
+function tryExpand(paths, inner, opts, fn) {
+  try {
+    paths = expand(inner, opts, fn);
+    if (paths.length === 1 && paths[0] === inner) {
+      return null;
+    }
+    return paths;
+  } catch(err) {}
+  return null;
+}
+
 /**
  * Handle empty braces: `{}`
  */
 
-function emptyBraces(str, arr, opts) {
+function emptyBraces(str, opts, arr) {
   return braces(str.replace(/\{}/g, '\\{\\}'), arr, opts);
 }
 
@@ -162,7 +187,7 @@ function emptyBraces(str, arr, opts) {
  * Handle patterns with whitespace
  */
 
-function splitWhitespace(str) {
+function splitWhitespace(str, opts, arr) {
   var paths = str.split(' ');
   var len = paths.length;
   var res = [];
@@ -179,13 +204,13 @@ function splitWhitespace(str) {
  * Handle escaped braces: `\\{foo,bar}`
  */
 
-function escapeBraces(str, arr, opts) {
+function escapeBraces(str, opts, arr) {
   if (!/\{[^{]+\{/.test(str)) {
     return arr.concat(str.replace(/\\/g, ''));
   } else {
     str = str.replace(/\\{/g, '__LT_BRACE__');
     str = str.replace(/\\}/g, '__RT_BRACE__');
-    return map(braces(str, arr, opts), function (ele) {
+    return map(braces(str, opts, arr), function (ele) {
       ele = ele.replace(/__LT_BRACE__/g, '{');
       return ele.replace(/__RT_BRACE__/g, '}');
     });
@@ -196,12 +221,12 @@ function escapeBraces(str, arr, opts) {
  * Handle escaped dots: `{1\\.2}`
  */
 
-function escapeDots(str, arr, opts) {
+function escapeDots(str, opts, arr) {
   if (!/[^\\]\..+\\\./.test(str)) {
     return arr.concat(str.replace(/\\/g, ''));
   } else {
     str = str.replace(/\\\./g, '__ESC_DOT__');
-    return map(braces(str, arr, opts), function (ele) {
+    return map(braces(str, opts, arr), function (ele) {
       return ele.replace(/__ESC_DOT__/g, '.');
     });
   }
@@ -211,12 +236,12 @@ function escapeDots(str, arr, opts) {
  * Handle escaped commas: `{a\\,b}`
  */
 
-function escapeCommas(str, arr, opts) {
+function escapeCommas(str, opts, arr) {
   if (!/\w,/.test(str)) {
     return arr.concat(str.replace(/\\/g, ''));
   } else {
     str = str.replace(/\\,/g, '__ESC_COMMA__');
-    return map(braces(str, arr, opts), function (ele) {
+    return map(braces(str, opts, arr), function (ele) {
       return ele.replace(/__ESC_COMMA__/g, ',');
     });
   }
@@ -252,48 +277,6 @@ function rangeify(str, options) {
     }
   }
   return arr;
-}
-
-/**
- * Make a regex-ready string. Example:
- *
- * ```js
- * makeRegexString('foo/{a..z}/bar');
- * //=> 'foo/[a-z]/bar'
- * ```
- */
-
-function makeRegexString(str) {
-  var matches = str.match(/\\?\{([^{}]+)*\}/g);
-  if (matches) {
-    var len = matches.length;
-
-    while (len--) {
-      var match = matches[len];
-      var res;
-
-      if (!match || match === '{,}' || /["']|\\[,.]/.test(match)) {
-        continue;
-      }
-
-      if (match[0] === '\\') {
-        res = '{"' + match.slice(2, match.length - 1) + '"}';
-        return str.replace(match, res);
-      }
-
-      var dots = match.match(/\.\./g);
-      if (!dots) {
-        res = match.slice(1, match.length - 1);
-        res = '(' + res.replace(/,/g, '|') + ')';
-        str = str.replace(match, res);
-      } else if (dots && dots.length < 2) {
-        res = match.slice(1, match.length - 1);
-        res = '[' + res.replace(/\.\./g, '-') + ']';
-        str = str.replace(match, res);
-      }
-    }
-  }
-  return str;
 }
 
 /**
