@@ -15,6 +15,7 @@ if ('minimatch' in argv) {
   expand = require('minimatch').braceExpand;
 }
 
+
 describe('braces', function () {
   describe('brace expansion', function () {
     it('should return an empty array when no braces are found', function () {
@@ -26,6 +27,7 @@ describe('braces', function () {
       expand('a{,}{,}', {nodupes: false}).should.eql(['a', 'a', 'a', 'a']);
       expand('a{,}{,}{,}', {nodupes: false}).should.eql(['a', 'a', 'a', 'a', 'a', 'a', 'a', 'a']);
       expand('{a,b{,}{,}{,}}', {nodupes: false}).should.eql(['a', 'b', 'b', 'b', 'b', 'b', 'b', 'b', 'b']);
+      expand('a{,}/{c,d}/e', {nodupes: false}).should.eql(['a/c/e','a/c/e','a/d/e','a/d/e']);
       expand('{a,b{,}{,}{,},c}d', {nodupes: false}).should.eql(['ad', 'bd', 'bd', 'bd', 'bd', 'bd', 'bd', 'bd', 'bd', 'cd']);
     });
 
@@ -146,8 +148,13 @@ describe('braces', function () {
     });
 
     it('should expand with globs.', function () {
-      expand('a/**/c{d,e}f*.js').should.eql(['a/**/cdf*.js', 'a/**/cef*.js']);
-      expand('a/**/c{d,e}f*.{md,txt}').should.eql(['a/**/cdf*.md', 'a/**/cef*.md', 'a/**/cdf*.txt', 'a/**/cef*.txt']);
+      expand('a/b/{d,e}/*.js').should.eql(['a/b/d/*.js', 'a/b/e/*.js']);
+      expand('a/**/c/{d,e}/f*.js').should.eql(['a/**/c/d/f*.js', 'a/**/c/e/f*.js']);
+      expand('a/**/c/{d,e}/f*.{md,txt}').should.eql(['a/**/c/d/f*.md', 'a/**/c/e/f*.md', 'a/**/c/d/f*.txt', 'a/**/c/e/f*.txt']);
+    });
+
+    it('should expand with extglobs.', function () {
+      expand('a/b/{d,e,[1-5]}/*.js').should.eql(['a/b/d/*.js', 'a/b/e/*.js', 'a/b/[1-5]/*.js']);
     });
   });
 
@@ -258,6 +265,12 @@ describe('range expansion', function () {
   it('should use steps with alphabetical ranges', function () {
     expand('{a..e..2}').should.eql(['a','c', 'e']);
     expand('{E..A..2}').should.eql(['E', 'C', 'A']);
+  });
+
+  it('should not try to expand ranges with decimals', function () {
+    expand('{1.1..2.1}').should.eql(['{1.1..2.1}']);
+    expand('{1.1..2.1}', {makeRe: true}).should.eql(['{1.1..2.1}']);
+    expand('{1.1..~2.1}', {makeRe: true}).should.eql(['{1.1..~2.1}']);
   });
 
   it('should expand negative ranges', function () {

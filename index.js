@@ -12,8 +12,9 @@
  */
 
 var filter = require('arr-filter');
-var expandRange = require('expand-range');
+var expand = require('expand-range');
 var tokens = require('preserve');
+var exp = require('./lib/exp');
 
 /**
  * Expose `braces`
@@ -23,11 +24,6 @@ module.exports = function (str, options) {
   if (typeof str !== 'string') {
     throw new Error('braces expects a string');
   }
-
-  if (options && options.makeRe) {
-    str = makeRegexString(str);
-  }
-
   return braces(str, options);
 };
 
@@ -81,7 +77,7 @@ function braces(str, arr, options) {
     case '} {':
       return splitWhitespace(str);
     case '{,}':
-      return rangeify(str, opts);
+      return exp(str, opts, braces);
     case '{}':
       return emptyBraces(str, arr, opts);
     case '\\{':
@@ -107,21 +103,21 @@ function braces(str, arr, options) {
 
   var outter = match[1];
   var inner = match[2];
+  if (inner === '') { return [str]; }
+
   var paths;
 
   if (/[^\\\/]\.{2}/.test(inner)) {
-    try {
-      paths = expandRange(inner, fn || opts.makeRe);
-    } catch(err) {
-      if (/,/.test(str)) { return str.replace(/\{|\}/g, '').split(','); }
-      return [str];
-    }
-  } else if (inner === '') {
-    return [str];
+    paths = expand(inner, opts, fn) || inner.split(',');
+
   } else if (inner[0] === '"' || inner[0] === '\'') {
     return arr.concat(str.replace(/['"]/g, ''));
+
   } else {
     paths = inner.split(',');
+    if (opts.makeRe) {
+      return braces(str.replace(outter, wrap(paths, '|')), opts);
+    }
   }
 
   var len = paths.length;
@@ -130,7 +126,13 @@ function braces(str, arr, options) {
   while (len--) {
     var path = paths[i++];
 
-    if (/\.[^.\\\/]/.test(path)) { return [str]; }
+    if (/\.[^.\\\/]/.test(path)) {
+      if (paths.length > 1) {
+        return paths;
+      }
+      return [str];
+    }
+
     val = splice(str, outter, path);
 
     if (/\{.+\}/.test(val)) {
@@ -148,6 +150,18 @@ function braces(str, arr, options) {
     });
   }
   return arr;
+}
+
+function wrap(arr, sep) {
+  if (sep === '|') {
+    return '(' + arr.join(sep) + ')';
+  }
+  if (sep === ',') {
+    return '{' + arr.join(sep) + '}';
+  }
+  if (sep === '-') {
+    return '[' + arr.join(sep) + ']';
+  }
 }
 
 /**
@@ -220,38 +234,6 @@ function escapeCommas(str, arr, opts) {
       return ele.replace(/__ESC_COMMA__/g, ',');
     });
   }
-}
-
-/**
- * Create and expand range patterns: `a{,}{,}`
- */
-
-function rangeify(str, options) {
-  var opts = options || {};
-  var rep = str.replace(/\{,}/g, '__ESC_EXP__');
-  var res = braces(rep, opts);
-  var len = res.length;
-  var i = 0;
-  var arr = [];
-
-  while (len--) {
-    var ele = res[i++];
-    var match = ele.match(powRegex());
-    if (match) {
-      ele = ele.replace(powRegex(), '');
-      if (opts.nodupes && ele != '') {
-        arr.push(ele);
-      } else {
-        var num = Math.pow(2, match.length);
-        while (num--) {
-          if (ele != '') { arr.push(ele); }
-        }
-      }
-    } else {
-      arr.push(ele);
-    }
-  }
-  return arr;
 }
 
 /**
