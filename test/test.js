@@ -15,6 +15,7 @@ if ('minimatch' in argv) {
   expand = require('minimatch').braceExpand;
 }
 
+
 describe('braces', function () {
   describe('brace expansion', function () {
     it('should return an empty array when no braces are found', function () {
@@ -26,6 +27,7 @@ describe('braces', function () {
       expand('a{,}{,}', {nodupes: false}).should.eql(['a', 'a', 'a', 'a']);
       expand('a{,}{,}{,}', {nodupes: false}).should.eql(['a', 'a', 'a', 'a', 'a', 'a', 'a', 'a']);
       expand('{a,b{,}{,}{,}}', {nodupes: false}).should.eql(['a', 'b', 'b', 'b', 'b', 'b', 'b', 'b', 'b']);
+      expand('a{,}/{c,d}/e', {nodupes: false}).should.eql(['a/c/e','a/c/e','a/d/e','a/d/e']);
       expand('{a,b{,}{,}{,},c}d', {nodupes: false}).should.eql(['ad', 'bd', 'bd', 'bd', 'bd', 'bd', 'bd', 'bd', 'bd', 'cd']);
     });
 
