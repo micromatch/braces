@@ -74,7 +74,7 @@ function braces(str, arr, options) {
       return escapeCommas(str, arr, opts);
     case '\\.':
       return escapeDots(str, arr, opts);
-    case '} {':
+    case ' ':
       return splitWhitespace(str);
     case '{,}':
       return exp(str, opts, braces);
@@ -111,7 +111,7 @@ function braces(str, arr, options) {
     paths = expand(inner, opts, fn) || inner.split(',');
 
   } else if (inner[0] === '"' || inner[0] === '\'') {
-    return arr.concat(str.replace(/['"]/g, ''));
+    return arr.concat(str.split(/['"]/).join(''));
 
   } else {
     paths = inner.split(',');
@@ -169,7 +169,7 @@ function wrap(arr, sep) {
  */
 
 function emptyBraces(str, arr, opts) {
-  return braces(str.replace(/\{}/g, '\\{\\}'), arr, opts);
+  return braces(str.split('{}').join('\\{\\}'), arr, opts);
 }
 
 /**
@@ -195,13 +195,13 @@ function splitWhitespace(str) {
 
 function escapeBraces(str, arr, opts) {
   if (!/\{[^{]+\{/.test(str)) {
-    return arr.concat(str.replace(/\\/g, ''));
+    return arr.concat(str.split('\\').join(''));
   } else {
-    str = str.replace(/\\{/g, '__LT_BRACE__');
-    str = str.replace(/\\}/g, '__RT_BRACE__');
+    str = str.split('\\{').join('__LT_BRACE__');
+    str = str.split('\\}').join('__RT_BRACE__');
     return map(braces(str, arr, opts), function (ele) {
-      ele = ele.replace(/__LT_BRACE__/g, '{');
-      return ele.replace(/__RT_BRACE__/g, '}');
+      ele = ele.split('__LT_BRACE__').join('{');
+      return ele.split('__RT_BRACE__').join('}');
     });
   }
 }
@@ -212,11 +212,11 @@ function escapeBraces(str, arr, opts) {
 
 function escapeDots(str, arr, opts) {
   if (!/[^\\]\..+\\\./.test(str)) {
-    return arr.concat(str.replace(/\\/g, ''));
+    return arr.concat(str.split('\\').join(''));
   } else {
-    str = str.replace(/\\\./g, '__ESC_DOT__');
+    str = str.split('\\.').join('__ESC_DOT__');
     return map(braces(str, arr, opts), function (ele) {
-      return ele.replace(/__ESC_DOT__/g, '.');
+      return ele.split('__ESC_DOT__').join('.');
     });
   }
 }
@@ -227,63 +227,22 @@ function escapeDots(str, arr, opts) {
 
 function escapeCommas(str, arr, opts) {
   if (!/\w,/.test(str)) {
-    return arr.concat(str.replace(/\\/g, ''));
+    return arr.concat(str.split('\\').join(''));
   } else {
-    str = str.replace(/\\,/g, '__ESC_COMMA__');
+    str = str.split('\\,').join('__ESC_COMMA__');
     return map(braces(str, arr, opts), function (ele) {
-      return ele.replace(/__ESC_COMMA__/g, ',');
+      return ele.split('__ESC_COMMA__').join(',');
     });
   }
 }
 
-/**
- * Make a regex-ready string. Example:
- *
- * ```js
- * makeRegexString('foo/{a..z}/bar');
- * //=> 'foo/[a-z]/bar'
- * ```
- */
-
-function makeRegexString(str) {
-  var matches = str.match(/\\?\{([^{}]+)*\}/g);
-  if (matches) {
-    var len = matches.length;
-
-    while (len--) {
-      var match = matches[len];
-      var res;
-
-      if (!match || match === '{,}' || /["']|\\[,.]/.test(match)) {
-        continue;
-      }
-
-      if (match[0] === '\\') {
-        res = '{"' + match.slice(2, match.length - 1) + '"}';
-        return str.replace(match, res);
-      }
-
-      var dots = match.match(/\.\./g);
-      if (!dots) {
-        res = match.slice(1, match.length - 1);
-        res = '(' + res.replace(/,/g, '|') + ')';
-        str = str.replace(match, res);
-      } else if (dots && dots.length < 2) {
-        res = match.slice(1, match.length - 1);
-        res = '[' + res.replace(/\.\./g, '-') + ']';
-        str = str.replace(match, res);
-      }
-    }
-  }
-  return str;
-}
 
 /**
  * Regex for common patterns
  */
 
 function patternRegex() {
-  return /\$\{|} {|{}|{,}|\\,|\\\.|\\{|\\}/;
+  return /\$\{|[ \t]|{}|{,}|\\,|\\\.|\\{|\\}/;
 }
 
 /**
@@ -302,19 +261,6 @@ function es6Regex() {
   return /\$\{([^}]+)\}/;
 }
 
-/**
- * Regex for exponent Power syntax
- */
-
-function powRegex() {
-  return /__ESC_EXP__/g;
-}
-
-/**
- * Regex caches
- */
-
-var powRe;
 var braceRe;
 var patternRe;
 
