@@ -62,17 +62,6 @@ function braces(str, opts, fn, arr) {
     patternRe = patternRegex();
   }
 
-
-  if (!(braceRe instanceof RegExp)) {
-    braceRe = braceRegex();
-  }
-
-  var match = braceRe.exec(str);
-  console.log(match)
-  if (match == null) {
-    return [str];
-  }
-
   var matches = str.match(patternRe) || [];
   var m = matches[0];
 
@@ -99,8 +88,17 @@ function braces(str, opts, fn, arr) {
       }
   }
 
+  if (!(braceRe instanceof RegExp)) {
+    braceRe = braceRegex();
+  }
+
+  var match = braceRe.exec(str);
+  if (match == null) {
+    return [str];
+  }
+
   var outter = match[1];
-  var inner = match[2];
+  var inner = match[3];
   if (inner === '') {
     return [str];
   }
@@ -110,7 +108,7 @@ function braces(str, opts, fn, arr) {
   if (/[^\\\/]\.{2}/.test(inner)) {
     paths = expand(inner, opts, fn) || inner.split(',');
   } else if (inner[0] === '"' || inner[0] === '\'') {
-    return arr.concat(str.replace(/['"]/g, ''));
+    return arr.concat(str.split(/['"]/).join(''));
   } else {
     paths = inner.split(',');
     if (opts.makeRe) {
@@ -168,7 +166,7 @@ function wrap(arr, sep) {
  */
 
 function emptyBraces(str, opts, arr) {
-  return braces(str.replace(/\{}/g, '\\{\\}'), arr, opts);
+  return braces(str.split('{}').join('\\{\\}'), arr, opts);
 }
 
 /**
@@ -188,12 +186,6 @@ function splitWhitespace(str, opts, arr) {
   return res;
 }
 
-var render = {
-  '\\{': function leftBrace(str, opts, arr) {
-    // body...
-  }
-};
-
 /**
  * Handle escaped braces: `\\{foo,bar}`
  */
@@ -202,11 +194,11 @@ function escapeBraces(str, opts, arr) {
   if (!/\{[^{]+\{/.test(str)) {
     return arr.concat(str.replace(/\\/g, ''));
   } else {
-    str = str.replace(/\\{/g, '__LT_BRACE__');
-    str = str.replace(/\\}/g, '__RT_BRACE__');
+    str = str.split('\\{').join('__LT_BRACE__');
+    str = str.split('\\}').join('__RT_BRACE__');
     return map(braces(str, opts, arr), function (ele) {
-      ele = ele.replace(/__LT_BRACE__/g, '{');
-      return ele.replace(/__RT_BRACE__/g, '}');
+      ele = ele.split('__LT_BRACE__').join('{');
+      return ele.split('__RT_BRACE__').join('}');
     });
   }
 }
@@ -217,11 +209,11 @@ function escapeBraces(str, opts, arr) {
 
 function escapeDots(str, opts, arr) {
   if (!/[^\\]\..+\\\./.test(str)) {
-    return arr.concat(str.replace(/\\/g, ''));
+    return arr.concat(str.split('\\').join(''));
   } else {
-    str = str.replace(/\\\./g, '__ESC_DOT__');
+    str = str.split('\\.').join('__ESC_DOT__');
     return map(braces(str, opts, arr), function (ele) {
-      return ele.replace(/__ESC_DOT__/g, '.');
+      return ele.split('__ESC_DOT__').join('.');
     });
   }
 }
@@ -232,45 +224,13 @@ function escapeDots(str, opts, arr) {
 
 function escapeCommas(str, opts, arr) {
   if (!/\w,/.test(str)) {
-    return arr.concat(str.replace(/\\/g, ''));
+    return arr.concat(str.split('\\').join(''));
   } else {
-    str = str.replace(/\\,/g, '__ESC_COMMA__');
+    str = str.split('\\,').join('__ESC_COMMA__');
     return map(braces(str, opts, arr), function (ele) {
-      return ele.replace(/__ESC_COMMA__/g, ',');
+      return ele.split('__ESC_COMMA__').join(',');
     });
   }
-}
-
-/**
- * Create and expand range patterns: `a{,}{,}`
- */
-
-function rangeify(str, options) {
-  var opts = options || {};
-  var rep = str.replace(/\{,}/g, '__ESC_EXP__');
-  var res = braces(rep, opts);
-  var len = res.length;
-  var i = 0;
-  var arr = [];
-
-  while (len--) {
-    var ele = res[i++];
-    var match = ele.match(powRegex());
-    if (match) {
-      ele = ele.replace(powRegex(), '');
-      if (opts.nodupes && ele != '') {
-        arr.push(ele);
-      } else {
-        var num = Math.pow(2, match.length);
-        while (num--) {
-          if (ele != '') { arr.push(ele); }
-        }
-      }
-    } else {
-      arr.push(ele);
-    }
-  }
-  return arr;
 }
 
 /**
@@ -286,7 +246,7 @@ function patternRegex() {
  */
 
 function braceRegex() {
-  return /.*([\\$]?\{([^{}]*?)\})/;
+  return /.*(([\\$])?\{([^{}]*?)\})/;
 }
 
 /**
@@ -298,18 +258,9 @@ function es6Regex() {
 }
 
 /**
- * Regex for exponent Power syntax
- */
-
-function powRegex() {
-  return /__ESC_EXP__/g;
-}
-
-/**
  * Regex caches
  */
 
-var powRe;
 var braceRe;
 var patternRe;
 
