@@ -15,6 +15,7 @@ var typeOf = require('kind-of');
 var filter = require('arr-filter');
 var expand = require('expand-range');
 var tokens = require('preserve');
+var exponential = require('./lib/exp');
 
 /**
  * Expose `braces`
@@ -61,6 +62,17 @@ function braces(str, opts, fn, arr) {
     patternRe = patternRegex();
   }
 
+
+  if (!(braceRe instanceof RegExp)) {
+    braceRe = braceRegex();
+  }
+
+  var match = braceRe.exec(str);
+  console.log(match)
+  if (match == null) {
+    return [str];
+  }
+
   var matches = str.match(patternRe) || [];
   var m = matches[0];
 
@@ -69,10 +81,10 @@ function braces(str, opts, fn, arr) {
       return escapeCommas(str, opts, arr);
     case '\\.':
       return escapeDots(str, opts, arr);
-    case '} {':
+    case ' ':
       return splitWhitespace(str, opts, arr);
     case '{,}':
-      return rangeify(str, opts, arr);
+      return exponential(str, opts, braces);
     case '{}':
       return emptyBraces(str, opts, arr);
     case '\\{':
@@ -87,22 +99,13 @@ function braces(str, opts, fn, arr) {
       }
   }
 
-  if (!(braceRe instanceof RegExp)) {
-    braceRe = braceRegex();
-  }
-
-  var match = braceRe.exec(str);
-  if (match == null) {
-    return [str];
-  }
-
   var outter = match[1];
   var inner = match[2];
   if (inner === '') {
     return [str];
   }
 
-  var paths;
+  var paths = null;
 
   if (/[^\\\/]\.{2}/.test(inner)) {
     paths = expand(inner, opts, fn) || inner.split(',');
@@ -161,21 +164,6 @@ function wrap(arr, sep) {
 }
 
 /**
- * Expand ranges
- */
-
-function tryExpand(paths, inner, opts, fn) {
-  try {
-    paths = expand(inner, opts, fn);
-    if (paths.length === 1 && paths[0] === inner) {
-      return null;
-    }
-    return paths;
-  } catch(err) {}
-  return null;
-}
-
-/**
  * Handle empty braces: `{}`
  */
 
@@ -199,6 +187,12 @@ function splitWhitespace(str, opts, arr) {
 
   return res;
 }
+
+var render = {
+  '\\{': function leftBrace(str, opts, arr) {
+    // body...
+  }
+};
 
 /**
  * Handle escaped braces: `\\{foo,bar}`
@@ -284,7 +278,7 @@ function rangeify(str, options) {
  */
 
 function patternRegex() {
-  return /\$\{|} {|{}|{,}|\\,|\\\.|\\{|\\}/;
+  return /\$\{|[ \t]|{}|{,}|\\,|\\\.|\\{|\\}/;
 }
 
 /**
@@ -292,7 +286,7 @@ function patternRegex() {
  */
 
 function braceRegex() {
-  return /.*(\\?\{([^}]+)\})/;
+  return /.*([\\$]?\{([^{}]*?)\})/;
 }
 
 /**
