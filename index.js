@@ -11,21 +11,20 @@
  * Module dependencies
  */
 
-var typeOf = require('kind-of');
 var filter = require('arr-filter');
 var expand = require('expand-range');
 var tokens = require('preserve');
-var exponential = require('./lib/exp');
+var exp = require('./lib/exp');
 
 /**
  * Expose `braces`
  */
 
-module.exports = function (str, options, fn) {
+module.exports = function (str, options) {
   if (typeof str !== 'string') {
     throw new Error('braces expects a string');
   }
-  return braces(str, options, fn);
+  return braces(str, options);
 };
 
 /**
@@ -38,24 +37,29 @@ module.exports = function (str, options, fn) {
  * @return {Array}
  */
 
-function braces(str, opts, fn, arr) {
-  if (str === '') { return []; }
-
-  if (typeOf(opts) !== 'object') {
-    arr = fn; fn = opts; opts = {};
+function braces(str, arr, options) {
+  if (str === '') {
+    return [];
   }
 
-  if (typeOf(fn) !== 'function') {
-    arr = fn; fn = null;
+  if (!Array.isArray(arr)) {
+    options = arr;
+    arr = [];
   }
 
-  opts = opts || {};
+  var opts = options || {};
   arr = arr || [];
-  fn = fn || opts.fn;
-  var es6;
 
   if (typeof opts.nodupes === 'undefined') {
     opts.nodupes = true;
+  }
+
+  var fn = opts.fn;
+  var es6;
+
+  if (typeof opts === 'function') {
+    fn = opts;
+    opts = {};
   }
 
   if (!(patternRe instanceof RegExp)) {
@@ -67,18 +71,18 @@ function braces(str, opts, fn, arr) {
 
   switch(m) {
     case '\\,':
-      return escapeCommas(str, opts, arr);
+      return escapeCommas(str, arr, opts);
     case '\\.':
-      return escapeDots(str, opts, arr);
+      return escapeDots(str, arr, opts);
     case ' ':
-      return splitWhitespace(str, opts, arr);
+      return splitWhitespace(str);
     case '{,}':
-      return exponential(str, opts, braces);
+      return exp(str, opts, braces);
     case '{}':
-      return emptyBraces(str, opts, arr);
+      return emptyBraces(str, arr, opts);
     case '\\{':
     case '\\}':
-      return escapeBraces(str, opts, arr);
+      return escapeBraces(str, arr, opts);
     case '${':
       if (!/\{[^{]+\{/.test(str)) {
         return arr.concat(str);
@@ -98,22 +102,21 @@ function braces(str, opts, fn, arr) {
   }
 
   var outter = match[1];
-  var inner = match[3];
-  if (inner === '') {
-    return [str];
-  }
+  var inner = match[2];
+  if (inner === '') { return [str]; }
 
-  var paths = null;
+  var paths;
 
   if (/[^\\\/]\.{2}/.test(inner)) {
     paths = expand(inner, opts, fn) || inner.split(',');
+
   } else if (inner[0] === '"' || inner[0] === '\'') {
     return arr.concat(str.split(/['"]/).join(''));
+
   } else {
     paths = inner.split(',');
     if (opts.makeRe) {
-      var res = wrap(paths, '|');
-      return braces(str.replace(outter, res), opts);
+      return braces(str.replace(outter, wrap(paths, '|')), opts);
     }
   }
 
@@ -133,7 +136,7 @@ function braces(str, opts, fn, arr) {
     val = splice(str, outter, path);
 
     if (/\{.+\}/.test(val)) {
-      arr = braces(val, opts, arr);
+      arr = braces(val, arr, opts);
     } else if (val !== '') {
 
       if (opts.nodupes && arr.indexOf(val) !== -1) { continue; }
@@ -165,7 +168,7 @@ function wrap(arr, sep) {
  * Handle empty braces: `{}`
  */
 
-function emptyBraces(str, opts, arr) {
+function emptyBraces(str, arr, opts) {
   return braces(str.split('{}').join('\\{\\}'), arr, opts);
 }
 
@@ -173,7 +176,7 @@ function emptyBraces(str, opts, arr) {
  * Handle patterns with whitespace
  */
 
-function splitWhitespace(str, opts, arr) {
+function splitWhitespace(str) {
   var paths = str.split(' ');
   var len = paths.length;
   var res = [];
@@ -190,13 +193,13 @@ function splitWhitespace(str, opts, arr) {
  * Handle escaped braces: `\\{foo,bar}`
  */
 
-function escapeBraces(str, opts, arr) {
+function escapeBraces(str, arr, opts) {
   if (!/\{[^{]+\{/.test(str)) {
-    return arr.concat(str.replace(/\\/g, ''));
+    return arr.concat(str.split('\\').join(''));
   } else {
     str = str.split('\\{').join('__LT_BRACE__');
     str = str.split('\\}').join('__RT_BRACE__');
-    return map(braces(str, opts, arr), function (ele) {
+    return map(braces(str, arr, opts), function (ele) {
       ele = ele.split('__LT_BRACE__').join('{');
       return ele.split('__RT_BRACE__').join('}');
     });
@@ -207,12 +210,12 @@ function escapeBraces(str, opts, arr) {
  * Handle escaped dots: `{1\\.2}`
  */
 
-function escapeDots(str, opts, arr) {
+function escapeDots(str, arr, opts) {
   if (!/[^\\]\..+\\\./.test(str)) {
     return arr.concat(str.split('\\').join(''));
   } else {
     str = str.split('\\.').join('__ESC_DOT__');
-    return map(braces(str, opts, arr), function (ele) {
+    return map(braces(str, arr, opts), function (ele) {
       return ele.split('__ESC_DOT__').join('.');
     });
   }
@@ -222,16 +225,17 @@ function escapeDots(str, opts, arr) {
  * Handle escaped commas: `{a\\,b}`
  */
 
-function escapeCommas(str, opts, arr) {
+function escapeCommas(str, arr, opts) {
   if (!/\w,/.test(str)) {
     return arr.concat(str.split('\\').join(''));
   } else {
     str = str.split('\\,').join('__ESC_COMMA__');
-    return map(braces(str, opts, arr), function (ele) {
+    return map(braces(str, arr, opts), function (ele) {
       return ele.split('__ESC_COMMA__').join(',');
     });
   }
 }
+
 
 /**
  * Regex for common patterns
@@ -246,7 +250,7 @@ function patternRegex() {
  */
 
 function braceRegex() {
-  return /.*(([\\$])?\{([^{}]*?)\})/;
+  return /.*(\\?\{([^}]+)\})/;
 }
 
 /**
@@ -256,10 +260,6 @@ function braceRegex() {
 function es6Regex() {
   return /\$\{([^}]+)\}/;
 }
-
-/**
- * Regex caches
- */
 
 var braceRe;
 var patternRe;
