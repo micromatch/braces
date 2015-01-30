@@ -14,6 +14,7 @@
 var filter = require('arr-filter');
 var expand = require('expand-range');
 var tokens = require('preserve');
+var map = require('arr-map');
 var exp = require('./lib/exp');
 
 /**
@@ -105,62 +106,77 @@ function braces(str, arr, options) {
   var inner = match[2];
   if (inner === '') { return [str]; }
 
-  var paths;
+  var segs, segsLength;
 
   if (/[^\\\/]\.{2}/.test(inner)) {
-    paths = expand(inner, opts, fn) || inner.split(',');
+    segs = expand(inner, opts, fn) || inner.split(',');
+    segsLength = segs.length;
 
   } else if (inner[0] === '"' || inner[0] === '\'') {
     return arr.concat(str.split(/['"]/).join(''));
 
   } else {
-    paths = inner.split(',');
+    segs = inner.split(',');
     if (opts.makeRe) {
-      return braces(str.replace(outter, wrap(paths, '|')), opts);
+      return braces(str.replace(outter, wrap(segs, '|')), opts);
+    }
+
+    segsLength = segs.length;
+    if (segsLength === 1 && opts.bash) {
+      segs[0] = wrap(segs[0], '\\');
     }
   }
 
-  var len = paths.length;
+  var len = segs.length;
   var i = 0, val;
 
   while (len--) {
-    var path = paths[i++];
+    var path = segs[i++];
+    var bash = false;
 
     if (/\.[^.\\\/]/.test(path)) {
-      if (paths.length > 1) {
-        return paths;
+      if (segsLength > 1) {
+        return segs;
+      } else {
+        return [str];
       }
-      return [str];
     }
 
     val = splice(str, outter, path);
 
-    if (/\{.+\}/.test(val)) {
+    if (/\{[^{}]+?\}/.test(val)) {
       arr = braces(val, arr, opts);
     } else if (val !== '') {
-
       if (opts.nodupes && arr.indexOf(val) !== -1) { continue; }
       arr.push(es6 ? tokens.after(val) : val);
     }
   }
 
-  if (opts.strict) {
-    return filter(arr, function (ele) {
-      return ele !== '\\' && ele !== '' && ele != null;
-    });
-  }
+  if (opts.strict) { return filter(arr, filterEmpty); }
   return arr;
 }
 
-function wrap(arr, sep) {
-  if (sep === '|') {
-    return '(' + arr.join(sep) + ')';
+/**
+ * Wrap a value with parens, brackets or braces,
+ * based on the given character/separator.
+ *
+ * @param  {String|Array} `val`
+ * @param  {String} `ch`
+ * @return {String}
+ */
+
+function wrap(val, ch) {
+  if (ch === '|') {
+    return '(' + val.join(ch) + ')';
   }
-  if (sep === ',') {
-    return '{' + arr.join(sep) + '}';
+  if (ch === ',') {
+    return '{' + val.join(ch) + '}';
   }
-  if (sep === '-') {
-    return '[' + arr.join(sep) + ']';
+  if (ch === '-') {
+    return '[' + val.join(ch) + ']';
+  }
+  if (ch === '\\') {
+    return '\\{' + val + '\\}';
   }
 }
 
@@ -173,19 +189,26 @@ function emptyBraces(str, arr, opts) {
 }
 
 /**
+ * Filter out empty-ish values
+ */
+
+function filterEmpty(ele) {
+  return !!ele && ele !== '\\';
+}
+
+/**
  * Handle patterns with whitespace
  */
 
 function splitWhitespace(str) {
-  var paths = str.split(' ');
-  var len = paths.length;
+  var segs = str.split(' ');
+  var len = segs.length;
   var res = [];
   var i = 0;
 
   while (len--) {
-    res.push.apply(res, braces(paths[i++]));
+    res.push.apply(res, braces(segs[i++]));
   }
-
   return res;
 }
 
@@ -236,7 +259,6 @@ function escapeCommas(str, arr, opts) {
   }
 }
 
-
 /**
  * Regex for common patterns
  */
@@ -273,24 +295,4 @@ function splice(str, token, replacement) {
   var i = str.indexOf(token);
   return str.substr(0, i) + replacement
     + str.substr(i + token.length);
-}
-
-/**
- * Faster array map
- */
-
-function map(arr, fn) {
-  if (arr == null) {
-    return [];
-  }
-
-  var len = arr.length;
-  var res = [];
-  var i = -1;
-
-  while (++i < len) {
-    res[i] = fn(arr[i], i);
-  }
-
-  return res;
 }
