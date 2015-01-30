@@ -26,7 +26,8 @@
     "test": "mocha -R spec"
   },
   "files": [
-    "index.js"
+    "index.js",
+    "lib/"
   ],
   "dependencies": {
     "arr-filter": "^1.0.2",
