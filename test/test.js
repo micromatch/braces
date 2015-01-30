@@ -51,6 +51,10 @@ describe('braces', function () {
       expand('a{b}c').should.eql(['abc']);
     });
 
+    it('should work with no braces in `bash` mode', function () {
+      expand('a{b}c', {bash: true}).should.eql(['a{b}c']);
+    });
+
     it('should handle spaces', function () {
       expand('0{1..9} {10..20}').should.eql(['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20']);
       expand('a{ ,c{d, },h}x').should.eql(['a{',',c{d,','},h}x']);
@@ -76,17 +80,24 @@ describe('braces', function () {
       expand('{{a,b}').should.eql(['{a','{b']);
       expand('{a,b}}').should.eql(['a}','b}']);
       expand('abcd{efgh').should.eql(['abcd{efgh']);
-      expand('a{b{c{d,e}f{x,y}}g}h').should.eql(['abcdfxgh', 'abcefxgh', 'abcdfygh', 'abcefygh']);
-      expand('a{b{c{d,e}f}g}h').should.eql(['abcdfgh', 'abcefgh']);
-      expand('f{x,y{{g,z}}h').should.eql(['f{x,ygh','f{x,yzh']);
-      expand('f{x,y{{g,z}}h}').should.eql(['fx','fygh','fyzh']); // Bash expects ['fx','fy{g}h','fy{z}h']
+      expand('a{b{c{d,e}f}g}h').should.eql(['abcdfgh','abcefgh']);
+      expand('f{x,y{{g,z}}h}').should.eql(['fx','fygh','fyzh']);
       expand('z{a,b},c}d').should.eql(['za,c}d','zb,c}d']);
       expand('a{b{c{d,e}f{x,y{{g}h').should.eql(['a{b{cdf{x,y{gh','a{b{cef{x,y{gh']);
-      expand('f{x,y{{g}h').should.eql(['f{x,y{gh']); // Bash expects ['f{x,y{{g}h']
-      expand('f{x,y{{g}}h').should.eql(['f{x,ygh']); // Bash expects ['f{x,y{{g}}h']
+      expand('f{x,y{{g}h').should.eql(['f{x,y{gh']);
+      expand('f{x,y{{g}}h').should.eql(['f{x,ygh']);
       expand('a{b{c{d,e}f{x,y{}g}h').should.eql(['a{b{cdfxh','a{b{cefxh','a{b{cdfy{}gh','a{b{cefy{}gh']);
       expand('f{x,y{}g}h').should.eql(['fxh','fy{}gh']);
       expand('z{a,b{,c}d').should.eql(['z{a,bd', 'z{a,bcd']);
+    });
+
+    it('should handle invalid braces in `bash mode`:', function () {
+      expand('a{b{c{d,e}f}g}h', {bash: true}).should.eql(['a{b{cdf}g}h','a{b{cef}g}h']);
+      expand('f{x,y{{g,z}}h}', {bash: true}).should.eql(['fx','fy{g}h','fy{z}h']);
+      expand('z{a,b},c}d', {bash: true}).should.eql(['za,c}d','zb,c}d']);
+      expand('a{b{c{d,e}f{x,y{{g}h', {bash: true}).should.eql(['a{b{cdf{x,y{{g}h','a{b{cef{x,y{{g}h']);
+      expand('f{x,y{{g}h', {bash: true}).should.eql(['f{x,y{{g}h']);
+      expand('f{x,y{{g}}h', {bash: true}).should.eql(['f{x,y{{g}}h']);
     });
 
     it('should return invalid braces:', function () {
@@ -97,17 +108,26 @@ describe('braces', function () {
       expand('{"x,x"}').should.eql(['{x,x}']);
       expand('{"klklkl"}{1,2,3}').should.eql(['{klklkl}1', '{klklkl}2', '{klklkl}3']);
     });
-    // note that Bash returns the value without removing braces. This makes no sense in node.
+
     it('should work with one value', function () {
       expand('a{b}c').should.eql(['abc']);
       expand('a/b/c{d}e').should.eql(['a/b/cde']);
-      expand('a/b/c{d}e').should.eql(['a/b/cde']);
+    });
+
+    it('should work with one value in `bash` mode', function () {
+      expand('a{b}c', {bash: true}).should.eql(['a{b}c']);
+      expand('a/b/c{d}e', {bash: true}).should.eql(['a/b/c{d}e']);
     });
 
     it('should work with nested non-sets', function () {
       expand('foo {1,2} bar').should.eql(['foo', '1', '2', 'bar']);
       expand('{a-{b,c,d}}').should.eql(['a-b', 'a-c', 'a-d']);
-      expand('{a,{a-{b,c,d}}}').should.eql(['a', 'a-b', 'a-c', 'a-d']);
+      expand('{a,{a-{b,c,d}}}').should.eql(['a','a-b','a-c','a-d']);
+    });
+
+    it('should work with nested non-sets in `bash` mode', function () {
+      expand('{a-{b,c,d}}', {bash: true}).should.eql(['{a-b}', '{a-c}', '{a-d}']);
+      expand('{a,{a-{b,c,d}}}', {bash: true}).should.eql(['a','{a-b}','{a-c}','{a-d}']);
     });
 
     it('should not expand dots with leading slashes (escaped or paths).', function () {
@@ -129,6 +149,10 @@ describe('braces', function () {
       expand('{x,y,{abc},trie}').should.eql(['x', 'y', 'abc', 'trie']);
     });
 
+    it('should use `bash` mode to expand sets', function () {
+      expand('{x,y,{abc},trie}', {bash: true}).should.eql(['x', 'y', '{abc}', 'trie']);
+    });
+
     it('should expand multiple sets', function () {
       expand('a/{a,b}/{c,d}/e').should.eql(['a/a/c/e', 'a/b/c/e', 'a/a/d/e', 'a/b/d/e']);
       expand('a{b,c}d{e,f}g').should.eql(['abdeg', 'acdeg', 'abdfg', 'acdfg']);
@@ -138,13 +162,17 @@ describe('braces', function () {
     it('should expand nested sets', function () {
       expand('{a,b}{{a,b},a,b}').should.eql(['aa', 'ab', 'ba', 'bb']); // Bash does not remove duplicates
       expand('/usr/{ucb/{ex,edit},lib/{ex,how_ex}}').should.eql(['/usr/ucb/ex', '/usr/lib/ex', '/usr/ucb/edit', '/usr/lib/how_ex']);
-      expand('a-{b{d,e}}-c').should.eql(['a-bd-c', 'a-be-c']); // Bash expects ['a-{bd}-c', 'a-{be}-c']
       expand('a{b,c{d,e}f}g').should.eql(['abg', 'acdfg', 'acefg']);
       expand('a{{x,y},z}b').should.eql(['axb','azb','ayb']);
       expand('f{x,y{g,z}}h').should.eql(['fxh','fygh','fyzh']);
       expand('a{b,c{d,e},h}x/z').should.eql(['abx/z', 'acdx/z', 'ahx/z', 'acex/z']);
       expand('a{b,c{d,e},h}x{y,z}').should.eql(['abxy', 'acdxy', 'ahxy', 'acexy', 'abxz', 'acdxz', 'ahxz', 'acexz']);
       expand('a{b,c{d,e},{f,g}h}x{y,z}').should.eql(['abxy', 'acdxy', 'afhxy', 'acexy', 'aghxy', 'abxz', 'acdxz', 'afhxz', 'acexz', 'aghxz']);
+      expand('a-{b{d,e}}-c').should.eql(['a-bd-c', 'a-be-c']);
+    });
+
+    it('should use `bash` mode to expand nested sets.', function () {
+      expand('a-{b{d,e}}-c', {bash: true}).should.eql(['a-{bd}-c', 'a-{be}-c']);
     });
 
     it('should expand with globs.', function () {
@@ -167,11 +195,15 @@ describe('braces', function () {
     });
 
     it('should not expand escaped commas.', function () {
-      expand('a{b\\,c}d').should.eql(['a{b,c}d']); // Bash expects ['a{b,c}d']
-      expand('a{b\\,c\\,d}e').should.eql(['a{b,c,d}e']); // Bash expects ['a{b,c,d}e']
-      expand('{abc\\,def}').should.eql(['{abc,def}']); // Bash expects ['{abc,def}']
-      expand('{abc\\,def,ghi}').should.eql(['abc,def', 'ghi']); // Bash expects ['{abc,def}']
-      expand('a/{b,c}/{x\\,y}/d/e').should.eql(['a/b/x,y/d/e', 'a/c/x,y/d/e']); // Bash expects ['a/b/{x,y}/d/e', 'a/c/{x,y}/d/e']
+      expand('a{b\\,c}d').should.eql(['a{b,c}d']);
+      expand('a{b\\,c\\,d}e').should.eql(['a{b,c,d}e']);
+      expand('{abc\\,def}').should.eql(['{abc,def}']);
+      expand('{abc\\,def,ghi}').should.eql(['abc,def', 'ghi']);
+      expand('a/{b,c}/{x\\,y}/d/e').should.eql(['a/b/x,y/d/e', 'a/c/x,y/d/e']);
+    });
+
+    it('should return sets with escaped commas in `bash` mode.', function () {
+      expand('a/{b,c}/{x\\,y}/d/e', {bash: true}).should.eql(['a/b/{x,y}/d/e', 'a/c/{x,y}/d/e']);
     });
 
     it('should not expand escaped braces.', function () {
@@ -227,8 +259,9 @@ describe('braces', function () {
     it('should expand a complex combination of ranges and sets:', function () {
       expand('a/{x,y}/{1..5}c{d,e}f.{md,txt}').should.eql(['a/x/1cdf.md', 'a/y/1cdf.md', 'a/x/2cdf.md', 'a/y/2cdf.md', 'a/x/3cdf.md', 'a/y/3cdf.md', 'a/x/4cdf.md', 'a/y/4cdf.md', 'a/x/5cdf.md', 'a/y/5cdf.md', 'a/x/1cef.md', 'a/y/1cef.md', 'a/x/2cef.md', 'a/y/2cef.md', 'a/x/3cef.md', 'a/y/3cef.md', 'a/x/4cef.md', 'a/y/4cef.md', 'a/x/5cef.md', 'a/y/5cef.md', 'a/x/1cdf.txt', 'a/y/1cdf.txt', 'a/x/2cdf.txt', 'a/y/2cdf.txt', 'a/x/3cdf.txt', 'a/y/3cdf.txt', 'a/x/4cdf.txt', 'a/y/4cdf.txt', 'a/x/5cdf.txt', 'a/y/5cdf.txt', 'a/x/1cef.txt', 'a/y/1cef.txt', 'a/x/2cef.txt', 'a/y/2cef.txt', 'a/x/3cef.txt', 'a/y/3cef.txt', 'a/x/4cef.txt', 'a/y/4cef.txt', 'a/x/5cef.txt', 'a/y/5cef.txt']);
     });
-    it('should expand a combination of nested sets and ranges:', function () {
-      expand('a/{x,{1..5},y}/c{d}e').should.eql(['a/x/cde', 'a/1/cde', 'a/y/cde', 'a/2/cde', 'a/3/cde', 'a/4/cde', 'a/5/cde']);
+
+    it('should expand complex sets and ranges in `bash` mode:', function () {
+      expand('a/{x,{1..5},y}/c{d}e', {bash: true}).should.eql(['a/x/c{d}e', 'a/1/c{d}e', 'a/y/c{d}e', 'a/2/c{d}e', 'a/3/c{d}e', 'a/4/c{d}e', 'a/5/c{d}e']);
     });
   });
 });
