@@ -75,6 +75,8 @@ function braces(str, arr, options) {
       return escapeCommas(str, arr, opts);
     case '\\.':
       return escapeDots(str, arr, opts);
+    case '\/.':
+      return escapePaths(str, arr, opts);
     case ' ':
       return splitWhitespace(str);
     case '{,}':
@@ -108,7 +110,7 @@ function braces(str, arr, options) {
 
   var segs, segsLength;
 
-  if (/[^\\\/]\.{2}/.test(inner)) {
+  if (inner.indexOf('..') !== -1) {
     segs = expand(inner, opts, fn) || inner.split(',');
     segsLength = segs.length;
 
@@ -134,7 +136,7 @@ function braces(str, arr, options) {
     var path = segs[i++];
     var bash = false;
 
-    if (/\.[^.\\\/]/.test(path)) {
+    if (/(\.[^.\/])/.test(path)) {
       if (segsLength > 1) {
         return segs;
       } else {
@@ -245,6 +247,17 @@ function escapeDots(str, arr, opts) {
 }
 
 /**
+ * Handle escaped dots: `{1\\.2}`
+ */
+
+function escapePaths(str, arr, opts) {
+  str = str.split('\/.').join('__ESC_PATH__');
+  return map(braces(str, arr, opts), function (ele) {
+    return ele.split('__ESC_PATH__').join('\/.');
+  });
+}
+
+/**
  * Handle escaped commas: `{a\\,b}`
  */
 
@@ -264,7 +277,7 @@ function escapeCommas(str, arr, opts) {
  */
 
 function patternRegex() {
-  return /\$\{|[ \t]|{}|{,}|\\,|\\\.|\\{|\\}/;
+  return /\$\{|[ \t]|{}|{,}|\\,|\/\.|\\\.|\\{|\\}/;
 }
 
 /**
