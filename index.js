@@ -11,11 +11,9 @@
  * Module dependencies
  */
 
-var filter = require('arr-filter');
 var expand = require('expand-range');
+var repeat = require('repeat-element');
 var tokens = require('preserve');
-var map = require('arr-map');
-var exp = require('./lib/exp');
 
 /**
  * Expose `braces`
@@ -80,7 +78,7 @@ function braces(str, arr, options) {
     case ' ':
       return splitWhitespace(str);
     case '{,}':
-      return exp(str, opts, braces);
+      return exponential(str, opts, braces);
     case '{}':
       return emptyBraces(str, arr, opts);
     case '\\{':
@@ -155,6 +153,55 @@ function braces(str, arr, options) {
   }
 
   if (opts.strict) { return filter(arr, filterEmpty); }
+  return arr;
+}
+
+/**
+ * Expand exponential ranges
+ *
+ *   `a{,}{,}` => ['a', 'a', 'a', 'a']
+ */
+
+function exponential(str, options, fn) {
+  if (typeof options === 'function') {
+    fn = options;
+    options = null;
+  }
+
+  var opts = options || {};
+  var esc = '__ESC_EXP__';
+  var exp = 0;
+  var res;
+
+  var parts = str.split('{,}');
+  if (opts.nodupes) {
+    return fn(parts.join(''), opts);
+  }
+
+  exp = parts.length - 1;
+  res = fn(parts.join(esc), opts);
+  var len = res.length;
+  var arr = [];
+  var i = 0;
+
+  while (len--) {
+    var ele = res[i++];
+    var idx = ele.indexOf(esc);
+
+    if (idx === -1) {
+      arr.push(ele);
+
+    } else {
+      ele = ele.split('__ESC_EXP__').join('');
+      if (!!ele && opts.nodupes !== false) {
+        arr.push(ele);
+
+      } else {
+        var num = Math.pow(2, exp);
+        arr.push.apply(arr, repeat(ele, num));
+      }
+    }
+  }
   return arr;
 }
 
@@ -308,4 +355,46 @@ function splice(str, token, replacement) {
   var i = str.indexOf(token);
   return str.substr(0, i) + replacement
     + str.substr(i + token.length);
+}
+
+/**
+ * Fast array map
+ */
+
+function map(arr, fn) {
+  if (arr == null) {
+    return [];
+  }
+
+  var len = arr.length;
+  var res = new Array(len);
+  var i = -1;
+
+  while (++i < len) {
+    res[i] = fn(arr[i], i, arr);
+  }
+
+  return res;
+}
+
+/**
+ * Fast array filter
+ */
+
+function filter(arr, cb) {
+  if (arr == null) return [];
+  if (typeof cb !== 'function') {
+    throw new TypeError('braces: filter expects a callback function.');
+  }
+
+  var len = arr.length;
+  var res = arr.slice();
+  var i = 0;
+
+  while (len--) {
+    if (!cb(arr[len], i++)) {
+      res.splice(len, 1);
+    }
+  }
+  return res;
 }
