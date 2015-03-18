@@ -1,7 +1,7 @@
 {
   "name": "braces",
   "description": "Fastest brace expansion for node.js, with the most complete support for the Bash 4.3 braces specification.",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "homepage": "https://github.com/jonschlinkert/braces",
   "author": {
     "name": "Jon Schlinkert",
@@ -30,9 +30,7 @@
     "lib/"
   ],
   "dependencies": {
-    "arr-filter": "^1.0.2",
-    "arr-map": "^1.0.0",
-    "expand-range": "^1.8.0",
+    "expand-range": "^1.8.1",
     "preserve": "^0.2.0",
     "repeat-element": "^1.1.0"
   },

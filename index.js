@@ -132,7 +132,6 @@ function braces(str, arr, options) {
 
   while (len--) {
     var path = segs[i++];
-    var bash = false;
 
     if (/(\.[^.\/])/.test(path)) {
       if (segsLength > 1) {
