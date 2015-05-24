@@ -22,7 +22,14 @@ describe('braces', function () {
       expand('').should.eql([]);
     });
 
-    it('should repeat strings followed by {,}', function () {
+    it('should expand bash exponential notation', function() {
+      expand('a{,}').should.eql(['a']);
+      expand('{,}b').should.eql(['b']);
+      expand('a{,}b').should.eql(['ab']);
+    });
+
+    // http://www.gnu.org/software/bash/manual/html_node/Brace-Expansion.html
+    it('should expand bash exponential notation', function () {
       expand('a{,}', {nodupes: false}).should.eql(['a', 'a']);
       expand('a{,}{,}', {nodupes: false}).should.eql(['a', 'a', 'a', 'a']);
       expand('a{,}{,}{,}', {nodupes: false}).should.eql(['a', 'a', 'a', 'a', 'a', 'a', 'a', 'a']);
@@ -44,14 +51,11 @@ describe('braces', function () {
       expand('abc').should.eql(['abc']);
     });
 
-    it('should work with no braces', function () {
-      expand('a{,}').should.eql(['a']);
-      expand('{,}b').should.eql(['b']);
-      expand('a{,}b').should.eql(['ab']);
+    it('should work with no commas', function () {
       expand('a{b}c').should.eql(['abc']);
     });
 
-    it('should work with no braces in `bash` mode', function () {
+    it('should work with no commas in `bash` mode', function () {
       expand('a{b}c', {bash: true}).should.eql(['a{b}c']);
     });
 
