@@ -1,38 +1,32 @@
 {
   "name": "braces",
   "description": "Fastest brace expansion for node.js, with the most complete support for the Bash 4.3 braces specification.",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "homepage": "https://github.com/jonschlinkert/braces",
   "author": {
     "name": "Jon Schlinkert",
     "url": "https://github.com/jonschlinkert"
   },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/jonschlinkert/braces.git"
-  },
+  "repository": "jonschlinkert/braces",
   "bugs": {
     "url": "https://github.com/jonschlinkert/braces/issues"
   },
-  "license": {
-    "type": "MIT",
-    "url": "https://github.com/jonschlinkert/braces/blob/master/LICENSE"
-  },
+  "license": "MIT",
   "main": "index.js",
   "engines": {
     "node": ">=0.10.0"
   },
   "scripts": {
-    "test": "mocha -R spec"
+    "test": "mocha"
   },
   "files": [
-    "index.js",
-    "lib/"
+    "index.js"
   ],
   "dependencies": {
     "expand-range": "^1.8.1",
+    "lazy-cache": "^0.2.3",
     "preserve": "^0.2.0",
-    "repeat-element": "^1.1.0"
+    "repeat-element": "^1.1.2"
   },
   "devDependencies": {
     "benchmarked": "^0.1.3",
