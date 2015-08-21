@@ -7,6 +7,7 @@
 
 'use strict';
 
+/* deps: mocha */
 var argv = require('minimist')(process.argv.slice(2));
 var should = require('should');
 var expand = require('..');
