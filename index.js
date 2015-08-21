@@ -11,9 +11,10 @@
  * Module dependencies
  */
 
-var expand = require('expand-range');
-var repeat = require('repeat-element');
-var tokens = require('preserve');
+var lazy = require('lazy-cache')(require);
+lazy('expand-range', 'expand');
+lazy('repeat-element', 'repeat');
+lazy('preserve', 'tokens');
 
 /**
  * Expose `braces`
@@ -89,7 +90,7 @@ function braces(str, arr, options) {
         return arr.concat(str);
       } else {
         es6 = true;
-        str = tokens.before(str, es6Regex());
+        str = lazy.tokens.before(str, es6Regex());
       }
   }
 
@@ -109,7 +110,7 @@ function braces(str, arr, options) {
   var segs, segsLength;
 
   if (inner.indexOf('..') !== -1) {
-    segs = expand(inner, opts, fn) || inner.split(',');
+    segs = lazy.expand(inner, opts, fn) || inner.split(',');
     segsLength = segs.length;
 
   } else if (inner[0] === '"' || inner[0] === '\'') {
@@ -147,7 +148,7 @@ function braces(str, arr, options) {
       arr = braces(val, arr, opts);
     } else if (val !== '') {
       if (opts.nodupes && arr.indexOf(val) !== -1) { continue; }
-      arr.push(es6 ? tokens.after(val) : val);
+      arr.push(es6 ? lazy.tokens.after(val) : val);
     }
   }
 
@@ -197,7 +198,7 @@ function exponential(str, options, fn) {
 
       } else {
         var num = Math.pow(2, exp);
-        arr.push.apply(arr, repeat(ele, num));
+        arr.push.apply(arr, lazy.repeat(ele, num));
       }
     }
   }
