@@ -20,7 +20,8 @@
     "test": "mocha"
   },
   "files": [
-    "index.js"
+    "index.js",
+    "utils.js"
   ],
   "dependencies": {
     "expand-range": "^1.8.1",
