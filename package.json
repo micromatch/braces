@@ -25,7 +25,6 @@
   ],
   "dependencies": {
     "expand-range": "^1.8.1",
-    "lazy-cache": "^0.2.3",
     "preserve": "^0.2.0",
     "repeat-element": "^1.1.2"
   },
