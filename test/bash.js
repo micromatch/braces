@@ -15,8 +15,8 @@ if ('minimatch' in argv) {
   braces = require('minimatch').braceExpand;
 }
 
-describe('braces', function () {
-  it('braces', function () {
+describe('braces', function() {
+  it('braces', function() {
     braces('ff{c,b,a}').should.eql(['ffc','ffb','ffa']);
     braces('f{d,e,f}g').should.eql(['fdg','feg','ffg']);
     braces('{l,n,m}xyz').should.eql(['lxyz','nxyz','mxyz']);
@@ -38,7 +38,7 @@ describe('braces', function () {
     braces('foo {1,2} bar').should.eql(['foo','1','2','bar']);
   });
 
-  it('new sequence brace operators', function () {
+  it('new sequence brace operators', function() {
     braces('{1..10}').should.eql(['1','2','3','4','5','6','7','8','9','10']);
     braces('{0..10,braces}').should.eql(['0..10','braces']);
     braces('{braces,{0..10}}').should.eql(['braces','0','1','2','3','4','5','6','7','8','9','10']);
@@ -46,7 +46,7 @@ describe('braces', function () {
     braces('x{{0..10},braces}y').should.eql(['x0y','xbracesy','x1y','x2y','x3y','x4y','x5y','x6y','x7y','x8y','x9y','x10y']);
   });
 
-  it('ranges', function () {
+  it('ranges', function() {
     braces('{3..3}').should.eql(['3']);
     braces('x{3..3}y').should.eql(['x3y']);
     braces('{10..1}').should.eql(['10','9','8','7','6','5','4','3','2','1']);
@@ -62,17 +62,17 @@ describe('braces', function () {
     braces('0{1..9} {10..20}').should.eql(['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20']);
   });
 
-  it('mixes are incorrectly-formed brace expansions', function () {
+  it('mixes are incorrectly-formed brace expansions', function() {
     braces('{1..f}').should.eql(['{1..f}']);
     braces('{f..1}').should.eql(['{f..1}']);
   });
 
-  it('do negative numbers work?', function () {
+  it('do negative numbers work?', function() {
     braces('{-1..-10}').should.eql(['-1','-2','-3','-4','-5','-6','-7','-8','-9','-10']);
     braces('{-20..0}').should.eql(['-20','-19','-18','-17','-16','-15','-14','-13','-12','-11','-10','-9','-8','-7','-6','-5','-4','-3','-2','-1','0']);
   });
 
-  it('weirdly-formed brace expansions -- fixed in post-bash-3.1', function () {
+  it('weirdly-formed brace expansions -- fixed in post-bash-3.1', function() {
     braces('{-1..-10}').should.eql(['-1','-2','-3','-4','-5','-6','-7','-8','-9','-10']);
     braces('{-20..0}').should.eql(['-20','-19','-18','-17','-16','-15','-14','-13','-12','-11','-10','-9','-8','-7','-6','-5','-4','-3','-2','-1','0']);
     braces('a-{b{d,e}}-c', {bash: true}).should.eql(['a-{bd}-c','a-{be}-c']);
@@ -83,7 +83,7 @@ describe('braces', function () {
     braces('{"x,x"}').should.eql(['{x,x}']);
   });
 
-  it('numerical ranges with steps', function () {
+  it('numerical ranges with steps', function() {
     braces('{1..10..2}').should.eql(['1','3','5','7','9']);
     braces('{-1..-10..2}').should.eql(['-1','-3','-5','-7','-9']);
     braces('{-1..-10..-2}').should.eql(['-1','-3','-5','-7','-9']);
@@ -98,23 +98,23 @@ describe('braces', function () {
     braces('{100..0..-5}').should.eql(['100','95','90','85','80','75','70','65','60','55','50','45','40','35','30','25','20','15','10','5','0']);
   });
 
-  it('alpha ranges with steps', function () {
+  it('alpha ranges with steps', function() {
     braces('{a..z}').should.eql(['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']);
     braces('{a..z..2}').should.eql(['a','c','e','g','i','k','m','o','q','s','u','w','y']);
     braces('{z..a..-2}').should.eql(['z','x','v','t','r','p','n','l','j','h','f','d','b']);
   });
 
-  it('make sure brace expansion handles ints > 2**31 - 1 using intmax_t', function () {
+  it('make sure brace expansion handles ints > 2**31 - 1 using intmax_t', function() {
     braces('{2147483645..2147483649}').should.eql(['2147483645','2147483646','2147483647','2147483648','2147483649']);
   });
 
-  it('unwanted zero-padding -- fixed post-bash-4.0', function () {
+  it('unwanted zero-padding -- fixed post-bash-4.0', function() {
     braces('{10..0..2}').should.eql(['10','8','6','4','2','0']);
     braces('{10..0..-2}').should.eql(['10','8','6','4','2','0']);
     braces('{-50..-0..5}').should.eql(['-50','-45','-40','-35','-30','-25','-20','-15','-10','-5','0']);
   });
 
-  it('bad', function () {
+  it('bad', function() {
     braces('{1..10.f}').should.eql(['{1..10.f}']);
     braces('{1..ff}').should.eql(['{1..ff}']);
     braces('{1..10..ff}').should.eql(['{1..10..ff}']);
