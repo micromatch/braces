@@ -63,6 +63,12 @@ describe('braces', function() {
       expand('0{1..9} {10..20}').should.eql(['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20']);
       expand('a{ ,c{d, },h}x').should.eql(['a{',',c{d,','},h}x']);
       expand('a{ ,c{d, },h} ').should.eql(['a{', ',c{d,', '},h}']);
+
+      // see https://github.com/jonschlinkert/micromatch/issues/66
+      expand('/Users/tobiasreich/Sites/aaa/bbb/ccc 2016/src/**/[^_]*.{html,ejs}').should.eql([
+        '/Users/tobiasreich/Sites/aaa/bbb/ccc 2016/src/**/[^_]*.html',
+        '/Users/tobiasreich/Sites/aaa/bbb/ccc 2016/src/**/[^_]*.ejs'
+      ]);
     });
 
     it('should handle empty braces', function() {
