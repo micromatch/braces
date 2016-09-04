@@ -4,13 +4,20 @@
   "version": "1.8.5",
   "homepage": "https://github.com/jonschlinkert/braces",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
+  "contributors": [
+    "Brian Woodward <brian.woodward@gmail.com> (https://github.com/doowb)",
+    "Eugene Sharygin (https://github.com/eush77)",
+    "Jon Schlinkert <jon.schlinkert@sellside.com> (http://twitter.com/jonschlinkert)"
+  ],
   "repository": "jonschlinkert/braces",
   "bugs": {
     "url": "https://github.com/jonschlinkert/braces/issues"
   },
   "license": "MIT",
   "files": [
-    "index.js"
+    "index.js",
+    "LICENSE",
+    "README.md"
   ],
   "main": "index.js",
   "engines": {
@@ -39,6 +46,7 @@
     "alphabetical",
     "bash",
     "brace",
+    "braces",
     "expand",
     "expansion",
     "filepath",
@@ -74,9 +82,9 @@
     ],
     "related": {
       "list": [
-        "micromatch",
         "expand-range",
-        "fill-range"
+        "fill-range",
+        "micromatch"
       ]
     }
   }
