@@ -73,12 +73,8 @@ describe('braces', function() {
   });
 
   it('weirdly-formed brace expansions -- fixed in post-bash-3.1', function() {
-    braces('{-1..-10}').should.eql(['-1','-2','-3','-4','-5','-6','-7','-8','-9','-10']);
-    braces('{-20..0}').should.eql(['-20','-19','-18','-17','-16','-15','-14','-13','-12','-11','-10','-9','-8','-7','-6','-5','-4','-3','-2','-1','0']);
-    braces('a-{b{d,e}}-c', {bash: true}).should.eql(['a-{bd}-c','a-{be}-c']);
-
+    braces('a-{b{d,e}}-c').should.eql(['a-{bd}-c','a-{be}-c']);
     braces('a-{bdef-{g,i}-c').should.eql(['a-{bdef-g-c','a-{bdef-i-c']);
-
     braces('{"klklkl"}{1,2,3}').should.eql(['{klklkl}1','{klklkl}2','{klklkl}3']);
     braces('{"x,x"}').should.eql(['{x,x}']);
   });

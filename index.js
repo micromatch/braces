@@ -139,7 +139,7 @@ braces.isMatch = function(str, pattern, options) {
 
 braces.matcher = function(pattern, options) {
   var re = braces.makeRe(pattern, options);
-  console.log(re)
+  // console.log(re)
   return function(str) {
     return re.test(str);
   };
