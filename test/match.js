@@ -115,19 +115,16 @@ describe('braces', function() {
   });
 
   it('bad', function() {
-    assert.equal(braces('{1..10.f}'), ['{1..10.f}']);
-    assert.equal(braces('{1..ff}'), ['{1..ff}']);
+    assert.equal(braces('{1..0f}'), ['{1..0f}']);
     assert.equal(braces('{1..10..ff}'), ['{1..10..ff}']);
-    assert.equal(braces('{1.20..2}'), ['{1.20..2}']);
-    assert.equal(braces('{1..20..f2}'), ['{1..20..f2}']);
+    assert.equal(braces('{1..10.f}'), ['{1..10.f}']);
+    assert.equal(braces('{1..10f}'), ['{1..10f}']);
     assert.equal(braces('{1..20..2f}'), ['{1..20..2f}']);
+    assert.equal(braces('{1..20..f2}'), ['{1..20..f2}']);
     assert.equal(braces('{1..2f..2}'), ['{1..2f..2}']);
     assert.equal(braces('{1..ff..2}'), ['{1..ff..2}']);
     assert.equal(braces('{1..ff}'), ['{1..ff}']);
     assert.equal(braces('{1..f}'), ['{1..f}']);
-    assert.equal(braces('{1..0f}'), ['{1..0f}']);
-    assert.equal(braces('{1..10f}'), ['{1..10f}']);
-    assert.equal(braces('{1..10.f}'), ['{1..10.f}']);
-    assert.equal(braces('{1..10.f}'), ['{1..10.f}']);
+    assert.equal(braces('{1.20..2}'), ['{1.20..2}']);
   });
 });
