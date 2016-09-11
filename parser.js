@@ -61,6 +61,7 @@ function parse(input) {
   utils.define(prevNode, 'next', eos);
   ast[0].nodes.push(eos);
 
+  ast[0].orig = input;
   return ast[0];
 }
 
@@ -168,7 +169,6 @@ Compiler.prototype = {
    */
 
   compile: function(ast, options) {
-    this.options.source = ast.orig;
     this.ast = ast;
     this.mapVisit(this.ast.nodes);
     return this;
@@ -180,7 +180,8 @@ var str = 'a{b,c{d,e}f}g';
 
 var ast = parse(str);
 var compiler = new Compiler();
-var state = {expected: 'abg acdfg acefg'};
+compiler.expected = 'abg acdfg acefg';
+var state = {};
 state.after = [];
 state.before = [];
 state.queue = [];
@@ -200,14 +201,15 @@ compiler
 
   .set('text', function(node) {
     var segs = node.val.split(',');
+
     if (node.next.type === 'brace.open') {
+      console.log(node, segs, node.next)
       state.before.push(segs.pop());
     }
 
     if (node.prev.type === 'brace.close') {
       state.after.push(segs.shift());
     }
-    console.log(node)
 
     state.queue.push.apply(state.queue, segs);
     return this.emit(node.val, node);
@@ -223,26 +225,25 @@ compiler
   })
   .set('eos', function(node) {
     var temp = [];
-    // queue.forEach(function(str) {
-    //   before.forEach(function(ele) {
-    //     temp.push(ele + str);
-    //   });
-    // });
+    state.queue.forEach(function(str) {
+      before.forEach(function(ele) {
+        temp.push(ele + str);
+      });
+    });
 
-    // queue = temp;
-    // temp = [];
+    state.queue = temp;
+    temp = [];
 
-    // queue.forEach(function(str) {
-    //   after.forEach(function(ele) {
-    //     temp.push(str + ele);
-    //   });
-    // });
+    state.queue.forEach(function(str) {
+      state.after.forEach(function(ele) {
+        temp.push(str + ele);
+      });
+    });
 
-    // output = temp;
+    state.output = temp;
     return this.emit(node.val, node);
   })
 
-// console.log(ast.nodes[1].nodes[2]);
-
-var res = compiler.compile(braces.pop());
-// console.log(state);
+// console.log(ast);
+var res = compiler.compile(ast);
+// console.log(res.ast);

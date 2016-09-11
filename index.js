@@ -23,16 +23,17 @@ var cache = {};
  */
 
 function braces(str, options) {
-  var res = braces.compile(str, options);
-  // console.log(res.braces)
-  return utils.unique(res.braces);
+  return braces.compile(str, options).output;
 }
-
 
 braces.compile = function(str, options) {
   var matcher = new Braces(options);
   var ast = matcher.parse(str, options);
   return matcher.compile(ast, options);
+};
+
+braces.expand = function(str, options) {
+  // todo
 };
 
 /**
@@ -99,7 +100,7 @@ braces.match = function(arr, pattern, options) {
 
 braces.isMatch = function(str, pattern, options) {
   var key = pattern;
-  var regex;
+  var matcher;
 
   if (options) {
     for (var prop in options) {
@@ -110,11 +111,11 @@ braces.isMatch = function(str, pattern, options) {
   }
 
   if (cache.hasOwnProperty(key)) {
-    regex = cache[key];
+    matcher = cache[key];
   } else {
-    regex = cache[key] = braces.makeRe(pattern, options);
+    matcher = cache[key] = braces.matcher(pattern, options);
   }
-  return regex.test(str);
+  return matcher(str);
 };
 
 /**
@@ -138,6 +139,7 @@ braces.isMatch = function(str, pattern, options) {
 
 braces.matcher = function(pattern, options) {
   var re = braces.makeRe(pattern, options);
+  console.log(re)
   return function(str) {
     return re.test(str);
   };

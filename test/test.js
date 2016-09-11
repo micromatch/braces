@@ -159,16 +159,16 @@ describe('braces', function() {
       assert.deepEqual(braces('a/{x,y}/c{d,e}f.{md,txt}'), ['a/x/cdf.md', 'a/y/cdf.md', 'a/x/cef.md', 'a/y/cef.md', 'a/x/cdf.txt', 'a/y/cdf.txt', 'a/x/cef.txt', 'a/y/cef.txt']);
     });
 
-    it.only('should expand nested sets', function() {
+    it('should expand nested sets', function() {
       assert.deepEqual(braces('{a,b}{{a,b},a,b}'), ['aa', 'ab', 'ba', 'bb']); // Bash does not remove duplicates
-      // assert.deepEqual(braces('/usr/{ucb/{ex,edit},lib/{ex,how_ex}}'), ['/usr/ucb/ex', '/usr/lib/ex', '/usr/ucb/edit', '/usr/lib/how_ex']);
+      assert.deepEqual(braces('/usr/{ucb/{ex,edit},lib/{ex,how_ex}}'), ['/usr/ucb/ex', '/usr/lib/ex', '/usr/ucb/edit', '/usr/lib/how_ex']);
       assert.deepEqual(braces('a{b,c{d,e}f}g'), ['abg', 'acdfg', 'acefg']);
-      // assert.deepEqual(braces('a{{x,y},z}b'), ['axb','azb','ayb']);
-      // assert.deepEqual(braces('f{x,y{g,z}}h'), ['fxh','fygh','fyzh']);
-      // assert.deepEqual(braces('a{b,c{d,e},h}x/z'), ['abx/z', 'acdx/z', 'ahx/z', 'acex/z']);
-      // assert.deepEqual(braces('a{b,c{d,e},h}x{y,z}'), ['abxy', 'acdxy', 'ahxy', 'acexy', 'abxz', 'acdxz', 'ahxz', 'acexz']);
-      // assert.deepEqual(braces('a{b,c{d,e},{f,g}h}x{y,z}'), ['abxy', 'acdxy', 'afhxy', 'acexy', 'aghxy', 'abxz', 'acdxz', 'afhxz', 'acexz', 'aghxz']);
-      // assert.deepEqual(braces('a-{b{d,e}}-c'), ['a-bd-c', 'a-be-c']);
+      assert.deepEqual(braces('a{{x,y},z}b'), ['axb','azb','ayb']);
+      assert.deepEqual(braces('f{x,y{g,z}}h'), ['fxh','fygh','fyzh']);
+      assert.deepEqual(braces('a{b,c{d,e},h}x/z'), ['abx/z', 'acdx/z', 'ahx/z', 'acex/z']);
+      assert.deepEqual(braces('a{b,c{d,e},h}x{y,z}'), ['abxy', 'acdxy', 'ahxy', 'acexy', 'abxz', 'acdxz', 'ahxz', 'acexz']);
+      assert.deepEqual(braces('a{b,c{d,e},{f,g}h}x{y,z}'), ['abxy', 'acdxy', 'afhxy', 'acexy', 'aghxy', 'abxz', 'acdxz', 'afhxz', 'acexz', 'aghxz']);
+      assert.deepEqual(braces('a-{b{d,e}}-c'), ['a-bd-c', 'a-be-c']);
     });
 
     it('should use `bash` mode to expand nested sets.', function() {
