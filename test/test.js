@@ -6,7 +6,7 @@ var argv = require('yargs-parser')(process.argv.slice(2));
 var minimatch = require('minimatch');
 var braces = argv.mm ? minimatch.braceExpand : require('..');
 
-describe('braces', function() {
+describe.skip('braces', function() {
   describe('brace expansion', function() {
     it('should return an empty array when no braces are found', function() {
       assert.deepEqual(braces(''), []);
@@ -266,7 +266,7 @@ describe('braces', function() {
   });
 });
 
-describe('range expansion', function() {
+describe.skip('range expansion', function() {
   it('should expand numerical ranges', function() {
     assert.deepEqual(braces('a{0..3}d'), ['a0d', 'a1d', 'a2d', 'a3d']);
     assert.deepEqual(braces('x{10..1}y'), ['x10y', 'x9y', 'x8y', 'x7y', 'x6y', 'x5y', 'x4y', 'x3y', 'x2y', 'x1y']);

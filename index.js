@@ -23,17 +23,32 @@ var cache = {};
  */
 
 function braces(str, options) {
-  return braces.compile(str, options).output;
+  if (cache[str]) return cache[str];
+  var input = utils.escape(str, options);
+  var output = braces.compile(input, options).output;
+  var res = utils.unescape(output, options);
+  cache[str] = res;
+  return res;
 }
 
 braces.compile = function(str, options) {
   var matcher = new Braces(options);
-  var ast = matcher.parse(str, options);
-  return matcher.compile(ast, options);
+  var ast = matcher.parse(utils.escape(str, options), options);
+  var compiled = matcher.compile(ast, options);
+  if (typeof compiled.output === 'string') {
+    compiled.output = utils.unescape(compiled.output, options);
+    return compiled;
+  }
+  compiled.output = compiled.output.map(function(str) {
+    return utils.unescape(str, options);
+  });
+  return compiled;
 };
 
 braces.expand = function(str, options) {
-  // todo
+  if (str === '' || str.length <= 2) return [str];
+  var opts = utils.extend({unescape: true}, options, {expand: true});
+  return braces.compile(str, opts).output;
 };
 
 /**

@@ -15,7 +15,7 @@ if ('minimatch' in argv) {
   braces = require('minimatch').braceExpand;
 }
 
-describe('braces', function() {
+describe.skip('braces', function() {
   it('braces', function() {
     braces('ff{c,b,a}').should.eql(['ffc','ffb','ffa']);
     braces('f{d,e,f}g').should.eql(['fdg','feg','ffg']);

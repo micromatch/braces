@@ -1,5 +1,5 @@
 {
-  "name": "braces",
+  "name": "braces2",
   "description": "Fastest brace expansion for node.js, with the most complete support for the Bash 4.3 braces specification.",
   "version": "1.8.5",
   "homepage": "https://github.com/jonschlinkert/braces",
@@ -27,20 +27,26 @@
     "test": "mocha"
   },
   "dependencies": {
+    "arr-flatten": "^1.0.1",
     "array-unique": "^0.3.2",
     "debug": "^2.2.0",
     "define-property": "^0.2.5",
     "extend-shallow": "^2.0.1",
-    "fill-array": "^1.0.0",
-    "fill-range": "^2.2.3",
+    "fill-range": "^3.0.1",
     "snapdragon": "^0.5.0"
   },
   "devDependencies": {
+    "cross-spawn": "^4.0.0",
+    "for-own": "^0.1.4",
     "gulp-format-md": "^0.1.8",
+    "isobject": "^2.1.0",
     "minimatch": "^3.0.0",
     "minimist": "^1.2.0",
     "mocha": "^2.4.5",
+    "noncharacters": "^1.1.0",
     "should": "^8.3.1",
+    "stringify-object": "^2.4.0",
+    "write": "^0.3.2",
     "yargs-parser": "^3.2.0"
   },
   "keywords": [

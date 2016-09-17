@@ -8,80 +8,72 @@
 'use strict';
 
 require('mocha');
+var util = require('util');
+var isObject = require('isobject');
 var assert = require('assert');
-var braces = require('..');
 var tests = {};
-var heading;
+var compare = require('./support/compare')(tests);
 
-function compare(fixture, expected) {
-  if (arguments.length === 1) {
-    heading = fixture;
-    tests[heading] = tests[heading] || [];
-    return;
-  }
+describe('.expand', function() {
+  after(function() {
+    // console.log(tests)
+  });
 
-  if (tests[heading]) {
-    tests[heading].push({
-      fixture: fixture,
-      expected: expected
-    });
-  }
-
-  var output = braces.compile(fixture).output;
-  assert.equal(output, expected, ' (' + fixture + ')\n\n      "' + output + '" !== "' + expected + '"\n');
-}
-
-describe('.compile (.output)', function() {
   describe('sets', function() {
     describe('invalid sets', function() {
       it('should handle invalid sets:', function() {
-        compare('should not expand invalid sets:');
-        compare('{0..10,braces}', '(0..10|braces)');
-        compare('{1..10,braces}', '(1..10|braces)');
+        compare('should handle invalid sets:');
+        compare('{0..10,braces}', ['0..10', 'braces']);
+        compare('{1..10,braces}', ['1..10', 'braces']);
       });
     });
 
     describe('escaping', function() {
-      it('should not expand escaped braces', function() {
-        compare('should expand sets');
-        compare('\\{a,b,c,d,e}', '\\{a,b,c,d,e\\}');
-        compare('a/b/c/{x,y\\}', 'a/b/c/\\{x,y\\}');
-        compare('a/\\{x,y}/cde', 'a/\\{x,y\\}/cde');
-        compare('abcd{efgh', 'abcd\\{efgh');
-        compare('{abc}', '\\{abc\\}');
-        compare('{x,y,\\{a,b,c\\}}', '(x|y|\\{a|b|c\\})');
-        compare('{x,y,{a,b,c\\}}', '\\{x,y,(a|b|c\\})');
-        compare('{x,y,{abc},trie}', '(x|y|\\{abc\\}|trie)');
-        compare('{x\\,y,\\{abc\\},trie}', '(x,y|\\{abc\\}|trie)');
+      it.only('should not expand escaped braces', function() {
+        compare('should not expand escaped braces');
+        compare('\\{a,b,c,d,e}', ['{a,b,c,d,e}']);
+        compare('a/b/c/{x,y\\}', ['a/b/c/{x,y}']);
+        compare('a/\\{x,y}/cde', ['a/{x,y}/cde']);
+        compare('abcd{efgh', ['abcd{efgh']);
+        compare('{abc}', ['\\{abc\\}']);
+        compare('{x,y,\\{a,b,c\\}}', ['x', 'y', '\\{a', 'b', 'c\\}']);
+        compare('{x,y,{a,b,c\\}}', ['{x,y,a', '{x,y,b', '{x,y,c\\}']);
+        compare('{x,y,{abc},trie}', ['x', 'y', '\\{abc\\}', 'trie']);
+        compare('{x\\,y,\\{abc\\},trie}', ['x,y', '\\{abc\\}', 'trie']);
       });
 
       it('should handle spaces', function() {
         compare('should handle spaces');
         // Bash 4.3 says the following should be equivalent to `foo|(1|2)|bar`,
         // That makes sense in Bash, since ' ' is a separator, but not here.
-        compare('foo {1,2} bar', 'foo (1|2) bar');
+        compare('foo {1,2} bar', [ 'foo 1 bar', 'foo 2 bar' ]);
       });
 
       it('should handle empty braces', function() {
         compare('should handle empty braces');
-        compare('{ }', '\\{|\\}');
-        compare('{', '\\{');
-        compare('{}', '\\{\\}');
-        compare('}', '\\}');
+        compare('{ }', [ '\\{ \\}' ]);
+        compare('{', ['\\{']);
+        compare('{}', ['\\{\\}']);
+        compare('}', ['\\}']);
       });
 
       it('should escape braces when only one value is defined', function() {
         compare('should escape braces when only one value is defined');
-        compare('a{b}c', 'a\\{b\\}c');
-        compare('a/b/c{d}e', 'a/b/c\\{d\\}e');
+        compare('a{b}c', ['a\\{b\\}c']);
+        compare('a/b/c{d}e', ['a/b/c\\{d\\}e']);
+      });
+
+      it('should escape closing braces when open is not defined', function() {
+        compare('should escape closing braces when open is not defined');
+        compare('{a,b}c,d}', ['ac,d}', 'bc,d}']);
       });
 
       it('should not expand braces in sets with es6/bash-like variables', function() {
-        compare('should not expand strings with es6/bash-like variables.');
-        compare('abc/${ddd}/xyz', 'abc/\\$\\{ddd\\}/xyz');
-        compare('a${b}c', 'a\\$\\{b\\}c');
-        compare('a/{${b},c}/d', 'a/(\\$\\{b\\}|c)/d');
-        compare('a${b,d}/{foo,bar}c', 'a\\$\\{b,d\\}/(foo|bar)c');
+        compare('should not expand braces in sets with es6/bash-like variables');
+        compare('abc/${ddd}/xyz', ['abc/\\$\\{ddd\\}/xyz']);
+        compare('a${b}c', ['a\\$\\{b\\}c']);
+        compare('a/{${b},c}/d', ['a/\\$\\{b\\}/d', 'a/c/d']);
+        compare('a${b,d}/{foo,bar}c', ['a\\$\\{b,d\\}/fooc', 'a\\$\\{b,d\\}/barc']);
       });
 
       it('should not expand escaped commas.', function() {
@@ -94,7 +86,7 @@ describe('.compile (.output)', function() {
       });
 
       it('should return sets with escaped commas', function() {
-        compare('a/{b,c}/{x\\,y}/d/e', 'a/(b|c)/\\{x,y\\}/d/e');
+        compare('should return sets with escaped commas');
       });
 
       it('should not expand escaped braces.', function() {
@@ -148,11 +140,16 @@ describe('.compile (.output)', function() {
         compare('a-{b{d,e}}-c', 'a-\\{b(d|e)\\}-c', ['a-{bd}-c', 'a-{be}-c']);
       });
 
-      it('should expand not modify non-brace characters', function() {
+      it('should expand with globs.', function() {
         compare('should expand with globs.');
         compare('a/b/{d,e}/*.js', 'a/b/(d|e)/*.js');
         compare('a/**/c/{d,e}/f*.js', 'a/**/c/(d|e)/f*.js');
         compare('a/**/c/{d,e}/f*.{md,txt}', 'a/**/c/(d|e)/f*.(md|txt)');
+      });
+
+      it('should expand with extglobs (TODO)', function() {
+        compare('should expand with extglobs (TODO)');
+        compare('a/b/{d,e,[1-5]}/*.js', 'a/b/(d|e|[1-5])/*.js');
       });
     });
 
@@ -210,7 +207,7 @@ describe('.compile (.output)', function() {
       });
 
       it('should escape invalid ranges:', function() {
-        compare('should return an empty string for invalid ranges:');
+        compare('should escape invalid ranges:');
         compare('{1..0f}', '\\{1..0f\\}', ['{1..0f}']);
         compare('{1..10..ff}', '\\{1..10..ff\\}', ['{1..10..ff}']);
         compare('{1..10.f}', '\\{1..10.f\\}', ['{1..10.f}']);
@@ -237,7 +234,7 @@ describe('.compile (.output)', function() {
       });
 
       it('should escaped outer braces in nested non-sets', function() {
-        compare('should work with nested non-sets');
+        compare('should escaped outer braces in nested non-sets');
         compare('{a-{b,c,d}}', '\\{a-(b|c|d)\\}');
         compare('{a,{a-{b,c,d}}}', '(a|\\{a-(b|c|d)\\})');
       });
@@ -256,7 +253,7 @@ describe('.compile (.output)', function() {
         compare('abcd{efgh', 'abcd\\{efgh');
         compare('a{b{c{d,e}f}g}h', 'a(b(c(d|e)f)g)h');
         compare('f{x,y{{g,z}}h}', 'f(x|y((g|z))h)');
-        compare('z{a,b},c}d', 'z(a|b),c\\}d');
+        compare('z{a,b},c}d', 'z(a|b)|c\\}d');
         compare('a{b{c{d,e}f{x,y{{g}h', 'a\\{b\\{c(d|e)f\\{x,y\\{\\{g\\}h', ['a{b{cdf{x,y{{g}h', 'a{b{cef{x,y{{g}h' ]);
         compare('f{x,y{{g}h', 'f\\{x,y\\{\\{g\\}h');
         compare('f{x,y{{g}}h', 'f\\{x,y(\\{g\\})h');
@@ -268,23 +265,27 @@ describe('.compile (.output)', function() {
 
     describe('positive numeric ranges', function() {
       it('should expand numeric ranges', function() {
-        compare('should expand numerical ranges');
-        compare('a{0..3}d', 'a([0-3])d');
-        compare('x{10..1}y', 'x([1-9]|10)y');
-        compare('x{3..3}y', 'x3y');
-        compare('{1..10}', '([1-9]|10)');
-        compare('{1..3}', '([1-3])');
-        compare('{1..9}', '([1-9])');
-        compare('{10..1}', '([1-9]|10)');
-        compare('{10..1}y', '([1-9]|10)y');
-        compare('{3..3}', '3');
-        compare('{5..8}', '([5-8])');
+        compare('should expand numeric ranges');
+        compare('a{0..3}d', ['a0d', 'a1d', 'a2d', 'a3d']);
+        compare('x{10..1}y', ['x10y', 'x9y', 'x8y', 'x7y', 'x6y', 'x5y', 'x4y', 'x3y', 'x2y', 'x1y']);
+        compare('x{3..3}y', ['x3y']);
+        compare('{1..10}', ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']);
+        compare('{1..3}', ['1', '2', '3']);
+        compare('{1..9}', ['1', '2', '3', '4', '5', '6', '7', '8', '9']);
+        compare('{10..1}', ['10', '9', '8', '7', '6', '5', '4', '3', '2', '1']);
+        compare('{10..1}y', ['10y', '9y', '8y', '7y', '6y', '5y', '4y', '3y', '2y', '1y']);
+        compare('{3..3}', ['3']);
+        compare('{5..8}', ['5', '6', '7', '8']);
       });
     });
 
+
+
+
+
     describe('negative ranges', function() {
       it('should expand ranges with negative numbers', function() {
-        compare('{-1..-10}', '(-[1-9]|-10)');
+        compare('should expand ranges with negative numbers');
         compare('{-10..-1}', '(-[1-9]|-10)');
         compare('{-20..0}', '(-[1-9]|-1[0-9]|-20|0)');
         compare('{0..-5}', '(-[1-5]|0)');
@@ -320,16 +321,16 @@ describe('.compile (.output)', function() {
     describe('combo', function() {
       it('should expand numerical ranges - positive and negative', function() {
         compare('should expand numerical ranges - positive and negative');
-        compare('{-10..10}', '(-[1-9]|-?10|[0-9])');
+        compare('{-10..10}', '(-?10|-?[1-9]|0)');
       });
     });
 
     // HEADS UP! If you're using the `--mm` flag minimatch freezes on these
     describe('large numbers', function() {
-      it('should expand large numbers', function() {
+      it.skip('should expand large numbers', function() {
         compare('should expand large numbers');
-        compare('{2147483645..2147483649}', '(214748364[5-9])');
-        compare('{214748364..2147483649}', '(21474836[4-9]|2147483[7-9][0-9]|214748[4-9][0-9]{2}|214749[0-9]{3}|2147[5-9][0-9]{4}|214[8-9][0-9]{5}|21[5-9][0-9]{6}|2[2-9][0-9]{7}|[3-9][0-9]{8}|1[0-9]{9}|20[0-9]{8}|21[0-3][0-9]{7}|214[0-6][0-9]{6}|2147[0-3][0-9]{5}|21474[0-7][0-9]{4}|214748[0-2][0-9]{3}|2147483[0-5][0-9]{2}|21474836[0-4][0-9])');
+        compare('{2147483645..2147483649}', ['(214748364[5-9])'], {makeRe: true});
+        compare('{214748364..2147483649}', ['(21474836[4-9]|2147483[7-9][0-9]|214748[4-9][0-9]{2}|214749[0-9]{3}|2147[5-9][0-9]{4}|214[8-9][0-9]{5}|21[5-9][0-9]{6}|2[2-9][0-9]{7}|[3-9][0-9]{8}|1[0-9]{9}|20[0-9]{8}|21[0-3][0-9]{7}|214[0-6][0-9]{6}|2147[0-3][0-9]{5}|21474[0-7][0-9]{4}|214748[0-2][0-9]{3}|2147483[0-5][0-9]{2}|21474836[0-4][0-9])'], {makeRe: true});
       });
     });
 
@@ -352,7 +353,7 @@ describe('.compile (.output)', function() {
       });
 
       it('should expand positive ranges with negative steps:', function() {
-        compare('should positive ranges with negative steps:');
+        compare('should expand positive ranges with negative steps:');
         compare('{10..0..-2}', '(10|8|6|4|2|0)');
       });
     });
@@ -416,7 +417,7 @@ describe('.compile (.output)', function() {
 
     it('should expand complex sets and ranges in `bash` mode:', function() {
       compare('should expand complex sets and ranges in `bash` mode:');
-      compare('a/{x,{1..5},y}/c{d}e', 'a/(x|([1-5])|y)/c\\{d\\}e', ['a/x/c{d}e', 'a/1/c{d}e', 'a/y/c{d}e', 'a/2/c{d}e', 'a/3/c{d}e', 'a/4/c{d}e', 'a/5/c{d}e']);
+      compare('a/{x,{1..5},y}/c{d}e', [ 'a/x/c\\{d\\}e', 'a/(1|2|3|4|5)/c\\{d\\}e', 'a/y/c\\{d\\}e' ], ['a/x/c{d}e', 'a/1/c{d}e', 'a/y/c{d}e', 'a/2/c{d}e', 'a/3/c{d}e', 'a/4/c{d}e', 'a/5/c{d}e']);
     });
   });
 });
