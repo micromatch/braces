@@ -14,7 +14,7 @@ var assert = require('assert');
 var tests = {};
 var compare = require('./support/compare')(tests);
 
-describe('.expand', function() {
+describe.skip('.expand', function() {
   after(function() {
     // console.log(tests)
   });
@@ -29,7 +29,7 @@ describe('.expand', function() {
     });
 
     describe('escaping', function() {
-      it.only('should not expand escaped braces', function() {
+      it('should not expand escaped braces', function() {
         compare('should not expand escaped braces');
         compare('\\{a,b,c,d,e}', ['{a,b,c,d,e}']);
         compare('a/b/c/{x,y\\}', ['a/b/c/{x,y}']);
