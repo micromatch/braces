@@ -8,7 +8,7 @@ var compare, tests = {};
 
 describe('compiler', function() {
   beforeEach(function() {
-    compare = support(tests, 'expand', {expand: true, makeRe: false});
+    compare = support(tests, 'expand', {expand: true, optimize: false});
   });
 
   var fixtures = [
@@ -286,7 +286,7 @@ describe('compiler', function() {
     ['z{a,b},c}d', {}],
     ['a{b{c{d,e}f{x,y{{g}h', {}],
     ['f{x,y{{g}h', {}],
-    ['f{x,y{{g}}h', {}],
+    ['f{x,y{{g}}h', {skip: true}],
     ['a{b{c{d,e}f{x,y{}g}h', {}],
     ['f{x,y{}g}h', {}],
     ['z{a,b{,c}d', {}],
@@ -313,7 +313,7 @@ describe('compiler', function() {
     ['0{1..9}/{10..20}', {}],
     ['0{a..d}0', {}],
     ['a/{b..d}/e', {}],
-    ['{1..f}', {bash: false}],
+    ['{1..f}', {bash: false, minimatch: false}], //<= minimatch fails
     ['{a..A}', {bash: false}],
     ['{A..a}', {bash: false}],
     ['{a..e}', {}],
@@ -321,7 +321,7 @@ describe('compiler', function() {
     ['{a..f}', {}],
     ['{a..z}', {}],
     ['{E..A}', {}],
-    ['{f..1}', {bash: false}],
+    ['{f..1}', {bash: false, minimatch: false}], //<= minimatch fails
     ['{f..a}', {}],
     ['{f..f}', {}],
 
@@ -337,56 +337,56 @@ describe('compiler', function() {
     // ['{214748364..2147483649}', {minimatch: false, bash: false, optimize: true, skip: true}],
 
     // should expand ranges using steps
-    ['{1..10..1}', {bash: false, makeRe: false}],
-    ['{1..10..2}', {bash: false, makeRe: false}],
-    ['{1..20..20}', {bash: false, makeRe: false}],
-    ['{1..20..20}', {bash: false, makeRe: false}],
-    ['{1..20..20}', {bash: false, makeRe: false}],
-    ['{1..20..2}', {bash: false, makeRe: false}],
-    ['{10..0..2}', {bash: false, makeRe: false}],
-    ['{10..1..2}', {bash: false, makeRe: false}],
-    ['{100..0..5}', {bash: false, makeRe: false}],
-    ['{2..10..1}', {bash: false, makeRe: false}],
-    ['{2..10..2}', {bash: false, makeRe: false}],
-    ['{2..10..3}', {bash: false, makeRe: false}],
-    ['{a..z..2}', {bash: false, makeRe: false}],
+    ['{1..10..1}', {bash: false, optimize: false}],
+    ['{1..10..2}', {bash: false, optimize: false}],
+    ['{1..20..20}', {bash: false, optimize: false}],
+    ['{1..20..20}', {bash: false, optimize: false}],
+    ['{1..20..20}', {bash: false, optimize: false}],
+    ['{1..20..2}', {bash: false, optimize: false}],
+    ['{10..0..2}', {bash: false, optimize: false}],
+    ['{10..1..2}', {bash: false, optimize: false}],
+    ['{100..0..5}', {bash: false, optimize: false}],
+    ['{2..10..1}', {bash: false, optimize: false}],
+    ['{2..10..2}', {bash: false, optimize: false}],
+    ['{2..10..3}', {bash: false, optimize: false}],
+    ['{a..z..2}', {bash: false, optimize: false}],
 
     // should expand positive ranges with negative steps
-    ['{10..0..-2}', {bash: false, makeRe: false}],
+    ['{10..0..-2}', {bash: false, optimize: false}],
 
     // should expand negative ranges using steps
-    ['{-1..-10..-2}', {bash: false, makeRe: false}],
-    ['{-1..-10..2}', {bash: false, makeRe: false}],
-    ['{-10..-2..2}', {bash: false, makeRe: false}],
-    ['{-2..-10..1}', {bash: false, makeRe: false}],
-    ['{-2..-10..2}', {bash: false, makeRe: false}],
-    ['{-2..-10..3}', {bash: false, makeRe: false}],
-    ['{-50..-0..5}', {bash: false, makeRe: false}],
-    ['{-9..9..3}', {bash: false, makeRe: false}],
-    ['{10..1..-2}', {bash: false, makeRe: false}],
-    ['{100..0..-5}', {bash: false, makeRe: false}],
+    ['{-1..-10..-2}', {bash: false, optimize: false}],
+    ['{-1..-10..2}', {bash: false, optimize: false}],
+    ['{-10..-2..2}', {bash: false, optimize: false}],
+    ['{-2..-10..1}', {bash: false, optimize: false}],
+    ['{-2..-10..2}', {bash: false, optimize: false}],
+    ['{-2..-10..3}', {bash: false, optimize: false}],
+    ['{-50..-0..5}', {bash: false, optimize: false}],
+    ['{-9..9..3}', {bash: false, optimize: false}],
+    ['{10..1..-2}', {bash: false, optimize: false}],
+    ['{100..0..-5}', {bash: false, optimize: false}],
 
     // should expand alpha ranges with steps
-    ['{a..e..2}', {bash: false, makeRe: false}],
-    ['{E..A..2}', {bash: false, makeRe: false}],
+    ['{a..e..2}', {bash: false, optimize: false}],
+    ['{E..A..2}', {bash: false, optimize: false}],
     ['{a..z}', {}],
-    ['{a..z..2}', {bash: false, makeRe: false}],
-    ['{z..a..-2}', {bash: false, makeRe: false}],
+    ['{a..z..2}', {bash: false, optimize: false}],
+    ['{z..a..-2}', {bash: false, optimize: false}],
 
     // should expand alpha ranges with negative steps
-    ['{z..a..-2}', {bash: false, makeRe: false}],
+    ['{z..a..-2}', {bash: false, optimize: false}],
 
     // should handle unwanted zero-padding (fixed post-bash-4.0)
-    ['{10..0..2}', {bash: false, makeRe: false}],
-    ['{10..0..-2}', {bash: false, makeRe: false}],
-    ['{-50..-0..5}', {bash: false, makeRe: false}],
+    ['{10..0..2}', {bash: false, optimize: false}],
+    ['{10..0..-2}', {bash: false, optimize: false}],
+    ['{-50..-0..5}', {bash: false, optimize: false}],
 
     // should work with dots in file paths
     ['../{1..3}/../foo', {}],
-    ['../{2..10..2}/../foo', {bash: false, makeRe: false}],
+    ['../{2..10..2}/../foo', {bash: false, optimize: false}],
     ['../{1..3}/../{a,b,c}/foo', {}],
-    ['./{a..z..3}/', {bash: false, makeRe: false}],
-    ['./{"x,y"}/{a..z..3}/', {bash: false, makeRe: false}],
+    ['./{a..z..3}/', {bash: false, optimize: false}],
+    ['./{"x,y"}/{a..z..3}/', {bash: false, minimatch: false, optimize: false}], //<= minimatch fails
 
     // should expand a complex combination of ranges and sets
     ['a/{x,y}/{1..5}c{d,e}f.{md,txt}', {}],
@@ -396,12 +396,15 @@ describe('compiler', function() {
   ];
 
   fixtures.forEach(function(arr) {
-    var opts = extend({}, arr[1], {makeRe: false, expand: true});
+    var opts = extend({}, arr[1], {optimize: false, expand: true});
     var str = arr[0];
     // if (str !== 'a/{{b,c}/{d,e}}/f') return;
 
-    // console.log(stringify(reference(str, opts), {newlines: false}));
     it('should compile: ' + str, function() {
+      if (opts.skip === true) {
+        this.skip();
+        return;
+      }
       compare(str, reference(str, opts), opts);
     });
   });

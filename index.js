@@ -23,23 +23,11 @@ var cache = {braces: {}};
 
 function braces(pattern, options) {
   debug('initializing from <%s>', __filename);
-  var key = pattern;
-  if (options) {
-    for (var prop in options) {
-      if (options.hasOwnProperty(prop)) {
-        key += ';' + prop + '=' + String(options[prop]);
-      }
-    }
-  }
+  var key = createKey(pattern, options);
 
-  if (cache.braces.hasOwnProperty(key)) {
+  if (isCached('braces', key, options)) {
     return cache.braces[key];
   }
-
-  // var key = createKey(pattern, options);
-  // if (isCached('braces', key, options)) {
-  //   return cache.braces[key];
-  // }
 
   var result = braces.compile(pattern, options);
   cache.braces[key] = result.output;
@@ -54,7 +42,7 @@ braces.compile = function(pattern, options) {
 };
 
 braces.expand = function(pattern, options) {
-  var opts = utils.extend({}, options, {expand: true, makeRe: false});
+  var opts = utils.extend({}, options, {expand: true, optimize: false});
   if (pattern === '' || pattern.length <= 2) {
     return [pattern];
   }
@@ -200,14 +188,13 @@ braces.makeRe = function(pattern, options) {
   if (isCached('makeRe', pattern, options)) {
     regex = cache.makeRe[key];
   } else {
-    var opts = utils.extend({makeRe: true, expand: false}, options);
+    var opts = utils.extend({optimize: true, expand: false}, options);
     regex = cache.makeRe[key] = new Braces(opts).makeRe(pattern);
   }
 
   return regex;
 };
 
-// console.log(braces.makeRe('a/b/{c,d,e}/f'))
 
 function isCached(type, key, options) {
   cache[type] = cache[type] || {};

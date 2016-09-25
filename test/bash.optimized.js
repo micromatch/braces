@@ -297,13 +297,18 @@ describe('optimized', function() {
   ];
 
   fixtures.forEach(function(arr) {
-    var opts = extend(arr[1], {makeRe: true});
+    var opts = extend(arr[1], {optimize: true});
     var str = arr[0];
     var expected = arr[2] || reference(str, opts);
-    // if (str !== './{x,y}}/(a|d|g|j|m|p|s|v|y)/') return;
+
+    // if (str !== 'a/{x,{1..5},y}/c{d}e') return;
 
     it('should compile: ' + str, function() {
+      if (opts.skip === true) {
+        this.skip();
+        return;
+      }
       compare(str, expected, opts);
     });
-  });
+  }.bind(this));
 });
