@@ -1,23 +1,47 @@
-#1: escape.js
-  brace-expansion.js x 107,003 ops/sec ±1.16% (90 runs sampled)
-  braces.js x 223,527 ops/sec ±0.67% (95 runs sampled)
+Benchmarking: (6 of 6)
+ · escape
+ · multiple
+ · nested
+ · normal
+ · range
+ · ranges
 
-#2: exponent.js
-  brace-expansion.js x 14,850 ops/sec ±0.99% (96 runs sampled)
-  braces.js x 595,592 ops/sec ±0.75% (96 runs sampled)
+# benchmark/fixtures/escape.js (42 bytes)
+  brace-expansion x 86,633 ops/sec ±1.08% (82 runs sampled)
+  braces x 8,413,921 ops/sec ±1.47% (86 runs sampled)
+  minimatch x 91,438 ops/sec ±1.65% (85 runs sampled)
 
-#3: multiple.js
-  brace-expansion.js x 102,908 ops/sec ±1.59% (91 runs sampled)
-  braces.js x 360,895 ops/sec ±0.53% (97 runs sampled)
+  fastest is braces
 
-#4: nested.js
-  brace-expansion.js x 112,877 ops/sec ±1.56% (90 runs sampled)
-  braces.js x 392,422 ops/sec ±0.84% (95 runs sampled)
+# benchmark/fixtures/multiple.js (38 bytes)
+  brace-expansion x 88,555 ops/sec ±1.43% (83 runs sampled)
+  braces x 7,450,531 ops/sec ±1.43% (84 runs sampled)
+  minimatch x 67,936 ops/sec ±1.23% (86 runs sampled)
 
-#5: normal.js
-  brace-expansion.js x 176,480 ops/sec ±1.68% (91 runs sampled)
-  braces.js x 557,777 ops/sec ±0.82% (95 runs sampled)
+  fastest is braces
 
-#6: range.js
-  brace-expansion.js x 111,405 ops/sec ±1.59% (90 runs sampled)
-  braces.js x 348,645 ops/sec ±0.89% (96 runs sampled)
+# benchmark/fixtures/nested.js (39 bytes)
+  brace-expansion x 67,551 ops/sec ±1.42% (86 runs sampled)
+  braces x 7,086,549 ops/sec ±1.45% (81 runs sampled)
+  minimatch x 66,975 ops/sec ±1.59% (85 runs sampled)
+
+  fastest is braces
+
+# benchmark/fixtures/normal.js (38 bytes)
+  brace-expansion x 141,188 ops/sec ±1.43% (83 runs sampled)
+  braces x 6,728,393 ops/sec ±1.51% (83 runs sampled)
+  minimatch x 130,210 ops/sec ±1.35% (87 runs sampled)
+
+  fastest is braces
+
+# benchmark/fixtures/range.js (39 bytes)
+  brace-expansion x 91,959 ops/sec ±1.46% (87 runs sampled)
+  braces x 6,549,020 ops/sec ±1.67% (85 runs sampled)
+  minimatch x 82,684 ops/sec ±1.47% (84 runs sampled)
+
+  fastest is braces
+
+# benchmark/fixtures/ranges.js (49 bytes)
+  brace-expansion x 6,002 ops/sec ±1.23% (86 runs sampled)
+  braces x 7,424,642 ops/sec ±1.91% (82 runs sampled)
+  minimatch x 4,155 ops/sec ±1.25% (85 runs sampled)
