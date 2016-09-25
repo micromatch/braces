@@ -13,7 +13,7 @@ var compare, tests = {};
 
 describe('optimized', function() {
   beforeEach(function() {
-    compare = support(tests, 'stringify', {makeRe: true});
+    compare = support(tests, {makeRe: true});
   });
 
   describe('sets', function() {

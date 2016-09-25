@@ -18,7 +18,7 @@ var reference = {
 module.exports = function(str, options) {
   var fn = argv.m ? reference.minimatch : bash;
   if (options.minimatch !== false && options.bash === false) {
-    return braces.expand.apply(braces, arguments);
+    return reference.minimatch.apply(minimatch, arguments);
   }
   return fn.apply(null, arguments);
-}
+};

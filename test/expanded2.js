@@ -1,13 +1,14 @@
 'use strict';
 
 var extend = require('extend-shallow');
+var stringify = require('./support/stringify');
 var reference = require('./support/reference');
 var support = require('./support/compare');
 var compare, tests = {};
 
 describe('compiler', function() {
   beforeEach(function() {
-    compare = support(tests, 'expand', {expand: true});
+    compare = support(tests, 'expand', {expand: true, makeRe: false});
   });
 
   var fixtures = [
@@ -39,7 +40,7 @@ describe('compiler', function() {
     ['a/{b,{c,d},e}/f', {}],
     ['a/{b,{c,d}/{e,f},g}/h', {}],
     ['a/{b{c,d},e{f,g}h{i,j}}/k', {}],
-    ['a/{b{c,d},e}/f', // [ 'a/bc/f', {}],
+    ['a/{b{c,d},e}/f', {}],
     ['a/{b{c,d}e{f,g}h{i,j}}/k', {}],
     ['a/{b{c,d}e{f,g},h{i,j}}/k', {}],
     ['a/{x,y}/{1..5}c{d,e}f.{md,txt}', {}],
@@ -75,9 +76,8 @@ describe('compiler', function() {
     ['{1..ff}', {}],
     ['{1.20..2}', {}],
     ['{10..1}', {}],
-    ['{10..1}y', {}],
-    ['{214748364..2147483649}', {}],
-    ['{2147483645..2147483649}', {}],
+    // ['{214748364..2147483649}', {}],
+    // ['{2147483645..2147483649}', {}],
     ['{3..3}', {}],
     ['{5..8}', {}],
     ['{9..-4}', {}],
@@ -110,7 +110,7 @@ describe('compiler', function() {
     ['**/{1..5}/a.js', {}],
     ['**/{a,b,c}/*.js', {}],
     ['**/{a,b,*}/*.js', {}],
-    ['**/{**,b,*}/*.js', {}],, {}],
+    ['**/{**,b,*}/*.js', {}],
 
     ['/usr/{ucb/{ex,edit},lib/{ex,how_ex}}', {}],
     ['ff{c,b,a}', {}],
@@ -123,7 +123,6 @@ describe('compiler', function() {
     ['{{0..10},braces}', {}],
     ['{{1..10..2},braces}', {bash: false}],
     ['{{1..10},braces}', {}],
-
 
     ['a/{a,b}/{c,d}/e', {}],
     ['a{b,c}d{e,f}g', {}],
@@ -393,15 +392,15 @@ describe('compiler', function() {
     ['a/{x,y}/{1..5}c{d,e}f.{md,txt}', {}],
 
     // should expand complex sets and ranges in `bash` mode
-    ['a/{x,{1..5},y}/c{d}e', {}],
-
+    ['a/{x,{1..5},y}/c{d}e', {}]
   ];
 
   fixtures.forEach(function(arr) {
     var opts = extend({}, arr[1], {makeRe: false, expand: true});
     var str = arr[0];
-    // if (str !== 'a{b{c{d,e}f{x,y{}g}h') return;
+    // if (str !== 'a/{{b,c}/{d,e}}/f') return;
 
+    // console.log(stringify(reference(str, opts), {newlines: false}));
     it('should compile: ' + str, function() {
       compare(str, reference(str, opts), opts);
     });

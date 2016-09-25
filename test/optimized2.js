@@ -7,7 +7,7 @@ var compare, tests = {};
 
 describe('optimized', function() {
   beforeEach(function() {
-    compare = support(tests, 'stringify');
+    compare = support(tests);
   });
 
   var fixtures = [
@@ -300,7 +300,7 @@ describe('optimized', function() {
     var opts = extend(arr[1], {makeRe: true});
     var str = arr[0];
     var expected = arr[2] || reference(str, opts);
-    if (str !== './{x,y}}/(a|d|g|j|m|p|s|v|y)/') return;
+    // if (str !== './{x,y}}/(a|d|g|j|m|p|s|v|y)/') return;
 
     it('should compile: ' + str, function() {
       compare(str, expected, opts);
