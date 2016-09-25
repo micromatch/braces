@@ -8,9 +8,6 @@
 'use strict';
 
 require('mocha');
-var util = require('util');
-var isObject = require('isobject');
-var assert = require('assert');
 var tests = {};
 var compare = require('./support/compare')(tests);
 
@@ -91,7 +88,7 @@ describe.skip('.expand', function() {
 
       it('should not expand escaped braces.', function() {
         compare('should not expand escaped braces.');
-        compare('{a,b\\}c,d}', '(a|b\\}c|d)', ['a','b}c','d']);
+        compare('{a,b\\}c,d}', '(a|b\\}c|d)', ['a', 'b}c', 'd']);
         compare('\\{a,b,c,d,e}', '\\{a,b,c,d,e\\}');
         compare('a/{z,\\{a,b,c,d,e}/d', 'a/(z|\\{a|b|c|d|e)/d');
         compare('a/\\{b,c}/{d,e}/f', 'a/\\{b,c\\}/(d|e)/f');
@@ -278,10 +275,6 @@ describe.skip('.expand', function() {
         compare('{5..8}', ['5', '6', '7', '8']);
       });
     });
-
-
-
-
 
     describe('negative ranges', function() {
       it('should expand ranges with negative numbers', function() {

@@ -24,11 +24,9 @@ var cache = {};
 
 function braces(str, options) {
   if (cache[str]) return cache[str];
-  var input = utils.escape(str, options);
-  var output = braces.compile(input, options).output;
-  var res = utils.unescape(output, options);
-  cache[str] = res;
-  return res;
+  var result = braces.compile(str, options);
+  cache[str] = result.output;
+  return result.output;
 }
 
 braces.compile = function(str, options) {
@@ -46,9 +44,10 @@ braces.compile = function(str, options) {
 };
 
 braces.expand = function(str, options) {
+  var opts = utils.extend({unescape: true}, options, {expand: true, makeRe: false});
   if (str === '' || str.length <= 2) return [str];
-  var opts = utils.extend({unescape: true}, options, {expand: true});
-  return braces.compile(str, opts).output;
+  var res = braces.compile(str, opts).output;
+  return res;
 };
 
 /**

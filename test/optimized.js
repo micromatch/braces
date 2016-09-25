@@ -8,30 +8,14 @@
 'use strict';
 
 require('mocha');
-var assert = require('assert');
-var braces = require('..');
-var tests = {};
-var heading;
+var support = require('./support/compare');
+var compare, tests = {};
 
-function compare(fixture, expected) {
-  if (arguments.length === 1) {
-    heading = fixture;
-    tests[heading] = tests[heading] || [];
-    return;
-  }
+describe('optimized', function() {
+  beforeEach(function() {
+    compare = support(tests, 'stringify', {makeRe: true});
+  });
 
-  if (tests[heading]) {
-    tests[heading].push({
-      fixture: fixture,
-      expected: expected
-    });
-  }
-
-  var output = braces.compile(fixture).output;
-  assert.equal(output, expected, ' (' + fixture + ')\n\n      "' + output + '" !== "' + expected + '"\n');
-}
-
-describe('.compile (.output)', function() {
   describe('sets', function() {
     describe('invalid sets', function() {
       it('should handle invalid sets:', function() {
@@ -44,11 +28,11 @@ describe('.compile (.output)', function() {
     describe('escaping', function() {
       it('should not expand escaped braces', function() {
         compare('should expand sets');
-        compare('\\{a,b,c,d,e}', '\\{a,b,c,d,e\\}');
-        compare('a/b/c/{x,y\\}', 'a/b/c/\\{x,y\\}');
-        compare('a/\\{x,y}/cde', 'a/\\{x,y\\}/cde');
-        compare('abcd{efgh', 'abcd\\{efgh');
-        compare('{abc}', '\\{abc\\}');
+        compare('\\{a,b,c,d,e}', '{a,b,c,d,e}');
+        compare('a/b/c/{x,y\\}', 'a/b/c/{x,y}');
+        compare('a/\\{x,y}/cde', 'a/{x,y}/cde');
+        compare('abcd{efgh', 'abcd{efgh');
+        compare('{abc}', '{abc}');
         compare('{x,y,\\{a,b,c\\}}', '(x|y|\\{a|b|c\\})');
         compare('{x,y,{a,b,c\\}}', '\\{x,y,(a|b|c\\})');
         compare('{x,y,{abc},trie}', '(x|y|\\{abc\\}|trie)');
@@ -64,7 +48,7 @@ describe('.compile (.output)', function() {
 
       it('should handle empty braces', function() {
         compare('should handle empty braces');
-        compare('{ }', '\\{|\\}');
+        compare('{ }', '\\{ \\}');
         compare('{', '\\{');
         compare('{}', '\\{\\}');
         compare('}', '\\}');
@@ -99,7 +83,7 @@ describe('.compile (.output)', function() {
 
       it('should not expand escaped braces.', function() {
         compare('should not expand escaped braces.');
-        compare('{a,b\\}c,d}', '(a|b\\}c|d)', ['a','b}c','d']);
+        compare('{a,b\\}c,d}', '(a|b\\}c|d)', ['a', 'b}c', 'd']);
         compare('\\{a,b,c,d,e}', '\\{a,b,c,d,e\\}');
         compare('a/{z,\\{a,b,c,d,e}/d', 'a/(z|\\{a|b|c|d|e)/d');
         compare('a/\\{b,c}/{d,e}/f', 'a/\\{b,c\\}/(d|e)/f');
@@ -138,10 +122,10 @@ describe('.compile (.output)', function() {
       it('should expand nested sets', function() {
         compare('should expand nested sets');
         compare('{a,b}{{a,b},a,b}', '(a|b)((a|b)|a|b)');
-        compare('/usr/{ucb/{ex,edit},lib/{ex,how_ex}}', '/usr/(ucb/(ex|edit)|lib/(ex|how_ex))');
         compare('a{b,c{d,e}f}g', 'a(b|c(d|e)f)g');
         compare('a{{x,y},z}b', 'a((x|y)|z)b');
         compare('f{x,y{g,z}}h', 'f(x|y(g|z))h');
+        compare('a{b,c}{d,e}/hx/z', 'a(b|c)(d|e)/hx/z');
         compare('a{b,c{d,e},h}x/z', 'a(b|c(d|e)|h)x/z');
         compare('a{b,c{d,e},h}x{y,z}', 'a(b|c(d|e)|h)x(y|z)');
         compare('a{b,c{d,e},{f,g}h}x{y,z}', 'a(b|c(d|e)|(f|g)h)x(y|z)');
@@ -238,8 +222,8 @@ describe('.compile (.output)', function() {
 
       it('should escaped outer braces in nested non-sets', function() {
         compare('should work with nested non-sets');
-        compare('{a-{b,c,d}}', '\\{a-(b|c|d)\\}');
-        compare('{a,{a-{b,c,d}}}', '(a|\\{a-(b|c|d)\\})');
+        compare('{a-{b,c,d}}', '{a-(b|c|d)}');
+        compare('{a,{a-{b,c,d}}}', '(a|{a-(b|c|d)})');
       });
 
       it('should escape imbalanced braces', function() {
@@ -250,7 +234,6 @@ describe('.compile (.output)', function() {
         compare('{abc', '\\{abc');
         compare('}abc', '\\}abc');
         compare('ab{c', 'ab\\{c');
-        compare('ab{c', 'ab\\{c');
         compare('{{a,b}', '\\{(a|b)');
         compare('{a,b}}', '(a|b)\\}');
         compare('abcd{efgh', 'abcd\\{efgh');
@@ -259,8 +242,8 @@ describe('.compile (.output)', function() {
         compare('z{a,b},c}d', 'z(a|b),c\\}d');
         compare('a{b{c{d,e}f{x,y{{g}h', 'a\\{b\\{c(d|e)f\\{x,y\\{\\{g\\}h', ['a{b{cdf{x,y{{g}h', 'a{b{cef{x,y{{g}h' ]);
         compare('f{x,y{{g}h', 'f\\{x,y\\{\\{g\\}h');
-        compare('f{x,y{{g}}h', 'f\\{x,y(\\{g\\})h');
-        compare('a{b{c{d,e}f{x,y{}g}h', 'a\\{b\\{c(d|e)f(x|y\\{\\}g)h');
+        compare('f{x,y{{g}}h', 'f{x,y{{g}}h');
+        compare('a{b{c{d,e}f{x,y{}g}h', 'a{b{c(d|e)f(x|y{}g)h');
         compare('f{x,y{}g}h', 'f(x|y\\{\\}g)h');
         compare('z{a,b{,c}d', 'z\\{a,b(|c)d');
       });
@@ -360,12 +343,12 @@ describe('.compile (.output)', function() {
     describe('steps > negative ranges', function() {
       it('should expand negative ranges using steps:', function() {
         compare('should expand negative ranges using steps:');
-        compare('{-1..-10..-2}', '-(1|3|5|7|9)');
-        compare('{-1..-10..2}', '-(1|3|5|7|9)');
-        compare('{-10..-2..2}', '-(10|8|6|4|2)');
+        compare('{-1..-10..-2}', '(-(1|3|5|7|9))');
+        compare('{-1..-10..2}', '(-(1|3|5|7|9))');
+        compare('{-10..-2..2}', '(-(10|8|6|4|2))');
         compare('{-2..-10..1}', '(-[2-9]|-10)');
-        compare('{-2..-10..2}', '-(2|4|6|8|10)');
-        compare('{-2..-10..3}', '-(2|5|8)');
+        compare('{-2..-10..2}', '(-(2|4|6|8|10))');
+        compare('{-2..-10..3}', '(-(2|5|8))');
         compare('{-50..-0..5}', '(0|-(50|45|40|35|30|25|20|15|10|5))');
         compare('{-9..9..3}', '(0|3|6|9|-(9|6|3))');
         compare('{10..1..-2}', '(10|8|6|4|2)');
