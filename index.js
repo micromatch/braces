@@ -5,15 +5,19 @@ var compilers = require('./lib/compilers');
 var parsers = require('./lib/parsers');
 var Braces = require('./lib/braces');
 var utils = require('./lib/utils');
-var cache = {braces: {}};
+var cache = {braces: {}, compile: {}, expand: {}, parse: {}};
 
 /**
- * Convert the given `braces` pattern into a regex-compatible string.
+ * Convert the given `braces` pattern into a regex-compatible string. Set `options.expand`
+ * to true to return an array of patterns.
  *
  * ```js
  * var braces = require('braces');
- * var str = braces('*.!(*a)');
- * console.log(str);
+ * console.log(braces('{a,b,c}'));
+ * //=> ['(a|b|c)']
+ *
+ * console.log(braces('{a,b,c}', {expand: true}));
+ * //=> ['a', 'b', 'c']
  * ```
  * @param {String} `str`
  * @param {Object} `options`
@@ -23,53 +27,79 @@ var cache = {braces: {}};
 
 function braces(pattern, options) {
   debug('initializing from <%s>', __filename);
-  var key = createKey(pattern, options);
+  if (options && options.expand === true) {
+    return braces.expand.apply(braces, arguments);
+  }
 
-  if (isCached('braces', key, options)) {
+  var key = pattern;
+  if (options) {
+    for (var prop in options) {
+      if (options.hasOwnProperty(prop)) {
+        key += ';' + prop + '=' + String(options[prop]);
+      }
+    }
+  }
+
+  if (cache.braces[key]) {
     return cache.braces[key];
   }
 
   var result = braces.compile(pattern, options);
-  cache.braces[key] = result.output;
-  return result.output;
+  var output = result.output;
+  cache.braces[key] = output;
+  return output;
 }
 
+braces.parse = function(pattern, options) {
+  var opts = utils.extend({optimize: true}, options);
+
+  var key = pattern;
+  for (var prop in opts) {
+    if (opts.hasOwnProperty(prop)) {
+      key += ';' + prop + '=' + String(opts[prop]);
+    }
+  }
+
+  if (cache.parse[key]) {
+    return cache.parse[key];
+  }
+
+  var inst = braces.instance = new Braces(opts);
+  var ast = inst.parse(pattern, opts);
+  cache.parse[key] = ast;
+  return ast;
+};
+
 braces.compile = function(pattern, options) {
-  var matcher = new Braces(options);
-  var ast = matcher.parse(pattern, options);
-  var compiled = matcher.compile(ast, options);
+  var opts = utils.extend({optimize: true}, options);
+
+  var key = pattern;
+  for (var prop in opts) {
+    if (opts.hasOwnProperty(prop)) {
+      key += ';' + prop + '=' + String(opts[prop]);
+    }
+  }
+
+  if (cache.compile[key]) {
+    return cache.compile[key];
+  }
+
+  var ast = braces.parse(pattern, opts);
+  var inst = braces.instance || new Braces(opts);
+  var compiled = inst.compile(ast, opts);
+  compiled.output = utils.arrayify(compiled.output);
+  cache.compile[key] = compiled;
   return compiled;
 };
 
 braces.expand = function(pattern, options) {
-  var opts = utils.extend({}, options, {expand: true, optimize: false});
+  var opts = utils.createOptions({}, options, {optimize: false, expand: true});
   if (pattern === '' || pattern.length <= 2) {
     return [pattern];
   }
   var res = braces.compile(pattern, opts).output;
-  return res;
+  return utils.arrayify(res);
 };
-
-function isCached(type, key, options) {
-  cache[type] = cache[type] || {};
-  if (options && options.cache === false) {
-    return false;
-  }
-  return cache[type].hasOwnProperty(key);
-}
-
-function createKey(pattern, options) {
-  var key = pattern;
-  if (typeof options === 'undefined') {
-    return key;
-  }
-  for (var prop in options) {
-    if (options.hasOwnProperty(prop)) {
-      key += ';' + prop + '=' + String(options[prop]);
-    }
-  }
-  return key;
-}
 
 /**
  * Expose `braces`

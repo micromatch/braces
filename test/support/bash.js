@@ -1,7 +1,7 @@
 'use strict';
 
-var utils = require('../../lib/utils');
 var spawn = require('cross-spawn');
+var utils = require('./utils');
 
 /**
  * Expose `bash` util

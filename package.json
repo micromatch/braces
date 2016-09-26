@@ -36,8 +36,10 @@
     "snapdragon": "^0.5.0"
   },
   "devDependencies": {
+    "ansi-cyan": "^0.1.1",
+    "benchmarked": "^0.2.5",
+    "brace-expansion": "^1.1.6",
     "cross-spawn": "^4.0.0",
-    "for-own": "^0.1.4",
     "gulp": "^3.9.1",
     "gulp-eslint": "^3.0.1",
     "gulp-format-md": "^0.1.8",

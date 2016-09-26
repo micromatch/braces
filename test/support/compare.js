@@ -1,49 +1,33 @@
 'use strict';
 
 var util = require('util');
-var isNumber = require('is-number');
 var compare = require('./natural');
 var assert = require('assert');
 var braces = require('../..');
+var history = {fixtures: {}, expected: {}};
 
-module.exports = function(tests, config) {
-  var heading;
-
+module.exports = function(config) {
   return function(fixture, expected, options) {
     var opts = Object.assign({}, config, options);
     if (opts.skip) return;
 
-    if (arguments.length === 1) {
-      heading = fixture;
-      tests[heading] = tests[heading] || [];
-      return;
-    }
-
-    if (Array.isArray(expected)) {
-      expected.sort(compare);
-    }
-
+    var actual = braces(fixture, opts);
     expected = inspect(expected);
-    if (tests[heading]) {
-      tests[heading].push({
-        fixture: inspect(fixture),
-        expected: expected
-      });
-    }
+    actual = inspect(actual);
 
-    var val = opts.expand ? braces.expand.call(braces, fixture, opts) : braces(fixture, opts);
-    if (Array.isArray(val)) {
-      val.sort(compare);
-    }
-
-    var actual = inspect(val);
     var msg = ' ' + fixture + '\n\n      "' + actual + '" !== "' + expected + '"\n';
     assert.deepEqual(actual, expected, msg);
-  }
-}
+  };
+};
 
-function inspect(str) {
-  return util.inspect(str, {depth: null})
+function inspect(val) {
+  if (Array.isArray(val)) {
+    val = val.map(function(str) {
+      return str.split('\\').join('');
+    })
+    val.sort(compare);
+  }
+  return util.inspect(val, {depth: null})
     .split(/\s*\n+\s*/).join(' ')
     .split(/\[\s*'/).join('[\'')
     .split(/'\s*\]/).join('\']')

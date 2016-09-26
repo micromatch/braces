@@ -26,10 +26,10 @@ module.exports = function naturalSort(a, b) {
   if (!isNumA) return 1;
   if (!isNumB) return -1;
   return compare(parsedA, parsedB);
-}
+};
 
 function compare(a, b) {
-  return a == b ? 0 : (a < b ? -1 : 1);
+  return a === b ? 0 : (a < b ? -1 : 1);
 }
 
 function strip(val, re) {

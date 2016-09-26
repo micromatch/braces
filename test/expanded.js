@@ -9,11 +9,11 @@
 
 require('mocha');
 var support = require('./support/compare');
-var compare, tests = {};
+var compare;
 
 describe('optimized', function() {
   beforeEach(function() {
-    compare = support(tests, {optimize: false});
+    compare = support({optimize: false});
   });
 
   describe('sets', function() {
@@ -151,7 +151,7 @@ describe('optimized', function() {
 
     describe('spaces', function() {
       it('should handle spaces', function() {
-        compare('0{1..9} {10..20}', [ '01 10', '01 11', '01 12', '01 13', '01 14', '01 15', '01 16', '01 17', '01 18', '01 19', '01 20', '02 10', '02 11', '02 12', '02 13', '02 14', '02 15', '02 16', '02 17', '02 18', '02 19', '02 20', '03 10', '03 11', '03 12', '03 13', '03 14', '03 15', '03 16', '03 17', '03 18', '03 19', '03 20', '04 10', '04 11', '04 12', '04 13', '04 14', '04 15', '04 16', '04 17', '04 18', '04 19', '04 20', '05 10', '05 11', '05 12', '05 13', '05 14', '05 15', '05 16', '05 17', '05 18', '05 19', '05 20', '06 10', '06 11', '06 12', '06 13', '06 14', '06 15', '06 16', '06 17', '06 18', '06 19', '06 20', '07 10', '07 11', '07 12', '07 13', '07 14', '07 15', '07 16', '07 17', '07 18', '07 19', '07 20', '08 10', '08 11', '08 12', '08 13', '08 14', '08 15', '08 16', '08 17', '08 18', '08 19', '08 20', '09 10', '09 11', '09 12', '09 13', '09 14', '09 15', '09 16', '09 17', '09 18', '09 19', '09 20' ]);
+        compare('0{1..9} {10..20}', ['01 10', '01 11', '01 12', '01 13', '01 14', '01 15', '01 16', '01 17', '01 18', '01 19', '01 20', '02 10', '02 11', '02 12', '02 13', '02 14', '02 15', '02 16', '02 17', '02 18', '02 19', '02 20', '03 10', '03 11', '03 12', '03 13', '03 14', '03 15', '03 16', '03 17', '03 18', '03 19', '03 20', '04 10', '04 11', '04 12', '04 13', '04 14', '04 15', '04 16', '04 17', '04 18', '04 19', '04 20', '05 10', '05 11', '05 12', '05 13', '05 14', '05 15', '05 16', '05 17', '05 18', '05 19', '05 20', '06 10', '06 11', '06 12', '06 13', '06 14', '06 15', '06 16', '06 17', '06 18', '06 19', '06 20', '07 10', '07 11', '07 12', '07 13', '07 14', '07 15', '07 16', '07 17', '07 18', '07 19', '07 20', '08 10', '08 11', '08 12', '08 13', '08 14', '08 15', '08 16', '08 17', '08 18', '08 19', '08 20', '09 10', '09 11', '09 12', '09 13', '09 14', '09 15', '09 16', '09 17', '09 18', '09 19', '09 20']);
         compare('a{ ,c{d, },h}x', ['acdx', 'ac x', 'ahx', 'a x']);
         compare('a{ ,c{d, },h} ', ['a  ', 'ac  ', 'acd ', 'ah ']);
 
@@ -187,7 +187,6 @@ describe('optimized', function() {
       });
 
       it('weirdly-formed brace expansions -- fixed in post-bash-3.1', function() {
-        compare('weirdly-formed brace expansions -- fixed in post-bash-3.1');
         compare('a-{b{d,e}}-c', ['a-{bd}-c', 'a-{be}-c']);
         compare('a-{bdef-{g,i}-c', ['a-{bdef-g-c', 'a-{bdef-i-c']);
       });
@@ -280,7 +279,7 @@ describe('optimized', function() {
 
     // HEADS UP! If you're using the `--mm` flag minimatch freezes on these
     describe('large numbers', function() {
-      it.skip('should expand large numbers', function() {
+      it('should expand large numbers', function() {
         compare('{2147483645..2147483649}', ['(214748364[5-9])'], {optimize: true});
         compare('{214748364..2147483649}', ['(21474836[4-9]|2147483[7-9][0-9]|214748[4-9][0-9]{2}|214749[0-9]{3}|2147[5-9][0-9]{4}|214[8-9][0-9]{5}|21[5-9][0-9]{6}|2[2-9][0-9]{7}|[3-9][0-9]{8}|1[0-9]{9}|20[0-9]{8}|21[0-3][0-9]{7}|214[0-6][0-9]{6}|2147[0-3][0-9]{5}|21474[0-7][0-9]{4}|214748[0-2][0-9]{3}|2147483[0-5][0-9]{2}|21474836[0-4][0-9])'], {optimize: true});
       });
@@ -336,7 +335,6 @@ describe('optimized', function() {
 
     describe('padding', function() {
       it('unwanted zero-padding -- fixed post-bash-4.0', function() {
-        compare('unwanted zero-padding -- fixed post-bash-4.0');
         compare('{10..0..2}', ['10', '8', '6', '4', '2', '0']);
         compare('{10..0..-2}', ['10', '8', '6', '4', '2', '0']);
         compare('{-50..-0..5}', ['-50', '-45', '-40', '-35', '-30', '-25', '-20', '-15', '-10', '-5', '0']);
@@ -346,7 +344,6 @@ describe('optimized', function() {
 
   describe('integration', function() {
     it('should work with dots in file paths', function() {
-      compare('should work with dots in file paths');
       compare('../{1..3}/../foo', ['../1/../foo', '../2/../foo', '../3/../foo']);
       compare('../{2..10..2}/../foo', ['../2/../foo', '../4/../foo', '../6/../foo', '../8/../foo', '../10/../foo']);
       compare('../{1..3}/../{a,b,c}/foo', ['../1/../a/foo', '../2/../a/foo', '../3/../a/foo', '../1/../b/foo', '../2/../b/foo', '../3/../b/foo', '../1/../c/foo', '../2/../c/foo', '../3/../c/foo']);
@@ -355,12 +352,10 @@ describe('optimized', function() {
     });
 
     it('should expand a complex combination of ranges and sets:', function() {
-      compare('should expand a complex combination of ranges and sets:');
       compare('a/{x,y}/{1..5}c{d,e}f.{md,txt}', ['a/x/1cdf.md', 'a/y/1cdf.md', 'a/x/2cdf.md', 'a/y/2cdf.md', 'a/x/3cdf.md', 'a/y/3cdf.md', 'a/x/4cdf.md', 'a/y/4cdf.md', 'a/x/5cdf.md', 'a/y/5cdf.md', 'a/x/1cef.md', 'a/y/1cef.md', 'a/x/2cef.md', 'a/y/2cef.md', 'a/x/3cef.md', 'a/y/3cef.md', 'a/x/4cef.md', 'a/y/4cef.md', 'a/x/5cef.md', 'a/y/5cef.md', 'a/x/1cdf.txt', 'a/y/1cdf.txt', 'a/x/2cdf.txt', 'a/y/2cdf.txt', 'a/x/3cdf.txt', 'a/y/3cdf.txt', 'a/x/4cdf.txt', 'a/y/4cdf.txt', 'a/x/5cdf.txt', 'a/y/5cdf.txt', 'a/x/1cef.txt', 'a/y/1cef.txt', 'a/x/2cef.txt', 'a/y/2cef.txt', 'a/x/3cef.txt', 'a/y/3cef.txt', 'a/x/4cef.txt', 'a/y/4cef.txt', 'a/x/5cef.txt', 'a/y/5cef.txt']);
     });
 
     it('should expand complex sets and ranges in `bash` mode:', function() {
-      compare('should expand complex sets and ranges in `bash` mode:');
       compare('a/{x,{1..5},y}/c{d}e', ['a/x/c{d}e', 'a/1/c{d}e', 'a/2/c{d}e', 'a/3/c{d}e', 'a/4/c{d}e', 'a/5/c{d}e', 'a/y/c{d}e']);
     });
   });

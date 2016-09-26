@@ -1,16 +1,11 @@
 'use strict';
 
 var extend = require('extend-shallow');
-var stringify = require('./support/stringify');
 var reference = require('./support/reference');
 var support = require('./support/compare');
-var compare, tests = {};
+var compare;
 
 describe('compiler', function() {
-  beforeEach(function() {
-    compare = support(tests, 'expand', {expand: true, optimize: false});
-  });
-
   var fixtures = [
     ['0{1..9} {10..20}', {}],
     ['\\{a,b,c,d,e}', {}],
@@ -62,19 +57,7 @@ describe('compiler', function() {
     ['{ }', {}],
     ['{', {}],
     ['{0..10,braces}', {}],
-    ['{1..0f}', {}],
-    ['{1..10,braces}', {}],
-    ['{1..10..ff}', {}],
-    ['{1..10.f}', {}],
-    ['{1..10f}', {}],
-    ['{1..10}', {}],
-    ['{1..20..2f}', {bash: false}],
-    ['{1..20..f2}', {}],
-    ['{1..2f..2}', {bash: false}],
-    ['{1..3}', {}],
-    ['{1..9}', {}],
-    ['{1..ff}', {}],
-    ['{1.20..2}', {}],
+
     ['{10..1}', {}],
     // ['{214748364..2147483649}', {}],
     // ['{2147483645..2147483649}', {}],
@@ -116,7 +99,6 @@ describe('compiler', function() {
     ['ff{c,b,a}', {}],
     ['f{d,e,f}g', {}],
     ['x{{0..10},braces}y', {}],
-    ['{1..10}', {}],
     ['{a,b,c}', {}],
     ['{braces,{0..10}}', {}],
     ['{l,n,m}xyz', {}],
@@ -150,14 +132,6 @@ describe('compiler', function() {
     ['{x,y,{a,b,c\\}}', {}],
     ['{x,y,{abc},trie}', {}],
     ['{x\\,y,\\{abc\\},trie}', {}],
-
-    // should handle spaces
-    // Bash 4.3 says the following should be equivalent to `foo|(1|2)|bar
-    // That makes sense in Bash, since ' ' is a separator, but not here
-    ['foo {1,2} bar', {}],
-    ['0{1..9} {10..20}', {}],
-    ['a{ ,c{d, },h}x', {}],
-    ['a{ ,c{d, },h} ', {}],
 
     // should handle empty braces
     ['{ }', {}],
@@ -200,7 +174,6 @@ describe('compiler', function() {
     ['ff{c,b,a}', {}],
     ['f{d,e,f}g', {}],
     ['x{{0..10},braces}y', {}],
-    ['{1..10}', {}],
     ['{a,b,c}', {}],
     ['{braces,{0..10}}', {}],
     ['{l,n,m}xyz', {}],
@@ -222,13 +195,12 @@ describe('compiler', function() {
     ['a{b,c{d,e},h}x/z', {}],
     ['a{b,c{d,e},h}x{y,z}', {}],
     ['a{b,c{d,e},{f,g}h}x{y,z}', {}],
+    ['a-{b{d,e}}-c', {}],
 
-    // should expand with globs
+    // should ignore glob characters
     ['a/b/{d,e}/*.js', {}],
     ['a/**/c/{d,e}/f*.js', {}],
     ['a/**/c/{d,e}/f*.{md,txt}', {}],
-
-    // should expand with extglobs (TODO
     ['a/b/{d,e,[1-5]}/*.js', {}],
 
     // should work with leading and trailing commas
@@ -242,6 +214,10 @@ describe('compiler', function() {
 
     // see https://github.com/jonschlinkert/micromatch/issues/66
     ['/Users/tobiasreich/Sites/aaa/bbb/ccc 2016/src/**/[^_]*.{html,ejs}', {}],
+
+    /**
+    * Ranges
+    */
 
     // should not try to expand ranges with decimals
     ['{1.1..2.1}', {}],
@@ -281,12 +257,13 @@ describe('compiler', function() {
     ['{{a,b}', {}],
     ['{a,b}}', {}],
     ['abcd{efgh', {}],
+    ['a{b{c{d,e}f}gh', {}],
     ['a{b{c{d,e}f}g}h', {}],
     ['f{x,y{{g,z}}h}', {}],
     ['z{a,b},c}d', {}],
     ['a{b{c{d,e}f{x,y{{g}h', {}],
     ['f{x,y{{g}h', {}],
-    ['f{x,y{{g}}h', {skip: true}],
+    ['f{x,y{{g}}h', {}],
     ['a{b{c{d,e}f{x,y{}g}h', {}],
     ['f{x,y{}g}h', {}],
     ['z{a,b{,c}d', {}],
@@ -298,7 +275,6 @@ describe('compiler', function() {
     ['{1..10}', {}],
     ['{1..3}', {}],
     ['{1..9}', {}],
-    ['{10..1}', {}],
     ['{10..1}y', {}],
     ['{3..3}', {}],
     ['{5..8}', {}],
@@ -369,7 +345,6 @@ describe('compiler', function() {
     // should expand alpha ranges with steps
     ['{a..e..2}', {bash: false, optimize: false}],
     ['{E..A..2}', {bash: false, optimize: false}],
-    ['{a..z}', {}],
     ['{a..z..2}', {bash: false, optimize: false}],
     ['{z..a..-2}', {bash: false, optimize: false}],
 
@@ -395,10 +370,14 @@ describe('compiler', function() {
     ['a/{x,{1..5},y}/c{d}e', {}]
   ];
 
+  beforeEach(function() {
+    compare = support();
+  });
+
   fixtures.forEach(function(arr) {
-    var opts = extend({}, arr[1], {optimize: false, expand: true});
+    var opts = extend({}, arr[1], {expand: true});
     var str = arr[0];
-    if (str !== '{214748364..2147483649}') return;
+    // if (str !== '{214748364..2147483649}') return;
 
     it('should compile: ' + str, function() {
       if (opts.skip === true) {
