@@ -333,8 +333,8 @@ describe('compiler', function() {
 
     // HEADS UP! If you're using the `--mm` flag minimatch freezes on these
     // should expand large numbers
-    // ['{2147483645..2147483649}', {minimatch: false, bash: false, optimize: true, skip: true}],
-    // ['{214748364..2147483649}', {minimatch: false, bash: false, optimize: true, skip: true}],
+    ['{2147483645..2147483649}', {minimatch: false, bash: false, optimize: true}],
+    ['{214748364..2147483649}', {minimatch: false, bash: false, optimize: true}],
 
     // should expand ranges using steps
     ['{1..10..1}', {bash: false, optimize: false}],
@@ -398,7 +398,7 @@ describe('compiler', function() {
   fixtures.forEach(function(arr) {
     var opts = extend({}, arr[1], {optimize: false, expand: true});
     var str = arr[0];
-    // if (str !== 'a/{{b,c}/{d,e}}/f') return;
+    if (str !== '{214748364..2147483649}') return;
 
     it('should compile: ' + str, function() {
       if (opts.skip === true) {

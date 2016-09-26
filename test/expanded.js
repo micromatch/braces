@@ -142,24 +142,6 @@ describe('optimized', function() {
       });
     });
 
-    describe('factorials / exponential notation', function() {
-      it.skip('should expand bash exponential notation', function() {
-        compare('{,}', '');
-        compare('a{,}', 'a{2}');
-        compare('a{,,}', 'a{2}'); //<= TODO
-        compare('a{,}{,}', 'a{4}');
-        compare('a{,}{,}{,}', 'a{8}');
-        compare('a{,}{,}{,}{,}', 'a{16}');
-        compare('{a,b{,}{,}{,}}', '(a|b{8})');
-        compare('a{,}/{c,d}/e', 'a{2}/(c|d)/e');
-        compare('{a,b{,}{,}{,},c}d', '(a|b{8}|c)d');
-      });
-
-      it.skip('should expand non-sequential sibling exponential notation', function() {
-        compare('{a{,,}b{,}}', 'a{2}');
-      });
-    });
-
     describe('commas', function() {
       it('should work with leading and trailing commas.', function() {
         compare('a{b,}c', ['abc', 'ac']);

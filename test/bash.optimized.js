@@ -98,34 +98,6 @@ describe('optimized', function() {
     ['a/**/c/{d,e}/f*.js', {}, 'a/**/c/(d|e)/f*.js'],
     ['a/**/c/{d,e}/f*.{md,txt}', {}, 'a/**/c/(d|e)/f*.(md|txt)'],
 
-    // should expand bash exponential notation
-    ['{,}', {skip: true}, ''],
-    ['a{,}', {skip: true}, 'a{2}'],
-    ['a{,,}', {skip: true}, 'a{2}'],
-    ['a{,}{,}', {skip: true}, 'a{4}'],
-    ['a{,}{,}{,}', {skip: true}, 'a{8}'],
-    ['a{,}{,}{,}{,}', {skip: true}, 'a{16}'],
-    ['{a,b{,}{,}{,}}', {skip: true}, '(a|b{8})'],
-    ['a{,}/{c,d}/e', {skip: true}, 'a{2}/(c|d)/e'],
-    ['{a,b{,}{,}{,},c}d', {skip: true}, '(a|b{8}|c)d'],
-
-    // should expand non-sequential sibling exponential notation
-    ['{a{,,}b{,}}', {skip: true}, 'a{2}'],
-
-    // should expand bash exponential notation
-    ['a{,}{,}', {skip: true}],
-    ['a{,}{,}{,}', {skip: true}],
-    ['{a,b{,}{,}{,}}', {skip: true}],
-    ['a{,}/{c,d}/e', {skip: true}],
-    ['{a,b{,}{,}{,},c}d', {skip: true}],
-
-    // should eliminate dupes in repeated strings when `nodupes` is true
-    ['a{,}{,}', {skip: true}],
-    ['a{,}{,}{,}', {skip: true}],
-    ['{a,b{,}{,}{,}}', {skip: true}],
-    ['{a,b{,}{,}{,},c}d', {skip: true}],
-    ['{a,b{,}{,}{,},c}d', {skip: true}],
-
     // should work with leading and trailing commas
     ['a{b,}c', {}, 'a(b|)c'],
     ['a{,b}c', {}, 'a(|b)c'],
@@ -235,8 +207,8 @@ describe('optimized', function() {
 
     // HEADS UP! If you're using the `--mm` flag minimatch freezes on these
     // should expand large numbers
-    // ['{2147483645..2147483649}', {skip: true}, '(214748364[5-9])'],
-    // ['{214748364..2147483649}', {skip: true}, '(21474836[4-9]|2147483[7-9][0-9]|214748[4-9][0-9]{2}|214749[0-9]{3}|2147[5-9][0-9]{4}|214[8-9][0-9]{5}|21[5-9][0-9]{6}|2[2-9][0-9]{7}|[3-9][0-9]{8}|1[0-9]{9}|20[0-9]{8}|21[0-3][0-9]{7}|214[0-6][0-9]{6}|2147[0-3][0-9]{5}|21474[0-7][0-9]{4}|214748[0-2][0-9]{3}|2147483[0-5][0-9]{2}|21474836[0-4][0-9])'],
+    ['{2147483645..2147483649}', {}, '(214748364[5-9])'],
+    ['{214748364..2147483649}', {}, '(21474836[4-9]|2147483[7-9][0-9]|214748[4-9][0-9]{2}|214749[0-9]{3}|2147[5-9][0-9]{4}|214[8-9][0-9]{5}|21[5-9][0-9]{6}|2[2-9][0-9]{7}|[3-9][0-9]{8}|1[0-9]{9}|20[0-9]{8}|21[0-3][0-9]{7}|214[0-6][0-9]{6}|2147[0-3][0-9]{5}|21474[0-7][0-9]{4}|214748[0-2][0-9]{3}|2147483[0-5][0-9]{2}|21474836[0-4][0-9])'],
 
     // should expand ranges using steps
     ['{1..10..1}', {bash: false}, '([1-9]|10)'],
