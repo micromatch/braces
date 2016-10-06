@@ -1,12 +1,12 @@
 'use strict';
 
 var debug = require('debug')('braces');
+var toRegex = require('to-regex');
 var compilers = require('./lib/compilers');
 var parsers = require('./lib/parsers');
 var Braces = require('./lib/braces');
 var utils = require('./lib/utils');
 var cache = require('./lib/cache');
-var toRegex = require('to-regex');
 var MAX_LENGTH = 1024 * 64;
 
 /**
@@ -33,39 +33,51 @@ function braces(pattern, options) {
     return braces.expand.apply(braces, arguments);
   }
 
-  var result = braces.compile(pattern, options);
-  var opts = utils.extend({optimize: true}, options);
+  function expand() {
+    var result = braces.compile(pattern, options);
+    var opts = utils.extend({optimize: true}, options);
 
-  var snapdragon = new Braces(opts);
-  var ast = snapdragon.parse(pattern, opts);
-  var res = snapdragon.compile(ast, opts);
-  return utils.arrayify(res.output);
+    var snapdragon = new Braces(opts);
+    var ast = snapdragon.parse(pattern, opts);
+    var res = snapdragon.compile(ast, opts);
+    return utils.arrayify(res.output);
+  }
+
+  return memoize('braces', pattern, options, expand);
 }
 
 braces.parse = function(pattern, options) {
-  var opts = utils.extend({optimize: true}, options);
-  var inst = braces.instance = new Braces(opts);
-  var ast = inst.parse(pattern, opts);
-  return ast;
+  function parse() {
+    var opts = utils.createOptions({optimize: true}, options);
+    var inst = braces.instance = new Braces(opts);
+    var ast = inst.parse(pattern, opts);
+    return ast;
+  }
+  return memoize('parse', pattern, options, parse);
 };
 
 braces.compile = function(pattern, options) {
-  var opts = utils.extend({optimize: true}, options);
-  var ast = braces.parse(pattern, opts);
-  var inst = braces.instance || new Braces(opts);
-  var compiled = inst.compile(ast, opts);
-
-  compiled.output = utils.arrayify(compiled.output);
-  return compiled;
+  function compile() {
+    var opts = utils.createOptions({optimize: true}, options);
+    var ast = braces.parse(pattern, opts);
+    var inst = braces.instance || new Braces(opts);
+    var compiled = inst.compile(ast, opts);
+    compiled.output = utils.arrayify(compiled.output);
+    return compiled;
+  }
+  return memoize('compile', pattern, options, compile);
 };
 
 braces.expand = function(pattern, options) {
-  var opts = utils.createOptions({}, options, {optimize: false, expand: true});
-  if (pattern === '' || pattern.length <= 2) {
-    return [pattern];
+  function expand() {
+    var opts = utils.createOptions({}, options, {optimize: false, expand: true});
+    if (pattern === '' || pattern.length <= 2) {
+      return [pattern];
+    }
+    var res = braces.compile(pattern, opts).output;
+    return utils.arrayify(res);
   }
-  var res = braces.compile(pattern, opts).output;
-  return utils.arrayify(res);
+  return memoize('expand', pattern, options, expand);
 };
 
 /**

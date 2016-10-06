@@ -2,9 +2,12 @@
 
 var util = require('util');
 var assert = require('assert');
-var compare = require('./compare');
 var braces = require('../..');
 var history = {fixtures: {}, expected: {}};
+
+function compare(a, b) {
+  return a === b ? 0 : a > b ? 1 : -1;
+}
 
 module.exports = function(config) {
   return function(fixture, expected, options) {
