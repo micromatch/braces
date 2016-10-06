@@ -9,7 +9,7 @@ var argv = require('yargs-parser')(process.argv.slice(2), {
   alias: {log: 'l', write: 'w', unit: 'u'}
 });
 
-var generate = require('./generate');
+var generate = require('./bash');
 var newTests = require('../reference/add');
 var tests = require('../reference/');
 var braces = require('../..');

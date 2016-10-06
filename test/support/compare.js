@@ -1,8 +1,8 @@
 'use strict';
 
 var util = require('util');
-var compare = require('./natural');
 var assert = require('assert');
+var compare = require('./compare');
 var braces = require('../..');
 var history = {fixtures: {}, expected: {}};
 
