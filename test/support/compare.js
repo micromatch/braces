@@ -10,7 +10,17 @@ function compare(a, b) {
 }
 
 module.exports = function(config) {
+  config = config || {};
   return function(fixture, expected, options) {
+    options = options || {};
+
+    if (options.optimize === true) {
+      delete config.expand;
+    }
+    if (options.expand === true) {
+      delete config.optimize;
+    }
+
     var opts = Object.assign({}, config, options);
     if (opts.skip) return;
 
