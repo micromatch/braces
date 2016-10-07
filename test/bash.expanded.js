@@ -8,8 +8,6 @@ var compare;
 describe('compiler', function() {
   var fixtures = [
     ['0{1..9} {10..20}', {}],
-    ['\\{a,b,c,d,e}', {}],
-    ['a${b}c', {}],
     ['a/\\{b,c,d,{x,y}}{e,f\\}/g', {}],
     ['a/\\{b,c,d\\}\\{e,f\\}/g', {}],
     ['a/\\{b,c,d\\}\\{e,f}/g', {}],
@@ -21,10 +19,7 @@ describe('compiler', function() {
     ['a/\\{{b,c}{e,f}/g', {}],
     ['a/\\{{b,c}{e,f}\\}/g', {}],
     ['a/\\{{b,c}{e,f}}/g', {}],
-    ['a/b/c/{x,y\\}', {}],
-    ['a/b/c{d}e', {}],
     ['a/b/{b,c,{d,e{f,g},{w,x}/{y,z}}}/h/i', {}],
-    ['a/{${b},c}/d', {}],
     ['a/{b,c,d}{e,f}/g', {}],
     ['a/{b,c\\,d}{e,f}/g', {}],
     ['a/{b,c\\}}{e,f}/g', {}],
@@ -49,7 +44,6 @@ describe('compiler', function() {
     ['a{ ,c{d, },h} ', {}],
     ['a{ ,c{d, },h}x', {}],
     ['a{0..3}d', {}],
-    ['a{b{c{d,e}f{x,y{{g}h', {}],
     ['a{b}c', {}],
     ['foo {1,2} bar', {}],
     ['x{10..1}y', {}],
@@ -124,14 +118,19 @@ describe('compiler', function() {
 
     // should not expand escaped braces
     ['\\{a,b,c,d,e}', {}],
-    ['a/b/c/{x,y\\}', {}],
+    ['a/\\{b,c}/{d,e}/f', {}],
     ['a/\\{x,y}/cde', {}],
+    ['a/b/c/{x,y\\}', {}],
+    ['a/{z,\\{a,b,c,d,e}/d', {}],
     ['abcd{efgh', {}],
+    ['{a,b\\}c,d}', {}],
     ['{abc}', {}],
     ['{x,y,\\{a,b,c\\}}', {}],
     ['{x,y,{a,b,c\\}}', {}],
     ['{x,y,{abc},trie}', {}],
     ['{x\\,y,\\{abc\\},trie}', {}],
+    ['./\\{x,y}/{a..z..3}/', {bash: false}],
+
 
     // should handle empty braces
     ['{ }', {}],
@@ -158,13 +157,6 @@ describe('compiler', function() {
     ['{abc\\,def}', {}],
     ['{abc\\,def,ghi}', {}],
     ['a/{b,c}/{x\\,y}/d/e', {}],
-
-    // should not expand escaped braces
-    ['{a,b\\}c,d}', {}],
-    ['\\{a,b,c,d,e}', {}],
-    ['a/{z,\\{a,b,c,d,e}/d', {}],
-    ['a/\\{b,c}/{d,e}/f', {}],
-    ['./\\{x,y}/{a..z..3}/', {bash: false}],
 
     // should not expand escaped braces or commas
     ['{x\\,y,\\{abc\\},trie}', {}],
@@ -377,7 +369,7 @@ describe('compiler', function() {
   fixtures.forEach(function(arr) {
     var opts = extend({}, arr[1], {expand: true});
     var str = arr[0];
-    // if (str !== '{214748364..2147483649}') return;
+    // if (str !== 'a{b{c{d,e}f{x,y{{g}h') return;
 
     it('should compile: ' + str, function() {
       if (opts.skip === true) {

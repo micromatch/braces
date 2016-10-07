@@ -8,7 +8,11 @@
 'use strict';
 
 require('mocha');
+var assert = require('assert');
+var bash = require('./support/bash');
 var support = require('./support/compare');
+var braces = require('..');
+var expand = braces.expand;
 var compare;
 
 describe('optimized', function() {
@@ -90,20 +94,41 @@ describe('optimized', function() {
       });
     });
 
-    // describe('multipliers', function() {
-    //   it.only('should support multipliers', function() {
-    //     // compare('{,}', '');
-    //     compare('a{,}', 'a{2}');
-    //     // compare('a{,,}', 'a{2}'); //<= TODO
-    //     // compare('a{,}{,}', 'a{4}');
-    //     // compare('a{,}{,}{,}', 'a{8}');
-    //     // compare('a{,}{,}{,}{,}', 'a{16}');
-    //     // compare('{a,b{,}{,}{,}}', '(a|b{8})');
-    //     // compare('a{,}/{c,d}/e', 'a{2}/(c|d)/e');
-    //     // compare('{a,b{,}{,}{,},c}d', '(a|b{8}|c)d');
-    //     // compare('{a{,,}b{,}}', 'a{2}');
-    //   });
-    // });
+    describe('multipliers', function() {
+      it('should support multipliers', function() {
+        compare('{{d,d},e}{,}', bash('{{d,d},e}{,}'));
+        compare('{d{,},e}{,}', [ 'd', 'd', 'd', 'd', 'e', 'e' ]);
+        compare('a/{,}{c,d}/e', ['a/c/e', 'a/c/e', 'a/d/e', 'a/d/e']);
+        compare('a/{c,d}{,}/e', ['a/c/e', 'a/c/e', 'a/d/e', 'a/d/e']);
+        compare('a/{b,c{,}}', ['a/b', 'a/c', 'a/c']);
+        compare('a{,,}', ['a', 'a', 'a']);
+        compare('a{,}', ['a', 'a']);
+        compare('a{,}/{c,d}/e', ['a/c/e', 'a/c/e', 'a/d/e', 'a/d/e']);
+        compare('a{,}{,}', ['a', 'a', 'a', 'a']);
+        compare('a{,}{,}{,}', ['a', 'a', 'a', 'a', 'a', 'a', 'a', 'a']);
+        compare('a{,}{,}{,}{,}', ['a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a']);
+        compare('{,}', []);
+        compare('{a,b{,}{,}{,},c}d', ['ad', 'bd', 'bd', 'bd', 'bd', 'bd', 'bd', 'bd', 'bd', 'cd']);
+        compare('{a,b{,}{,}{,}}', ['a', 'b', 'b', 'b', 'b', 'b', 'b', 'b', 'b']);
+        compare('{a{,,}b{,}}', ['{ab}', '{ab}', '{ab}', '{ab}', '{ab}', '{ab}']);
+
+        compare('{d{,},e}{,}', bash('{d{,},e}{,}'), '{d{,},e}{,}');
+        compare('a/{b,c}{,}/{d{,},e}{,}', bash('a/{b,c}{,}/{d{,},e}{,}'), 'a/{b,c}{,}/{d{,},e}{,}');
+        compare('a/{b,c{,}}', bash('a/{b,c{,}}'));
+        compare('a{,,}', bash('a{,,}'));
+        compare('a{,}', bash('a{,}'));
+        compare('a{,}/{c,d}/e', bash('a{,}/{c,d}/e'));
+        compare('a/{,}{c,d}/e', bash('a{,}/{c,d}/e'));
+        compare('a/{c,d}{,}/e', bash('a{,}/{c,d}/e'));
+        compare('a{,}{,}', bash('a{,}{,}'));
+        compare('a{,}{,}{,}', bash('a{,}{,}{,}'));
+        compare('a{,}{,}{,}{,}', bash('a{,}{,}{,}{,}'));
+        compare('{,}', bash('{,}'));
+        compare('{a,b{,}{,}{,},c}d', bash('{a,b{,}{,}{,},c}d'));
+        compare('{a,b{,}{,}{,}}', bash('{a,b{,}{,}{,}}'));
+        compare('{a{,,}b{,}}', bash('{a{,,}b{,}}'));
+      });
+    });
 
     describe('set expansion', function() {
       it('should support sequence brace operators', function() {
@@ -139,6 +164,12 @@ describe('optimized', function() {
       });
 
       it('should expand nested sets', function() {
+        compare('{{d,d},e}{}', bash('{{d,d},e}{}'));
+        compare('{{d,d},e}a', bash('{{d,d},e}a'));
+        compare('{{d,d},e}{a,b}', bash('{{d,d},e}{a,b}'));
+        compare('{d,d,{d,d},{e,e}}', [ 'd', 'd', 'd', 'd', 'e', 'e' ]);
+        compare('{{d,d},e}{a,b}', bash('{{d,d},e}{a,b}'));
+        compare('{{d,d},e}', bash('{{d,d},e}'));
         compare('{a,b}{{a,b},a,b}', ['aa', 'aa', 'ab', 'ab', 'ba', 'ba', 'bb', 'bb']);
         compare('a{b,c{d,e}f}g', ['abg', 'acdfg', 'acefg']);
         compare('a{{x,y},z}b', ['axb', 'ayb', 'azb']);
@@ -171,7 +202,7 @@ describe('optimized', function() {
         compare('a{ ,c{d, },h} ', ['a  ', 'ac  ', 'acd ', 'ah ']);
 
         // see https://github.com/jonschlinkert/micromatch/issues/66
-        compare('/Users/tobiasreich/Sites/aaa/bbb/ccc 2016/src/**/[^_]*.{html,ejs}', ['/Users/tobiasreich/Sites/aaa/bbb/ccc 2016/src/**/[^_]*.ejs', '/Users/tobiasreich/Sites/aaa/bbb/ccc 2016/src/**/[^_]*.html']);
+        compare('/Users/tobiasreich/Sites/aaa/bbb/ccc 2016/src/**/[^_]*.{html,ejs}', bash('/Users/tobiasreich/Sites/aaa/bbb/ccc 2016/src/**/[^_]*.{html,ejs}'));
       });
     });
   });
@@ -232,7 +263,7 @@ describe('optimized', function() {
         compare('z{a,b},c}d', [ 'za,c}d', 'zb,c}d' ]);
         compare('a{b{c{d,e}f{x,y{{g}h', [ 'a{b{cdf{x,y{{g}h', 'a{b{cef{x,y{{g}h' ]);
         compare('f{x,y{{g}h', [ 'f{x,y{{g}h' ]);
-        // compare('f{x,y{{g}}h', ['f{x,y{g}h']);
+        compare('f{x,y{{g}}h', bash('f{x,y{{g}}h'));
         compare('a{b{c{d,e}f{x,y{}g}h', [ 'a{b{cdfxh', 'a{b{cdfy{}gh', 'a{b{cefxh', 'a{b{cefy{}gh' ]);
         compare('f{x,y{}g}h', [ 'fxh', 'fy{}gh' ]);
         compare('z{a,b{,c}d', [ 'z{a,bd', 'z{a,bcd' ]);

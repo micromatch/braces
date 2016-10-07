@@ -1,5 +1,5 @@
 {
-  "name": "braces2",
+  "name": "braces",
   "description": "Fastest brace expansion for node.js, with the most complete support for the Bash 4.3 braces specification.",
   "version": "1.8.5",
   "homepage": "https://github.com/jonschlinkert/braces",
@@ -16,8 +16,7 @@
   "license": "MIT",
   "files": [
     "index.js",
-    "LICENSE",
-    "README.md"
+    "lib"
   ],
   "main": "index.js",
   "engines": {
@@ -29,30 +28,34 @@
   "dependencies": {
     "arr-flatten": "^1.0.1",
     "array-unique": "^0.3.2",
+    "clone-deep": "^0.2.4",
     "debug": "^2.2.0",
     "define-property": "^0.2.5",
     "extend-shallow": "^2.0.1",
-    "fill-range": "^3.0.1",
-    "snapdragon": "^0.5.0"
+    "fill-range": "^3.0.3",
+    "isobject": "^2.1.0",
+    "regex-not": "^1.0.0",
+    "repeat-element": "^1.1.2",
+    "snapdragon": "^0.7.0",
+    "to-regex": "^2.1.0"
   },
   "devDependencies": {
     "ansi-cyan": "^0.1.1",
     "benchmarked": "^0.2.5",
     "brace-expansion": "^1.1.6",
-    "cross-spawn": "^4.0.0",
+    "cross-spawn": "^4.0.2",
     "gulp": "^3.9.1",
     "gulp-eslint": "^3.0.1",
-    "gulp-format-md": "^0.1.8",
+    "gulp-format-md": "^0.1.11",
     "gulp-istanbul": "^1.1.1",
     "gulp-mocha": "^3.0.1",
     "gulp-unused": "^0.2.0",
-    "is-number": "^3.0.0",
-    "minimatch": "^3.0.0",
-    "mocha": "^2.4.5",
+    "minimatch": "^3.0.3",
+    "mocha": "^3.1.0",
     "noncharacters": "^1.1.0",
     "stringify-object": "^2.4.0",
     "write": "^0.3.2",
-    "yargs-parser": "^3.2.0"
+    "yargs-parser": "^4.0.0"
   },
   "keywords": [
     "alpha",

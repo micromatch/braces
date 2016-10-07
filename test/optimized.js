@@ -8,8 +8,12 @@
 'use strict';
 
 require('mocha');
+var assert = require('assert');
+var bash = require('./support/bash');
 var support = require('./support/compare');
-var compare, tests = {};
+var braces = require('..');
+var expand = braces.expand;
+var compare;
 
 describe('optimized', function() {
   beforeEach(function() {
