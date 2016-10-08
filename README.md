@@ -1,62 +1,90 @@
 # braces [![NPM version](https://img.shields.io/npm/v/braces.svg?style=flat)](https://www.npmjs.com/package/braces) [![NPM downloads](https://img.shields.io/npm/dm/braces.svg?style=flat)](https://npmjs.org/package/braces) [![Build Status](https://img.shields.io/travis/jonschlinkert/braces.svg?style=flat)](https://travis-ci.org/jonschlinkert/braces)
 
-Fastest brace expansion for node.js, with the most complete support for the Bash 4.3 braces specification.
+> Fast, comprehensive, bash-like brace expansion implemented in JavaScript. Complete support for the Bash 4.3 braces specification, without sacrificing speed.
 
 ## Install
 
 Install with [npm](https://www.npmjs.com/):
 
 ```sh
-$ npm install braces --save
+$ npm install --save braces
 ```
 
-## Features
+## Highlights
 
-* Complete support for the braces part of the [Bash 4.3 Brace Expansion](www.gnu.org/software/bash/). Braces passes [all of the relevant unit tests](#bash-4-3-support) from the spec.
-* Expands comma-separated values: `a/{b,c}/d` => `['a/b/d', 'a/c/d']`
-* Expands alphabetical or numerical ranges: `{1..3}` => `['1', '2', '3']`
-* [Very fast](#benchmarks)
-* [Special characters](./patterns.md) can be used to generate interesting patterns.
+* **Accurate**: complete support for the [Bash 4.3 Brace Expansion](www.gnu.org/software/bash/) specification (passes all of the Bash brace expansion tests)
+* **[fast and performant](#benchmarks)**: not only runs fast, but scales well as patterns increase in complexity (other libs don't)
+* **Organized code base**: with parser and compiler that are easy to maintain and update when edge cases crop up.
+* **Source map** support
+* **Well-tested**: 840+ unit tests with thousands of actual patterns tested. Passes all of the [minimatch](https://github.com/isaacs/minimatch) and [brace-expansion](https://github.com/juliangruber/brace-expansion) unit tests as well.
+* **Optimized braces**: By default returns an optimized string that can be used for creating regular expressions for matching.
+* **Expanded braces**: Optionally returns an array (like bash). See a [comparison](#optimized-vs-expanded) between optimized and expanded.
 
-## Example usage
+## Usage
+
+The main export is a function that takes a brace `pattern` to expand and an `options` object if necessary.
 
 ```js
 var braces = require('braces');
-
-braces('a/{x,y}/c{d}e')
-//=> ['a/x/cde', 'a/y/cde']
-
-braces('a/b/c/{x,y}')
-//=> ['a/b/c/x', 'a/b/c/y']
-
-braces('a/{x,{1..5},y}/c{d}e')
-//=> ['a/x/cde', 'a/1/cde', 'a/y/cde', 'a/2/cde', 'a/3/cde', 'a/4/cde', 'a/5/cde']
+braces(pattern[, options]);
 ```
-
-### Use case: fixtures
-
-> Use braces to generate test fixtures!
 
 **Example**
 
 ```js
-var braces = require('./');
-var path = require('path');
-var fs = require('fs');
+console.log(braces('a/{x,y,z}/b', {expand: true}));
+//=> ['a/x/b', 'a/y/b', 'a/z/b']
 
-braces('blah/{a..z}.js').forEach(function(fp) {
-  if (!fs.existsSync(path.dirname(fp))) {
-    fs.mkdirSync(path.dirname(fp));
-  }
-  fs.writeFileSync(fp, '');
-});
+console.log(braces('a/{x,y,z}/b'));
+//=> ['a/(x|y|z)/b']
 ```
 
-See the [tests](./test/test.js) for more examples and use cases (also see the [bash spec tests](./test/bash-mm-adjusted.js));
+## Examples
 
-### Range expansion
+**Sequences**
 
-Uses [expand-range](https://github.com/jonschlinkert/expand-range) for range expansion.
+```js
+console.log(braces('{1..3}'));
+//=> ['1', '2', '3']
+
+console.log(braces('{a..c}'));
+//=> ['a', 'b', 'c']
+
+console.log(braces('foo/{a..c}'));
+//=> ['foo/a', 'foo/b', 'foo/c']
+```
+
+**Nested**
+
+```js
+console.log(braces('a/{x,{1..5},y}/c'));
+//=> ['a/x/c', 'a/1/c', 'a/2/c', 'a/3/c', 'a/4/c', 'a/5/c', 'a/y/c']
+```
+
+## Features
+
+* [lists](#lists): Expands bash "lists": `a/{b,c}/d` => `['a/b/d', 'a/c/d']`
+* [sequences](#sequences): Expands alphabetical or numerical "sequences" (ranges): `{1..3}` => `['1', '2', '3']`
+* [steps](#steps): Supports "steps" or increments: `{2..10..2}` => `['2', '4', '6', '8', '10']`
+* [escaping](#escaping)
+* [options](#options)
+
+### Lists
+
+```js
+braces('a/{foo,bar,baz}/b');
+//=> ['a/(foo|bar|baz)/b']
+
+braces('a/{foo,bar,baz}/b', {expand: true});
+//=> ['a/foo/b', 'a/bar/b', 'a/baz/b']
+
+braces('{foo,bar,baz}/*.js');
+//=> ['foo/*.js', 'bar/*.js', 'baz/*.js']
+```
+
+### Sequences
+
+Uses [fill-range](https://github.com/jonschlinkert/fill-range) for to expand sequence operators:
 
 ```js
 braces('a{1..3}b')
@@ -92,60 +120,23 @@ console.log(range);
 //=> ['xa0y', 'xb1y', 'xc2y', 'xd3y', 'xe4y']
 ```
 
-See [expand-range](https://github.com/jonschlinkert/expand-range) for benchmarks, tests and the full list of range expansion features.
+See [expand-range](https://github.com/jonschlinkert/expand-range) for additional documentation and to learn about all available range expansion features.
 
 ## Options
 
-### options.makeRe
+### options.expand
 
 Type: `Boolean`
 
-Deafault: `false`
+Deafault: `undefined`
 
-Return a regex-optimal string. If you're using braces to generate regex, this will result in dramatically faster performance.
-
-**Examples**
-
-With the default settings (`{makeRe: false}`):
-
-```js
-braces('{1..5}');
-//=> ['1', '2', '3', '4', '5']
-```
-
-With `{makeRe: true}`:
-
-```js
-braces('{1..5}', {makeRe: true});
-//=> ['[1-5]']
-
-braces('{3..9..3}', {makeRe: true});
-//=> ['(3|6|9)']
-```
-
-### options.bash
+### options.optimize
 
 Type: `Boolean`
 
-Default: `false`
+Deafault: `true`
 
-Enables complete support for the Bash specification. The downside is a 20-25% speed decrease.
-
-**Example**
-
-Using the default setting (`{bash: false}`):
-
-```js
-braces('a{b}c');
-//=> ['abc']
-```
-
-In bash (and minimatch), braces with one item are not expanded. To get the same result with braces, set `{bash: true}`:
-
-```js
-braces('a{b}c', {bash: true});
-//=> ['a{b}c']
-```
+Enabled by default.
 
 ### options.nodupes
 
@@ -155,13 +146,39 @@ Deafault: `true`
 
 Duplicates are removed by default. To keep duplicates, pass `{nodupes: false}` on the options
 
-## Bash 4.3 Support
+### options.quantifiers
 
-> Better support for Bash 4.3 than minimatch
+Type: `Boolean`
 
-This project has comprehensive unit tests, including tests coverted from [Bash 4.3](www.gnu.org/software/bash/). Currently only 8 of 102 unit tests fail, and
+Deafault: `undefined`
 
-## Run benchmarks
+In regular expressions, quanitifiers may be used to specify how many times a token can be repeated.
+
+For example, the regex `/ab{1,3}c/` will match `a`, then the letter `b`, from `1` to `3` times, then the letter `c`. In other words, `abc`, `abbc` and `abbbc` would all match, but not `ac` or `abbbbc`.
+
+Unfortunately, regex quantifiers happen to share the same syntax as [Bash lists](#Bash lists)
+
+The `quantifiers` option tells braces to detect when [regex quantifiers](#regex quantifiers) are defined in the given pattern, and not to try to expand them as lists.
+
+**Examples**
+
+```js
+var braces = require('braces');
+console.log(braces('a/b{1,3}/{x,y,z}'));
+//=> [ 'a/b(1|3)/(x|y|z)' ]
+console.log(braces('a/b{1,3}/{x,y,z}', {quantifiers: true}));
+//=> [ 'a/b{1,3}/(x|y|z)' ]
+console.log(braces('a/b{1,3}/{x,y,z}', {quantifiers: true, expand: true}));
+//=> [ 'a/b{1,3}/x', 'a/b{1,3}/y', 'a/b{1,3}/z' ]
+```
+
+## Optimized vs. Expanded
+
+TODO
+
+## Benchmarks
+
+### Running benchmarks
 
 Install dev dependencies:
 
@@ -172,58 +189,102 @@ npm i -d && npm benchmark
 ### Latest results
 
 ```bash
-#1: escape.js
-  brace-expansion.js x 114,934 ops/sec ±1.24% (93 runs sampled)
-  braces.js x 342,254 ops/sec ±0.84% (90 runs sampled)
+Benchmarking: (7 of 7)
+ · combination-nested
+ · combination
+ · escaped
+ · list-basic
+ · list-multiple
+ · sequence-basic
+ · sequence-multiple
 
-#2: exponent.js
-  brace-expansion.js x 12,359 ops/sec ±0.86% (96 runs sampled)
-  braces.js x 20,389 ops/sec ±0.71% (97 runs sampled)
+# benchmark/fixtures/combination-nested.js (52 bytes)
+  brace-expansion x 5,326 ops/sec ±1.19% (83 runs sampled)
+  braces x 11,510,149 ops/sec ±1.38% (84 runs sampled)
+  minimatch x 5,560 ops/sec ±1.18% (82 runs sampled)
 
-#3: multiple.js
-  brace-expansion.js x 114,469 ops/sec ±1.44% (94 runs sampled)
-  braces.js x 401,621 ops/sec ±0.87% (91 runs sampled)
+  fastest is braces
 
-#4: nested.js
-  brace-expansion.js x 102,769 ops/sec ±1.55% (92 runs sampled)
-  braces.js x 314,088 ops/sec ±0.71% (98 runs sampled)
+# benchmark/fixtures/combination.js (51 bytes)
+  brace-expansion x 637 ops/sec ±1.39% (84 runs sampled)
+  braces x 10,902,159 ops/sec ±1.36% (86 runs sampled)
+  minimatch x 686 ops/sec ±1.42% (81 runs sampled)
 
-#5: normal.js
-  brace-expansion.js x 157,577 ops/sec ±1.65% (91 runs sampled)
-  braces.js x 1,115,950 ops/sec ±0.74% (94 runs sampled)
+  fastest is braces
 
-#6: range.js
-  brace-expansion.js x 138,822 ops/sec ±1.71% (91 runs sampled)
-  braces.js x 1,108,353 ops/sec ±0.85% (94 runs sampled)
+# benchmark/fixtures/escaped.js (44 bytes)
+  brace-expansion x 157,111 ops/sec ±1.35% (83 runs sampled)
+  braces x 11,238,206 ops/sec ±1.41% (85 runs sampled)
+  minimatch x 175,069 ops/sec ±1.25% (85 runs sampled)
+
+  fastest is braces
+
+# benchmark/fixtures/list-basic.js (40 bytes)
+  brace-expansion x 105,715 ops/sec ±1.53% (85 runs sampled)
+  braces x 11,668,861 ops/sec ±1.39% (85 runs sampled)
+  minimatch x 103,579 ops/sec ±1.23% (88 runs sampled)
+
+  fastest is braces
+
+# benchmark/fixtures/list-multiple.js (52 bytes)
+  brace-expansion x 35,800 ops/sec ±1.23% (85 runs sampled)
+  braces x 9,853,090 ops/sec ±1.42% (82 runs sampled)
+  minimatch x 34,487 ops/sec ±1.57% (83 runs sampled)
+
+  fastest is braces
+
+# benchmark/fixtures/sequence-basic.js (41 bytes)
+  brace-expansion x 5,396 ops/sec ±1.44% (85 runs sampled)
+  braces x 9,469,841 ops/sec ±1.33% (81 runs sampled)
+  minimatch x 5,409 ops/sec ±1.48% (85 runs sampled)
+
+  fastest is braces
+
+# benchmark/fixtures/sequence-multiple.js (51 bytes)
+  brace-expansion x 105 ops/sec ±1.96% (70 runs sampled)
+  braces x 8,603,064 ops/sec ±1.34% (82 runs sampled)
+  minimatch x 116 ops/sec ±1.50% (72 runs sampled)
+
+  fastest is braces
 ```
 
-## Related projects
+## Why is braces [so fast](#benchmarks)?
 
-You might also be interested in these projects:
+**Parser/compiler**
 
-* [expand-range](https://www.npmjs.com/package/expand-range): Fast, bash-like range expansion. Expand a range of numbers or letters, uppercase or lowercase. See… [more](https://www.npmjs.com/package/expand-range) | [homepage](https://github.com/jonschlinkert/expand-range)
-* [fill-range](https://www.npmjs.com/package/fill-range): Fill in a range of numbers or letters, optionally passing an increment or multiplier to… [more](https://www.npmjs.com/package/fill-range) | [homepage](https://github.com/jonschlinkert/fill-range)
-* [micromatch](https://www.npmjs.com/package/micromatch): Glob matching for javascript/node.js. A drop-in replacement and faster alternative to minimatch and multimatch. | [homepage](https://github.com/jonschlinkert/micromatch)
+Braces uses a "real" parser and compiler to create a highly optimized regex that is often a fraction of the size of the value produced by [minimatch](https://github.com/isaacs/minimatch) (or rather, the library it uses for [brace-expansion](https://github.com/juliangruber/brace-expansion)).
 
-## Contributing
+## About
 
-Pull requests and stars are always welcome. For bugs and feature requests, [please create an issue](https://github.com/jonschlinkert/braces/issues/new).
+### Related projects
 
-## Building docs
+* [expand-range](https://www.npmjs.com/package/expand-range): Fast, bash-like range expansion. Expand a range of numbers or letters, uppercase or lowercase. See… [more](https://github.com/jonschlinkert/expand-range) | [homepage](https://github.com/jonschlinkert/expand-range "Fast, bash-like range expansion. Expand a range of numbers or letters, uppercase or lowercase. See the benchmarks. Used by micromatch.")
+* [fill-range](https://www.npmjs.com/package/fill-range): Fill in a range of numbers or letters, optionally passing an increment or `step` to… [more](https://github.com/jonschlinkert/fill-range) | [homepage](https://github.com/jonschlinkert/fill-range "Fill in a range of numbers or letters, optionally passing an increment or `step` to use, or create a regex-compatible range with `options.toRegex`")
+* [micromatch](https://www.npmjs.com/package/micromatch): Glob matching for javascript/node.js. A drop-in replacement and faster alternative to minimatch and multimatch. | [homepage](https://github.com/jonschlinkert/micromatch "Glob matching for javascript/node.js. A drop-in replacement and faster alternative to minimatch and multimatch.")
 
-Generate readme and API documentation with [verb](https://github.com/verbose/verb):
+### Contributing
+
+Pull requests and stars are always welcome. For bugs and feature requests, [please create an issue](../../issues/new).
+
+### Contributors
+
+| **Commits** | **Contributor**<br/> | 
+| --- | --- |
+| 130 | [jonschlinkert](https://github.com/jonschlinkert) |
+| 4 | [doowb](https://github.com/doowb) |
+| 1 | [eush77](https://github.com/eush77) |
+
+### Building docs
+
+_(This document was generated by [verb-generate-readme](https://github.com/verbose/verb-generate-readme) (a [verb](https://github.com/verbose/verb) generator), please don't edit the readme directly. Any changes to the readme must be made in [.verb.md](.verb.md).)_
+
+To generate the readme and API documentation with [verb](https://github.com/verbose/verb):
 
 ```sh
-$ npm install verb && npm run docs
+$ npm install -g verb verb-generate-readme && verb
 ```
 
-Or, if [verb](https://github.com/verbose/verb) is installed globally:
-
-```sh
-$ verb
-```
-
-## Running tests
+### Running tests
 
 Install dev dependencies:
 
@@ -231,18 +292,18 @@ Install dev dependencies:
 $ npm install -d && npm test
 ```
 
-## Author
+### Author
 
 **Jon Schlinkert**
 
 * [github/jonschlinkert](https://github.com/jonschlinkert)
 * [twitter/jonschlinkert](http://twitter.com/jonschlinkert)
 
-## License
+### License
 
 Copyright © 2016, [Jon Schlinkert](https://github.com/jonschlinkert).
 Released under the [MIT license](https://github.com/jonschlinkert/braces/blob/master/LICENSE).
 
 ***
 
-_This file was generated by [verb](https://github.com/verbose/verb), v0.9.0, on May 21, 2016._
+_This file was generated by [verb-generate-readme](https://github.com/verbose/verb-generate-readme), v0.1.31, on October 08, 2016._

@@ -1,6 +1,6 @@
 {
   "name": "braces",
-  "description": "Fastest brace expansion for node.js, with the most complete support for the Bash 4.3 braces specification.",
+  "description": "Fast, comprehensive, bash-like brace expansion implemented in JavaScript. Complete support for the Bash 4.3 braces specification, without sacrificing speed.",
   "version": "1.8.5",
   "homepage": "https://github.com/jonschlinkert/braces",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
@@ -86,7 +86,9 @@
       "gulp-format-md"
     ],
     "reflinks": [
-      "verb"
+      "verb",
+      "brace-expansion",
+      "verb-generate-readme"
     ],
     "toc": false,
     "layout": "default",
