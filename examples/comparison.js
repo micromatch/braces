@@ -26,3 +26,8 @@ console.log(braceExpansion('http://www.letters.com/file{a..z..2}.txt'));
 console.log(braceExpansion('mkdir /usr/local/src/bash/{old,new,dist,bugs}'));
 console.log(braceExpansion('chown root /usr/{ucb/{ex,edit},lib/{ex?.?*,how_ex}}'));
 
+
+console.log(braces('user-{200..300}/project-{a,b,c}-{1..10}'))
+//=> 'user-(20[0-9]|2[1-9][0-9]|300)/project-(a|b|c)-([1-9]|10)'
+console.log(braces.makeRe('user-{200..300}'))
+//=> /^(?:user-(20[0-9]|2[1-9][0-9]|300))$/
