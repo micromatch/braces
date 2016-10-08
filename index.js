@@ -52,15 +52,17 @@ function braces(pattern, options) {
     return arr;
   }
 
-  if (pattern === '{,}') {
-    return [];
+  var results = [];
+  if (options && options.expand === true) {
+    results = braces.expand(pattern, options);
+  } else {
+    results = braces.optimize(pattern, options);
   }
 
-  var proto = new Braces(options);
-  if (options && options.expand === true) {
-    return (cache[key] = proto.expand(pattern));
+  if (options && options.nodupes === true) {
+    results = utils.unique(results);
   }
-  return (cache[key] = proto.optimize(pattern));
+  return (cache[key] = results);
 }
 
 /**
@@ -82,11 +84,53 @@ braces.expand = function(pattern, options) {
   if (pattern === '' || pattern.length <= 2) {
     return [pattern];
   }
+
   if (pattern === '{,}') {
     return [];
   }
+
+  var quoted = /^(['"`])(.*)(\1)$/g.exec(pattern);
+  if (quoted) {
+    return [quoted[2]];
+  }
+
   var opts = utils.extend({}, options, {expand: true});
-  return braces(pattern, opts);
+  var proto = new Braces(options);
+  return proto.expand(pattern, opts).filter(Boolean);
+};
+
+/**
+ * Expands a brace pattern into a regex-compatible, optimized string. This method
+ * is called by the main [braces](#braces) function by default.
+ *
+ * ```js
+ * var braces = require('braces');
+ * console.log(braces.optimize('user-{200..300}/project-{a,b,c}-{1..10}'))
+ * //=> 'user-(20[0-9]|2[1-9][0-9]|300)/project-(a|b|c)-([1-9]|10)'
+ * ```
+ * @param {String|Object} `pattern` Brace pattern or AST returned from [.parse](#parse).
+ * @param {Object} `options`
+ * @return {Object} Returns an array of expanded values.
+ * @api public
+ */
+
+braces.optimize = function(pattern, options) {
+  if (pattern === '' || pattern.length <= 2) {
+    return [pattern];
+  }
+
+  if (pattern === '{,}') {
+    return [];
+  }
+
+  var quoted = /^(['"`])(.*)(\1)$/g.exec(pattern);
+  if (quoted) {
+    return [quoted[2]];
+  }
+
+  var opts = utils.extend({}, options, {optimize: true});
+  var proto = new Braces(options);
+  return proto.optimize(pattern, opts).filter(Boolean);
 };
 
 /**
@@ -94,9 +138,8 @@ braces.expand = function(pattern, options) {
  *
  * ```js
  * var braces = require('braces');
- * var re = braces.makeRe('[[:alpha:]]');
- * console.log(re);
- * //=> /^(?:[a-zA-Z])$/
+ * console.log(braces.makeRe('user-{200..300}'))
+ * //=> /^(?:user-(20[0-9]|2[1-9][0-9]|300))$/
  * ```
  * @param {String} `pattern` The pattern to convert to regex.
  * @param {Object} `options`
