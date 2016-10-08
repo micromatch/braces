@@ -23,20 +23,31 @@ module.exports = function(config) {
     var opts = Object.assign({}, config, options);
     if (opts.skip) return;
 
-    var actual = braces(fixture, opts);
-    expected = inspect(expected);
-    actual = inspect(actual);
+    var actual = stripSlashes(braces(fixture, opts)).filter(Boolean);
+    expected = stripSlashes(expected).filter(Boolean);
+    actual.sort(compare);
+    expected.sort(compare);
 
-    var msg = ' ' + fixture + '\n\n      "' + actual + '" !== "' + expected + '"\n';
+    var msg = ' ' + fixture + '\n\n      "' + inspect(actual) + '" !== "' + inspect(expected) + '"\n';
+
+    var a = actual.join('').split('\\').join('');
+    var b = expected.join('').split('\\').join('');
+    if (a !== b) {
+      console.log(actual, expected);
+    }
     assert.deepEqual(actual, expected, msg);
   };
 };
 
+function stripSlashes(arr) {
+  return arr.map(function(str) {
+    return str === '\\' ? '' : str.split('\\').join('');
+  });
+}
+
 function inspect(val) {
   if (Array.isArray(val)) {
-    val = val.map(function(str) {
-      return str.split('\\').join('');
-    })
+    val = stripSlashes(val).filter(Boolean);
     val.sort(compare);
   }
   return util.inspect(val, {depth: null})

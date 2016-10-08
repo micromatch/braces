@@ -5,7 +5,7 @@ var reference = require('./support/reference');
 var support = require('./support/compare');
 var compare, tests = {};
 
-describe('optimized', function() {
+describe('bash.optimized', function() {
   var fixtures = [
     ['0{1..9} {10..20}', {}, ['0([1-9]) (1[0-9]|20)']],
     ['{a,b,c,d,e}', {}, ['(a|b|c|d|e)']],

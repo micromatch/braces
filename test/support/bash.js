@@ -10,9 +10,9 @@ var utils = require('./utils');
 module.exports = function(pattern) {
   var cmd = pattern;
   if (!/echo/.test(cmd)) {
-    cmd = `shopt -s extglob && shopt -s nullglob && echo ${escape(pattern)}`;
+    cmd = `echo ${escape(pattern)}`;
   }
-  var res = spawn.sync('bash', ['-c', cmd]);
+  var res = spawn.sync('/usr/local/bin/bash', ['-c', cmd]);
   var err = res.stderr.toString().trim();
   if (err) {
     console.error(cmd);
@@ -28,7 +28,7 @@ module.exports = function(pattern) {
 
 function escape(buf) {
   return buf.split(/\\? /).join('_SPACE_')
-    .replace(/([*\[\]])/g, '\\$1')
+    .replace(/([*`\[\]])/g, '\\$1')
     .replace(/(\$\{)([^{}]+)(\})/g, function(m, $1, $2, $3) {
       return utils.nc[0] + $2 + utils.nc[2];
     });
@@ -44,6 +44,6 @@ function unescape(buf) {
     .map(function(str) {
       return utils.unescape(str, {escape: true})
         .split('_SPACE_').join(' ')
-        .split('\\').join('');
+        .split(/\\(?!`)/).join('');
     });
 }

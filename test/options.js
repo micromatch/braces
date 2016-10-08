@@ -16,19 +16,29 @@ describe('options', function() {
     compare = support();
   });
 
-  describe('expand:', function() {
+  describe('options.expand', function() {
     it('should expand braces when `options.expand` is true', function() {
       compare('a/{b,c}/d', ['a/b/d', 'a/c/d'], {expand: true});
     });
   });
 
-  describe('optimize:', function() {
+  describe('options.nodupes', function() {
+    it('should not remove duplicates by default', function() {
+      compare('a/{b,b,b}/c', ['a/b/c', 'a/b/c', 'a/b/c'], {expand: true});
+    });
+
+    it('should remove duplicates when `options.nodupes` is true', function() {
+      compare('a/{b,b,b}/c', ['a/b/c'], {expand: true, nodupes: true});
+    });
+  });
+
+  describe('options.optimize', function() {
     it('should optimize braces when `options.optimize` is true', function() {
       compare('a/{b,c}/d', ['a/(b|c)/d'], {optimize: true});
     });
   });
 
-  describe('quantifiers:', function() {
+  describe('options.quantifiers:', function() {
     it('should not expand regex quantifiers when `options.quantifiers` is true', function() {
       compare('a{2}c', ['a{2}c'], {quantifiers: true});
       compare('a{2,}c', ['a{2,}c'], {quantifiers: true});

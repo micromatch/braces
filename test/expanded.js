@@ -8,14 +8,11 @@
 'use strict';
 
 require('mocha');
-var assert = require('assert');
 var bash = require('./support/bash');
 var support = require('./support/compare');
-var braces = require('..');
-var expand = braces.expand;
 var compare;
 
-describe('optimized', function() {
+describe('expanded', function() {
   beforeEach(function() {
     compare = support({expand: true});
   });
@@ -30,6 +27,9 @@ describe('optimized', function() {
 
     describe('escaping', function() {
       it('should not expand escaped braces', function() {
+        compare('y{\\},a}x', ['y}x', 'yax']);
+        compare('y{\\},a}x', bash('y{\\},a}x'));
+        compare('{a,\\\\{a,b}c}', bash('{a,\\\\{a,b}c}'));
         compare('\\{a,b,c,d,e}', ['{a,b,c,d,e}']);
         compare('a/b/c/{x,y\\}', ['a/b/c/{x,y}']);
         compare('a/\\{x,y}/cde', ['a/{x,y}/cde']);
@@ -41,13 +41,14 @@ describe('optimized', function() {
         compare('{x\\,y,\\{abc\\},trie}', ['x,y', '\\{abc\\}', 'trie']);
       });
 
-      it('should handle spaces', function() {
-        // Bash 4.3 says the following should be equivalent to `foo|(1|2)|bar`,
-        // That makes sense in Bash, since ' ' is a separator, but not here.
-        compare('foo {1,2} bar', [ 'foo 1 bar', 'foo 2 bar' ]);
+      it('should handle empty braces', function() {
+        compare('{ }', [ '\\{ \\}' ]);
+        compare('{', ['\\{']);
+        compare('{}', ['\\{\\}']);
+        compare('}', ['\\}']);
       });
 
-      it('should handle empty braces', function() {
+      it('should handle empty sets', function() {
         compare('{ }', [ '\\{ \\}' ]);
         compare('{', ['\\{']);
         compare('{}', ['\\{\\}']);
@@ -190,19 +191,26 @@ describe('optimized', function() {
 
     describe('commas', function() {
       it('should work with leading and trailing commas.', function() {
-        compare('a{b,}c', ['abc', 'ac']);
-        compare('a{,b}c', ['abc', 'ac']);
+        compare('a{b,}c', bash('a{b,}c'));
+        compare('a{,b}c', bash('a{,b}c'));
+        compare('{{a,b},a}c', bash('{{a,b},a}c'));
+        compare('{{a,b},}c', bash('{{a,b},}c'));
+        compare('a{{a,b},}c', bash('a{{a,b},}c'));
       });
     });
 
     describe('spaces', function() {
       it('should handle spaces', function() {
-        compare('0{1..9} {10..20}', ['01 10', '01 11', '01 12', '01 13', '01 14', '01 15', '01 16', '01 17', '01 18', '01 19', '01 20', '02 10', '02 11', '02 12', '02 13', '02 14', '02 15', '02 16', '02 17', '02 18', '02 19', '02 20', '03 10', '03 11', '03 12', '03 13', '03 14', '03 15', '03 16', '03 17', '03 18', '03 19', '03 20', '04 10', '04 11', '04 12', '04 13', '04 14', '04 15', '04 16', '04 17', '04 18', '04 19', '04 20', '05 10', '05 11', '05 12', '05 13', '05 14', '05 15', '05 16', '05 17', '05 18', '05 19', '05 20', '06 10', '06 11', '06 12', '06 13', '06 14', '06 15', '06 16', '06 17', '06 18', '06 19', '06 20', '07 10', '07 11', '07 12', '07 13', '07 14', '07 15', '07 16', '07 17', '07 18', '07 19', '07 20', '08 10', '08 11', '08 12', '08 13', '08 14', '08 15', '08 16', '08 17', '08 18', '08 19', '08 20', '09 10', '09 11', '09 12', '09 13', '09 14', '09 15', '09 16', '09 17', '09 18', '09 19', '09 20']);
+        compare('0{1..9} {10..20}', bash('0{1..9} {10..20}'));
         compare('a{ ,c{d, },h}x', ['acdx', 'ac x', 'ahx', 'a x']);
         compare('a{ ,c{d, },h} ', ['a  ', 'ac  ', 'acd ', 'ah ']);
 
         // see https://github.com/jonschlinkert/micromatch/issues/66
         compare('/Users/tobiasreich/Sites/aaa/bbb/ccc 2016/src/**/[^_]*.{html,ejs}', bash('/Users/tobiasreich/Sites/aaa/bbb/ccc 2016/src/**/[^_]*.{html,ejs}'));
+
+        // Bash 4.3 says the following should be equivalent to `foo|(1|2)|bar`,
+        // That makes sense in Bash, since ' ' is a separator, but not here.
+        compare('foo {1,2} bar', [ 'foo 1 bar', 'foo 2 bar' ]);
       });
     });
   });
@@ -228,7 +236,6 @@ describe('optimized', function() {
         compare('{1..2f..2}', ['{1..2f..2}']);
         compare('{1..ff..2}', ['{1..ff..2}']);
         compare('{1..ff}', ['{1..ff}']);
-        // compare('{1..f}', ['1', '2', '3', '4', '5', '6', '7', '8', '9', '[', '', ':', ']', '<', '?', '`', '=', '_', '^', '@', '>', ';', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f']);
         compare('{1.20..2}', ['{1.20..2}']);
       });
 
@@ -296,7 +303,7 @@ describe('optimized', function() {
 
     describe('alphabetical ranges', function() {
       it('should expand alphabetical ranges', function() {
-        compare('0{1..9}/{10..20}', [ '01/10', '01/11', '01/12', '01/13', '01/14', '01/15', '01/16', '01/17', '01/18', '01/19', '01/20', '02/10', '02/11', '02/12', '02/13', '02/14', '02/15', '02/16', '02/17', '02/18', '02/19', '02/20', '03/10', '03/11', '03/12', '03/13', '03/14', '03/15', '03/16', '03/17', '03/18', '03/19', '03/20', '04/10', '04/11', '04/12', '04/13', '04/14', '04/15', '04/16', '04/17', '04/18', '04/19', '04/20', '05/10', '05/11', '05/12', '05/13', '05/14', '05/15', '05/16', '05/17', '05/18', '05/19', '05/20', '06/10', '06/11', '06/12', '06/13', '06/14', '06/15', '06/16', '06/17', '06/18', '06/19', '06/20', '07/10', '07/11', '07/12', '07/13', '07/14', '07/15', '07/16', '07/17', '07/18', '07/19', '07/20', '08/10', '08/11', '08/12', '08/13', '08/14', '08/15', '08/16', '08/17', '08/18', '08/19', '08/20', '09/10', '09/11', '09/12', '09/13', '09/14', '09/15', '09/16', '09/17', '09/18', '09/19', '09/20' ]);
+        compare('{a..F}', bash('{a..F}'));
         compare('0{a..d}0', [ '0a0', '0b0', '0c0', '0d0' ]);
         compare('a/{b..d}/e', [ 'a/b/e', 'a/c/e', 'a/d/e' ]);
         compare('{1..f}', [ '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?', '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', '\\', ']', '^', '_', '`', 'a', 'b', 'c', 'd', 'e', 'f' ]);
@@ -319,6 +326,8 @@ describe('optimized', function() {
 
     describe('combo', function() {
       it('should expand numerical ranges - positive and negative', function() {
+        compare('a{01..05}b', bash('a{01..05}b'));
+        compare('0{1..9}/{10..20}', bash('0{1..9}/{10..20}'));
         compare('{-10..10}', [ '-10', '-9', '-8', '-7', '-6', '-5', '-4', '-3', '-2', '-1', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10' ]);
       });
     });
@@ -326,8 +335,8 @@ describe('optimized', function() {
     // HEADS UP! If you're using the `--mm` flag minimatch freezes on these
     describe('large numbers', function() {
       it('should expand large numbers', function() {
-        compare('{2147483645..2147483649}', ['(214748364[5-9])'], {optimize: true});
-        compare('{214748364..2147483649}', ['(21474836[4-9]|2147483[7-9][0-9]|214748[4-9][0-9]{2}|214749[0-9]{3}|2147[5-9][0-9]{4}|214[8-9][0-9]{5}|21[5-9][0-9]{6}|2[2-9][0-9]{7}|[3-9][0-9]{8}|1[0-9]{9}|20[0-9]{8}|21[0-3][0-9]{7}|214[0-6][0-9]{6}|2147[0-3][0-9]{5}|21474[0-7][0-9]{4}|214748[0-2][0-9]{3}|2147483[0-5][0-9]{2}|21474836[0-4][0-9])'], {optimize: true});
+        compare('{2147483645..2147483649}', ['2147483645', '2147483646', '2147483647', '2147483648', '2147483649']);
+        compare('{214748364..2147483649}', ['(21474836[4-9]|2147483[7-9][0-9]|214748[4-9][0-9]{2}|214749[0-9]{3}|2147[5-9][0-9]{4}|214[8-9][0-9]{5}|21[5-9][0-9]{6}|2[2-9][0-9]{7}|[3-9][0-9]{8}|1[0-9]{9}|20[0-9]{8}|21[0-3][0-9]{7}|214[0-6][0-9]{6}|2147[0-3][0-9]{5}|21474[0-7][0-9]{4}|214748[0-2][0-9]{3}|2147483[0-5][0-9]{2}|21474836[0-4][0-9])']);
       });
     });
 

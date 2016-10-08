@@ -5,7 +5,7 @@ var reference = require('./support/reference');
 var support = require('./support/compare');
 var compare;
 
-describe('compiler', function() {
+describe('bash.expanded', function() {
   var fixtures = [
     ['0{1..9} {10..20}', {}],
     ['a/\\{b,c,d,{x,y}}{e,f\\}/g', {}],
@@ -39,10 +39,6 @@ describe('compiler', function() {
     ['a/{{a,b}/{c,d}}/z', {}],
     ['a/{{b,c}/{d,e}}', {}],
     ['a/{{b,c}/{d,e}}/f', {}],
-    ['abc/${ddd}/xyz', {}],
-    ['abcd{efgh', {}],
-    ['a{ ,c{d, },h} ', {}],
-    ['a{ ,c{d, },h}x', {}],
     ['a{0..3}d', {}],
     ['a{b}c', {}],
     ['foo {1,2} bar', {}],
@@ -53,8 +49,6 @@ describe('compiler', function() {
     ['{0..10,braces}', {}],
 
     ['{10..1}', {}],
-    // ['{214748364..2147483649}', {}],
-    // ['{2147483645..2147483649}', {}],
     ['{3..3}', {}],
     ['{5..8}', {}],
     ['{9..-4}', {}],
@@ -69,11 +63,7 @@ describe('compiler', function() {
     ['{abc}', {}],
     ['{b{c,d},e}', {}],
     ['{b{c,d},e}/f', {}],
-    ['{x,y,\\{a,b,c\\}}', {}],
-    ['{x,y,{a,b,c\\}}', {}],
-    ['{x,y,{abc},trie}', {}],
     ['x,y,{abc},trie', {}],
-    ['{x\\,y,\\{abc\\},trie}', {}],
     ['{{0..10},braces}', {}],
     ['{{a,b},{c,d}}', {}],
     ['{{a,b}/{c,d}}', {}],
@@ -112,6 +102,11 @@ describe('compiler', function() {
     ['a{b,c{d,e},h}x{y,z}', {}],
     ['a{b,c{d,e},{f,g}h}x{y,z}', {}],
 
+    // should gracefully handle large ranges (`braces` handles these fine,
+    // they are tested elsewhere, but they break all the other reference libs)
+    ['{214748364..2147483649}', {skip: true}],
+    ['{2147483645..2147483649}', {skip: true}],
+
     // should handle invalid sets
     ['{0..10,braces}', {}],
     ['{1..10,braces}', {}],
@@ -128,9 +123,15 @@ describe('compiler', function() {
     ['{x,y,\\{a,b,c\\}}', {}],
     ['{x,y,{a,b,c\\}}', {}],
     ['{x,y,{abc},trie}', {}],
-    ['{x\\,y,\\{abc\\},trie}', {}],
     ['./\\{x,y}/{a..z..3}/', {bash: false}],
 
+    // should not expand escaped commas
+    ['{x\\,y,\\{abc\\},trie}', {}],
+    ['a{b\\,c\\,d}e', {}],
+    ['a{b\\,c}d', {}],
+    ['{abc\\,def}', {}],
+    ['{abc\\,def,ghi}', {}],
+    ['a/{b,c}/{x\\,y}/d/e', {}],
 
     // should handle empty braces
     ['{ }', {}],
@@ -150,16 +151,6 @@ describe('compiler', function() {
     ['a${b}c', {}],
     ['a/{${b},c}/d', {}],
     ['a${b,d}/{foo,bar}c', {}],
-
-    // should not expand escaped commas
-    ['a{b\\,c\\,d}e', {}],
-    ['a{b\\,c}d', {}],
-    ['{abc\\,def}', {}],
-    ['{abc\\,def,ghi}', {}],
-    ['a/{b,c}/{x\\,y}/d/e', {}],
-
-    // should not expand escaped braces or commas
-    ['{x\\,y,\\{abc\\},trie}', {}],
 
     // should support sequence brace operators
     ['/usr/{ucb/{ex,edit},lib/{ex,how_ex}}', {}],
@@ -248,7 +239,6 @@ describe('compiler', function() {
     ['ab{c', {}],
     ['{{a,b}', {}],
     ['{a,b}}', {}],
-    ['abcd{efgh', {}],
     ['a{b{c{d,e}f}gh', {}],
     ['a{b{c{d,e}f}g}h', {}],
     ['f{x,y{{g,z}}h}', {}],
@@ -370,12 +360,11 @@ describe('compiler', function() {
     var opts = extend({}, arr[1], {expand: true});
     var str = arr[0];
     // if (str !== 'a{b{c{d,e}f{x,y{{g}h') return;
+    if (opts.skip === true) {
+      return;
+    }
 
     it('should compile: ' + str, function() {
-      if (opts.skip === true) {
-        this.skip();
-        return;
-      }
       compare(str, reference(str, opts), opts);
     });
   });
