@@ -2,6 +2,7 @@
 
 var spawn = require('cross-spawn');
 var utils = require('./utils');
+var bash = process.env.BASH || '/usr/local/bin/bash';
 
 /**
  * Expose `bash` util
@@ -12,7 +13,7 @@ module.exports = function(pattern) {
   if (!/echo/.test(cmd)) {
     cmd = `echo ${escape(pattern)}`;
   }
-  var res = spawn.sync('/usr/local/bin/bash', ['-c', cmd]);
+  var res = spawn.sync(bash, ['-c', cmd]);
   var err = res.stderr && res.stderr.toString().trim();
   if (err) {
     console.error(cmd);
