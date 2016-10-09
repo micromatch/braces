@@ -18,6 +18,9 @@ module.exports = function(pattern) {
     console.error(cmd);
     throw new Error(err);
   }
+  if (!res.stdout) {
+    return [];
+  }
   return unescape(res.stdout).sort();
 };
 
