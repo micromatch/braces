@@ -13,7 +13,7 @@ module.exports = function(pattern) {
     cmd = `echo ${escape(pattern)}`;
   }
   var res = spawn.sync('/usr/local/bin/bash', ['-c', cmd]);
-  var err = res.stderr.toString().trim();
+  var err = res.stderr && res.stderr.toString().trim();
   if (err) {
     console.error(cmd);
     throw new Error(err);
