@@ -189,7 +189,7 @@ function createKey(pattern, options) {
       key += ';' + prop + '=' + String(options[prop]);
     }
   }
-  return Symbol(key);
+  return key;
 }
 
 /**
