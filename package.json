@@ -44,6 +44,7 @@
     "benchmarked": "^0.2.5",
     "brace-expansion": "^1.1.6",
     "cross-spawn": "^4.0.2",
+    "fs-exists-sync": "^0.1.0",
     "gulp": "^3.9.1",
     "gulp-eslint": "^3.0.1",
     "gulp-format-md": "^0.1.11",

@@ -2,8 +2,11 @@
 
 var util = require('util');
 
+exports.exists = require('fs-exists-sync');
 exports.extend = require('extend-shallow');
 exports.nc = require('noncharacters');
+
+var bashPath = '';
 
 exports.escape = function(str, options) {
   if (typeof str !== 'string') {
@@ -38,4 +41,14 @@ exports.unescape = function(str, options) {
   str = str.split(exports.nc[2]).join(pre + '}');
   str = str.split(exports.nc[3]).join(',');
   return str.replace(/\\+/g, '\\');
+};
+
+exports.getBashPath = function() {
+  if (bashPath) return bashPath;
+  if (exports.exists('/usr/local/bin/bash')) {
+    bashPath = '/usr/local/bin/bash';
+  } else if (exports.exists('/bin/bash')) {
+    bashPath = '/bin/bash';
+  }
+  return bashPath;
 };

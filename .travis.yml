@@ -1,9 +1,21 @@
 sudo: false
 language: node_js
+os:
+  - linux
+  - osx
+
 node_js:
   - node
   - '6'
   - '5'
-  - '0.12'
-env:
-  - BASH=/bin/bash
+
+# addons will be installed when running on linux
+addons:
+  apt:
+    packages:
+      - bash
+
+# when running on "osx" upgrade bash
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then (brew outdated bash || brew upgrade bash); fi
