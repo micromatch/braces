@@ -2,7 +2,12 @@
 
 var util = require('util');
 var assert = require('assert');
+var argv = require('yargs-parser')(process.argv.slice(2))
 var braces = require('../..');
+
+if (argv.mm) {
+  braces = require('minimatch').braceExpand;
+}
 
 function compare(a, b) {
   return a === b ? 0 : a > b ? 1 : -1;
@@ -27,7 +32,7 @@ module.exports = function(config) {
     expected = stripSlashes(expected).filter(Boolean);
     actual.sort(compare);
     expected.sort(compare);
-
+    // console.log('compare(\'' + fixture + '\',', expected, ');');
     var msg = ' ' + fixture + '\n\n      "' + inspect(actual) + '" !== "' + inspect(expected) + '"\n';
 
     var a = actual.join('').split('\\').join('');

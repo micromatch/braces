@@ -1,12 +1,11 @@
 'use strict';
 
-require('mocha');
-var assert = require('assert');
 var extend = require('extend-shallow');
-var match = require('./support/match');
-var braces = require('..');
+var reference = require('./support/reference');
+var support = require('./support/compare');
+var compare, tests = {};
 
-describe('bash.expanded', function() {
+describe('bash.optimized', function() {
   var fixtures = [
     ['a{b,c{1..100}/{foo,bar}/,h}x/z', {}, ['a(b|c([1-9]|[1-9][0-9]|100)/(foo|bar)/|h)x/z']],
     ['0{1..9} {10..20}', {}, ['0([1-9]) (1[0-9]|20)']],
@@ -380,23 +379,25 @@ describe('bash.expanded', function() {
 
     // should expand complex sets and ranges in `bash` mode
     ['a/{x,{1..5},y}/c{d}e', {}, ['a/(x|([1-5])|y)/c\\{d\\}e']]
+
   ];
 
+  beforeEach(function() {
+    compare = support(tests);
+  });
+
   fixtures.forEach(function(arr) {
-    if (typeof arr === 'string') {
-      return;
-    }
+    var opts = extend({}, arr[1], {optimize: true});
+    var str = arr[0];
+    var expected = arr[2] || reference(str, opts);
+    // if (str !== 'a/{x,{1..5},y}/c{d}e') return;
 
-    var options = extend({}, arr[1], {optimize: true});
-    var pattern = arr[0];
-    var expected = arr[2];
-
-    if (options.skip === true) {
-      return;
-    }
-
-    it('should compile: ' + pattern, function() {
-      match(braces(pattern, options), expected, pattern);
+    it('should compile: ' + str, function() {
+      if (opts.skip === true) {
+        this.skip();
+        return;
+      }
+      compare(str, expected, opts);
     });
   });
 });

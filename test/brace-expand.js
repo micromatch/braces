@@ -1,7 +1,6 @@
 'use strict';
 
 var assert = require('assert');
-var bash = require('./support/bash');
 var braces = require('..');
 var expand = braces.expand;
 
@@ -66,9 +65,9 @@ describe('unit tests from brace-expand', function() {
 
   describe('nested', function() {
     it('should support nested sets', function() {
-      assert.deepEqual(expand('{a,b{1..3},c}'), bash('{a,b{1..3},c}'));
-      assert.deepEqual(expand('{{A..Z},{a..z}}'), bash('{{A..Z},{a..z}}'));
-      assert.deepEqual(expand('ppp{,config,oe{,conf}}'), bash('ppp{,config,oe{,conf}}'));
+      assert.deepEqual(expand('{a,b{1..3},c}'), ['a', 'b1', 'b2', 'b3', 'c']);
+      assert.deepEqual(expand('{{A..Z},{a..z}}'), [ 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' ].sort());
+      assert.deepEqual(expand('ppp{,config,oe{,conf}}'), ['ppp', 'pppconfig', 'pppoe', 'pppoeconf']);
     });
   });
 

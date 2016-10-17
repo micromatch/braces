@@ -1,5 +1,6 @@
 'use strict';
 
+var isWindows = require('is-windows');
 var spawn = require('cross-spawn');
 var utils = require('./utils');
 
@@ -8,18 +9,22 @@ var utils = require('./utils');
  */
 
 module.exports = function(pattern) {
-  var cmd = pattern;
-  if (!/echo/.test(cmd)) {
-    cmd = `echo ${escape(pattern)}`;
+  if (isWindows()) {
+    throw new Error('windows not supported');
   }
 
-  var bashPath = utils.getBashPath();
-  var res = spawn.sync(bashPath, ['-c', cmd]);
+  var cmd = pattern;
+  if (!/echo/.test(cmd)) {
+    cmd = 'echo ' + escape(pattern);
+  }
+
+  var res = spawn.sync(utils.getBashPath(), ['-c', cmd]);
   var err = res.stderr && res.stderr.toString().trim();
   if (err) {
     console.error(cmd);
     throw new Error(err);
   }
+
   if (!res.stdout) {
     return [];
   }
