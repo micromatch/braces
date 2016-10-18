@@ -6,8 +6,8 @@ function stringify(config, options) {
   options = options || {};
   var str = inspect(config, {singleQuotes: true, indent: '  '});
   var res = indentArray(str);
-    return res.split(/\s*\n+\s*/).join(' ');
   if (options.newlines === false) {
+    return res.split(/\s*\n+\s*/).join(' ');
   }
   return res;
 }

@@ -2,7 +2,8 @@
 
 var util = require('util');
 var assert = require('assert');
-var argv = require('yargs-parser')(process.argv.slice(2))
+var extend = require('extend-shallow');
+var argv = require('yargs-parser')(process.argv.slice(2));
 var braces = require('../..');
 
 if (argv.mm) {
@@ -25,7 +26,7 @@ module.exports = function(config) {
       delete config.optimize;
     }
 
-    var opts = Object.assign({}, config, options);
+    var opts = extend({}, config, options);
     if (opts.skip) return;
 
     var actual = stripSlashes(braces(fixture, opts)).filter(Boolean);

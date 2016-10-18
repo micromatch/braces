@@ -1,10 +1,17 @@
 'use strict';
 
-require('mocha');
-var assert = require('assert');
 var extend = require('extend-shallow');
-var match = require('./support/match');
+var assert = require('assert');
 var braces = require('..');
+
+function match(pattern, expected, options) {
+  var actual = braces.expand(pattern, options).sort();
+  assert.deepEqual(actual, expected.sort(), pattern);
+}
+
+/**
+ * Bash 4.3 unit tests with `braces.expand()`
+ */
 
 describe('bash.expanded', function() {
   var fixtures = [
@@ -193,8 +200,8 @@ describe('bash.expanded', function() {
     [ '0{a..d}0', {}, [ '0a0', '0b0', '0c0', '0d0' ] ],
     [ 'a/{b..d}/e', {}, [ 'a/b/e', 'a/c/e', 'a/d/e' ] ],
     [ '{1..f}', { bash: false, minimatch: false }, [ '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?', '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', '\\', ']', '^', '_', '`', 'a', 'b', 'c', 'd', 'e', 'f' ] ],
-    [ '{a..A}', { bash: false }, [ 'a', '`', '_', '^', ']', '', '[', 'Z', 'Y', 'X', 'W', 'V', 'U', 'T', 'S', 'R', 'Q', 'P', 'O', 'N', 'M', 'L', 'K', 'J', 'I', 'H', 'G', 'F', 'E', 'D', 'C', 'B', 'A' ] ],
-    [ '{A..a}', { bash: false }, [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', '', ']', '^', '_', '`', 'a' ] ],
+    [ '{a..A}', { bash: false }, [ 'a', '`', '_', '^', ']', '\\', '[', 'Z', 'Y', 'X', 'W', 'V', 'U', 'T', 'S', 'R', 'Q', 'P', 'O', 'N', 'M', 'L', 'K', 'J', 'I', 'H', 'G', 'F', 'E', 'D', 'C', 'B', 'A' ] ],
+    [ '{A..a}', { bash: false }, [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', '\\', ']', '^', '_', '`', 'a' ] ],
     [ '{a..e}', {}, [ 'a', 'b', 'c', 'd', 'e' ] ],
     [ '{A..E}', {}, [ 'A', 'B', 'C', 'D', 'E' ] ],
     [ '{a..f}', {}, [ 'a', 'b', 'c', 'd', 'e', 'f' ] ],
@@ -241,7 +248,7 @@ describe('bash.expanded', function() {
       return;
     }
 
-    var options = extend({}, arr[1], {expand: true});
+    var options = extend({}, arr[1]);
     var pattern = arr[0];
     var expected = arr[2];
 
@@ -250,7 +257,7 @@ describe('bash.expanded', function() {
     }
 
     it('should compile: ' + pattern, function() {
-      match(braces(pattern, options), expected, pattern);
+      match(pattern, expected, options);
     });
   });
 });

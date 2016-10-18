@@ -1,10 +1,17 @@
 'use strict';
 
-require('mocha');
-var assert = require('assert');
 var extend = require('extend-shallow');
-var match = require('./support/match');
+var assert = require('assert');
 var braces = require('..');
+
+function match(pattern, expected, options) {
+  var actual = braces.optimize(pattern, options).sort();
+  assert.deepEqual(actual, expected.sort(), pattern);
+}
+
+/**
+ * Bash 4.3 unit tests with `braces.optimize()`
+ */
 
 describe('bash.expanded', function() {
   var fixtures = [
@@ -127,11 +134,11 @@ describe('bash.expanded', function() {
     ['{1..10,braces}', {}, ['(1..10|braces)']],
 
     // should not expand escaped braces
-    ['\\{a,b,c,d,e}', {}, ['\\{a,b,c,d,e\\}']],
-    ['a/b/c/{x,y\\}', {}, ['a/b/c/\\{x,y\\}']],
-    ['a/\\{x,y}/cde', {}, ['a/\\{x,y\\}/cde']],
-    ['abcd{efgh', {}, ['abcd\\{efgh']],
-    ['\\{abc\\}', {}, ['\\{abc\\}']],
+    ['\\{a,b,c,d,e}', {}, ['{a,b,c,d,e}']],
+    ['a/b/c/{x,y\\}', {}, ['a/b/c/{x,y}']],
+    ['a/\\{x,y}/cde', {}, ['a/{x,y}/cde']],
+    ['abcd{efgh', {}, ['abcd{efgh']],
+    ['\\{abc\\}', {}, ['{abc}']],
     ['{x,y,\\{a,b,c\\}}', {}, ['(x|y|{a|b|c})']],
     ['{x,y,{a,b,c\\}}', {}, ['{x,y,(a|b|c})']],
     ['{x\\,y,\\{abc\\},trie}', {}, ['(x,y|{abc}|trie)']],
@@ -162,21 +169,21 @@ describe('bash.expanded', function() {
     ['a${b,d}/{foo,bar}c', {}, ['a${b,d}/(foo|bar)c']],
 
     // should not expand escaped commas
-    ['a{b\\,c\\,d}e', {}, ['a\\{b,c,d\\}e']],
-    ['a{b\\,c}d', {}, ['a\\{b,c\\}d']],
-    ['{abc\\,def}', {}, ['\\{abc,def\\}']],
+    ['a{b\\,c\\,d}e', {}, ['a{b,c,d}e']],
+    ['a{b\\,c}d', {}, ['a{b,c}d']],
+    ['{abc\\,def}', {}, ['{abc,def}']],
     ['{abc\\,def,ghi}', {}, ['(abc,def|ghi)']],
-    ['a/{b,c}/{x\\,y}/d/e', {}, ['a/(b|c)/\\{x,y\\}/d/e']],
+    ['a/{b,c}/{x\\,y}/d/e', {}, ['a/(b|c)/{x,y}/d/e']],
 
     // should not expand escaped braces
-    ['{a,b\\}c,d}', {}, ['(a|b\\}c|d)']],
-    ['\\{a,b,c,d,e}', {}, ['\\{a,b,c,d,e\\}']],
-    ['a/{z,\\{a,b,c,d,e}/d', {}, ['a/(z|\\{a|b|c|d|e)/d']],
-    ['a/\\{b,c}/{d,e}/f', {}, ['a/\\{b,c\\}/(d|e)/f']],
-    ['./\\{x,y}/{a..z..3}/', {}, ['./\\{x,y\\}/(a|d|g|j|m|p|s|v|y)/']],
+    ['{a,b\\}c,d}', {}, ['(a|b}c|d)']],
+    ['\\{a,b,c,d,e}', {}, ['{a,b,c,d,e}']],
+    ['a/{z,\\{a,b,c,d,e}/d', {}, ['a/(z|{a|b|c|d|e)/d']],
+    ['a/\\{b,c}/{d,e}/f', {}, ['a/{b,c}/(d|e)/f']],
+    ['./\\{x,y}/{a..z..3}/', {}, ['./{x,y}/(a|d|g|j|m|p|s|v|y)/']],
 
     // should not expand escaped braces or commas
-    ['{x\\,y,\\{abc\\},trie}', {}, ['(x,y|\\{abc\\}|trie)']],
+    ['{x\\,y,\\{abc\\},trie}', {}, ['(x,y|{abc}|trie)']],
 
     // should support sequence brace operators
     ['/usr/{ucb/{ex,edit},lib/{ex,how_ex}}', {}, ['/usr/(ucb/(ex|edit)|lib/(ex|how_ex))']],
@@ -205,7 +212,7 @@ describe('bash.expanded', function() {
     ['a{b,c{d,e},h}x/z', {}, ['a(b|c(d|e)|h)x/z']],
     ['a{b,c{d,e},h}x{y,z}', {}, ['a(b|c(d|e)|h)x(y|z)']],
     ['a{b,c{d,e},{f,g}h}x{y,z}', {}, ['a(b|c(d|e)|(f|g)h)x(y|z)']],
-    ['a-{b{d,e}}-c', {}, ['a-\\{b(d|e)\\}-c']],
+    ['a-{b{d,e}}-c', {}, ['a-{b(d|e)}-c']],
 
     // should expand not modify non-brace characters
     ['a/b/{d,e}/*.js', {}, ['a/b/(d|e)/*.js']],
@@ -232,54 +239,54 @@ describe('bash.expanded', function() {
     */
 
     // should not try to expand ranges with decimals
-    ['{1.1..2.1}', {}, ['\\{1.1..2.1\\}']],
-    ['{1.1..~2.1}', {}, ['\\{1.1..~2.1\\}']],
+    ['{1.1..2.1}', {}, ['{1.1..2.1}']],
+    ['{1.1..~2.1}', {}, ['{1.1..~2.1}']],
 
     // should escape invalid ranges
-    ['{1..0f}', {}, ['\\{1..0f\\}']],
-    ['{1..10..ff}', {}, ['\\{1..10..ff\\}']],
-    ['{1..10.f}', {}, ['\\{1..10.f\\}']],
-    ['{1..10f}', {}, ['\\{1..10f\\}']],
-    ['{1..20..2f}', {}, ['\\{1..20..2f\\}']],
-    ['{1..20..f2}', {}, ['\\{1..20..f2\\}']],
-    ['{1..2f..2}', {}, ['\\{1..2f..2\\}']],
-    ['{1..ff..2}', {}, ['\\{1..ff..2\\}']],
-    ['{1..ff}', {}, ['\\{1..ff\\}']],
-    ['{1.20..2}', {}, ['\\{1.20..2\\}']],
+    ['{1..0f}', {}, ['{1..0f}']],
+    ['{1..10..ff}', {}, ['{1..10..ff}']],
+    ['{1..10.f}', {}, ['{1..10.f}']],
+    ['{1..10f}', {}, ['{1..10f}']],
+    ['{1..20..2f}', {}, ['{1..20..2f}']],
+    ['{1..20..f2}', {}, ['{1..20..f2}']],
+    ['{1..2f..2}', {}, ['{1..2f..2}']],
+    ['{1..ff..2}', {}, ['{1..ff..2}']],
+    ['{1..ff}', {}, ['{1..ff}']],
+    ['{1.20..2}', {}, ['{1.20..2}']],
 
     // should handle weirdly-formed brace expansions (fixed in post-bash-3.1)
-    ['a-{b{d,e}}-c', {}, ['a-\\{b(d|e)\\}-c']],
-    ['a-{bdef-{g,i}-c', {}, ['a-\\{bdef-(g|i)-c']],
+    ['a-{b{d,e}}-c', {}, ['a-{b(d|e)}-c']],
+    ['a-{bdef-{g,i}-c', {}, ['a-{bdef-(g|i)-c']],
 
     // should not expand quoted strings
-    ['{"klklkl"}{1,2,3}', {}, ['\\{klklkl\\}(1|2|3)']],
-    ['{"x,x"}', {}, ['\\{x,x\\}']],
+    ['{"klklkl"}{1,2,3}', {}, ['{klklkl}(1|2|3)']],
+    ['{"x,x"}', {}, ['{x,x}']],
 
     // should escaped outer braces in nested non-sets
-    ['{a-{b,c,d}}', {}, ['\\{a-(b|c|d)\\}']],
-    ['{a,{a-{b,c,d}}}', {}, ['(a|\\{a-(b|c|d)\\})']],
+    ['{a-{b,c,d}}', {}, ['{a-(b|c|d)}']],
+    ['{a,{a-{b,c,d}}}', {}, ['(a|{a-(b|c|d)})']],
 
     // should escape imbalanced braces
-    ['a-{bdef-{g,i}-c', {}, ['a-\\{bdef-(g|i)-c']],
-    ['abc{', {}, ['abc\\{']],
-    ['{abc{', {}, ['\\{abc\\{']],
-    ['{abc', {}, ['\\{abc']],
-    ['}abc', {}, ['\\}abc']],
-    ['ab{c', {}, ['ab\\{c']],
-    ['ab{c', {}, ['ab\\{c']],
-    ['{{a,b}', {}, ['\\{(a|b)']],
-    ['{a,b}}', {}, ['(a|b)\\}']],
-    ['abcd{efgh', {}, ['abcd\\{efgh']],
+    ['a-{bdef-{g,i}-c', {}, ['a-{bdef-(g|i)-c']],
+    ['abc{', {}, ['abc{']],
+    ['{abc{', {}, ['{abc{']],
+    ['{abc', {}, ['{abc']],
+    ['}abc', {}, ['}abc']],
+    ['ab{c', {}, ['ab{c']],
+    ['ab{c', {}, ['ab{c']],
+    ['{{a,b}', {}, ['{(a|b)']],
+    ['{a,b}}', {}, ['(a|b)}']],
+    ['abcd{efgh', {}, ['abcd{efgh']],
     ['a{b{c{d,e}f}gh', {}, ['a{b(c(d|e)f)gh']],
     ['a{b{c{d,e}f}g}h', {}, ['a(b(c(d|e)f)g)h']],
     ['f{x,y{{g,z}}h}', {}, ['f(x|y((g|z))h)']],
-    ['z{a,b},c}d', {}, ['z(a|b),c\\}d']],
-    ['a{b{c{d,e}f{x,y{{g}h', {}, ['a\\{b\\{c(d|e)f\\{x,y\\{\\{g\\}h']],
-    ['f{x,y{{g}h', {}, ['f\\{x,y\\{\\{g\\}h']],
+    ['z{a,b},c}d', {}, ['z(a|b),c}d']],
+    ['a{b{c{d,e}f{x,y{{g}h', {}, ['a{b{c(d|e)f{x,y{{g}h']],
+    ['f{x,y{{g}h', {}, ['f{x,y{{g}h']],
     ['f{x,y{{g}}h', {}, ['f{x,y{{g}}h']],
-    ['a{b{c{d,e}f{x,y{}g}h', {}, ['a\\{b\\{c(d|e)f(x|y\\{\\}g)h']],
-    ['f{x,y{}g}h', {}, ['f(x|y\\{\\}g)h']],
-    ['z{a,b{,c}d', {}, ['z\\{a,b(|c)d']],
+    ['a{b{c{d,e}f{x,y{}g}h', {}, ['a{b{c(d|e)f(x|y{}g)h']],
+    ['f{x,y{}g}h', {}, ['f(x|y{}g)h']],
+    ['z{a,b{,c}d', {}, ['z{a,b(|c)d']],
 
     // should expand numeric ranges
     ['a{0..3}d', {}, ['a([0-3])d']],
@@ -373,13 +380,13 @@ describe('bash.expanded', function() {
     ['../{2..10..2}/../foo', {}, ['../(2|4|6|8|10)/../foo']],
     ['../{1..3}/../{a,b,c}/foo', {}, ['../([1-3])/../(a|b|c)/foo']],
     ['./{a..z..3}/', {}, ['./(a|d|g|j|m|p|s|v|y)/']],
-    ['./{"x,y"}/{a..z..3}/', {}, ['./\\{x,y\\}/(a|d|g|j|m|p|s|v|y)/']],
+    ['./{"x,y"}/{a..z..3}/', {}, ['./{x,y}/(a|d|g|j|m|p|s|v|y)/']],
 
     // should expand a complex combination of ranges and sets
     ['a/{x,y}/{1..5}c{d,e}f.{md,txt}', {}, ['a/(x|y)/([1-5])c(d|e)f.(md|txt)']],
 
     // should expand complex sets and ranges in `bash` mode
-    ['a/{x,{1..5},y}/c{d}e', {}, ['a/(x|([1-5])|y)/c\\{d\\}e']]
+    ['a/{x,{1..5},y}/c{d}e', {}, ['a/(x|([1-5])|y)/c{d}e']]
   ];
 
   fixtures.forEach(function(arr) {
@@ -387,7 +394,7 @@ describe('bash.expanded', function() {
       return;
     }
 
-    var options = extend({}, arr[1], {optimize: true});
+    var options = extend({}, arr[1]);
     var pattern = arr[0];
     var expected = arr[2];
 
@@ -396,7 +403,7 @@ describe('bash.expanded', function() {
     }
 
     it('should compile: ' + pattern, function() {
-      match(braces(pattern, options), expected, pattern);
+      match(pattern, expected, options);
     });
   });
 });

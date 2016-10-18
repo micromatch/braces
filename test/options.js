@@ -8,12 +8,35 @@
 'use strict';
 
 require('mocha');
-var match = require('./support/match');
+var assert = require('assert');
+var braces = require('..');
+
+function match(pattern, expected, options) {
+  assert.deepEqual(braces(pattern, options).sort(), expected.sort());
+}
 
 describe('options', function() {
   describe('options.expand', function() {
     it('should expand braces when `options.expand` is true', function() {
       match('a/{b,c}/d', ['a/b/d', 'a/c/d'], {expand: true});
+    });
+  });
+
+  describe('options.unescape', function() {
+    it('should remove backslashes from escaped brace characters', function() {
+      match('{a,b\\}c,d}', ['(a|b}c|d)']);
+      match('\\{a,b,c,d,e}', ['{a,b,c,d,e}']);
+      match('a/{z,\\{a,b,c,d,e}/d', ['a/(z|{a|b|c|d|e)/d']);
+      match('a/\\{b,c}/{d,e}/f', ['a/{b,c}/(d|e)/f']);
+      match('./\\{x,y}/{a..z..3}/', ['./{x,y}/(a|d|g|j|m|p|s|v|y)/']);
+    });
+
+    it('should not remove backslashes when `options.unescape` is false', function() {
+      match('{a,b\\}c,d}', ['(a|b\\}c|d)'], {unescape: false});
+      match('\\{a,b,c,d,e}', ['\\{a,b,c,d,e}'], {unescape: false});
+      match('a/{z,\\{a,b,c,d,e}/d', ['a/(z|\\{a|b|c|d|e)/d'], {unescape: false});
+      match('a/\\{b,c}/{d,e}/f', ['a/\\{b,c}/(d|e)/f'], {unescape: false});
+      match('./\\{x,y}/{a..z..3}/', ['./\\{x,y}/(a|d|g|j|m|p|s|v|y)/'], {unescape: false});
     });
   });
 

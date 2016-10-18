@@ -1,10 +1,12 @@
 'use strict';
 
-require('mocha');
 var assert = require('assert');
-var match = require('./support/match');
 var braces = require('..');
-var expand = braces.expand;
+
+function match(pattern, expected, options) {
+  var actual = braces.expand(pattern, options).sort();
+  assert.deepEqual(actual, expected.sort(), pattern);
+}
 
 describe('multiples', function() {
   var patterns = [
@@ -40,9 +42,9 @@ describe('multiples', function() {
     ['a{,}{,}{,}', ['a', 'a', 'a', 'a', 'a', 'a', 'a', 'a']],
     ['a{,}{,}{,}{,}', ['a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a']],
     ['one/{a{,}{,}}/{b/c{,,}{,}{,,}{,}}/two', ['one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two', 'one/{a}/{b/c}/two']],
-    ['{,}', ['']],
+    ['{,}', []],
     ['{,}a/{,}', ['a/', 'a/', 'a/', 'a/']],
-    ['{,}{,}', ['']],
+    ['{,}{,}', []],
     ['{a,b{,}{,}{,},c}d', ['ad', 'bd', 'bd', 'bd', 'bd', 'bd', 'bd', 'bd', 'bd', 'cd']],
     ['{a,b{,}{,}{,}}', ['a', 'b', 'b', 'b', 'b', 'b', 'b', 'b', 'b']],
     ['{a{,,}b{,}}', ['{ab}', '{ab}', '{ab}', '{ab}', '{ab}', '{ab}']]
@@ -50,7 +52,7 @@ describe('multiples', function() {
 
   patterns.forEach(function(pattern) {
     it('should expand: ' + pattern[0], function() {
-      match(expand(pattern[0]), pattern[1], pattern[0]);
+      match(pattern[0], pattern[1]);
     });
   });
 });

@@ -8,11 +8,14 @@
 'use strict';
 
 require('mocha');
-var match = require('./support/match');
+var assert = require('assert');
 var braces = require('..');
 
-describe('optimized', function() {
+function match(pattern, expected, options) {
+  assert.deepEqual(braces(pattern, options), expected);
+}
 
+describe('optimized', function() {
   describe('sets', function() {
     describe('invalid sets', function() {
       it('should handle invalid sets:', function() {
@@ -28,10 +31,10 @@ describe('optimized', function() {
         match('a/\\{x,y}/cde', ['a/{x,y}/cde']);
         match('abcd{efgh', ['abcd{efgh']);
         match('{abc}', ['{abc}']);
-        match('{x,y,\\{a,b,c\\}}', ['(x|y|\\{a|b|c\\})']);
-        match('{x,y,{a,b,c\\}}', ['\\{x,y,(a|b|c\\})']);
-        match('{x,y,{abc},trie}', ['(x|y|\\{abc\\}|trie)']);
-        match('{x\\,y,\\{abc\\},trie}', ['(x,y|\\{abc\\}|trie)']);
+        match('{x,y,\\{a,b,c\\}}', ['(x|y|{a|b|c})']);
+        match('{x,y,{a,b,c\\}}', ['{x,y,(a|b|c})']);
+        match('{x,y,{abc},trie}', ['(x|y|{abc}|trie)']);
+        match('{x\\,y,\\{abc\\},trie}', ['(x,y|{abc}|trie)']);
       });
 
       it('should handle spaces', function() {
@@ -41,46 +44,46 @@ describe('optimized', function() {
       });
 
       it('should handle empty braces', function() {
-        match('{ }', ['\\{ \\}']);
-        match('{', ['\\{']);
-        match('{}', ['\\{\\}']);
-        match('}', ['\\}']);
+        match('{ }', ['{ }']);
+        match('{', ['{']);
+        match('{}', ['{}']);
+        match('}', ['}']);
       });
 
       it('should escape braces when only one value is defined', function() {
-        match('a{b}c', ['a\\{b\\}c']);
-        match('a/b/c{d}e', ['a/b/c\\{d\\}e']);
+        match('a{b}c', ['a{b}c']);
+        match('a/b/c{d}e', ['a/b/c{d}e']);
       });
 
       it('should not expand braces in sets with es6/bash-like variables', function() {
-        match('abc/${ddd}/xyz', ['abc/\\$\\{ddd\\}/xyz']);
-        match('a${b}c', ['a\\$\\{b\\}c']);
-        match('a/{${b},c}/d', ['a/(\\$\\{b\\}|c)/d']);
-        match('a${b,d}/{foo,bar}c', ['a\\$\\{b,d\\}/(foo|bar)c']);
+        match('abc/${ddd}/xyz', ['abc/${ddd}/xyz']);
+        match('a${b}c', ['a${b}c']);
+        match('a/{${b},c}/d', ['a/(${b}|c)/d']);
+        match('a${b,d}/{foo,bar}c', ['a${b,d}/(foo|bar)c']);
       });
 
       it('should not expand escaped commas.', function() {
-        match('a{b\\,c\\,d}e', ['a\\{b,c,d\\}e']);
-        match('a{b\\,c}d', ['a\\{b,c\\}d']);
-        match('{abc\\,def}', ['\\{abc,def\\}']);
+        match('a{b\\,c\\,d}e', ['a{b,c,d}e']);
+        match('a{b\\,c}d', ['a{b,c}d']);
+        match('{abc\\,def}', ['{abc,def}']);
         match('{abc\\,def,ghi}', ['(abc,def|ghi)']);
-        match('a/{b,c}/{x\\,y}/d/e', ['a/(b|c)/\\{x,y\\}/d/e']);
+        match('a/{b,c}/{x\\,y}/d/e', ['a/(b|c)/{x,y}/d/e']);
       });
 
       it('should return sets with escaped commas', function() {
-        match('a/{b,c}/{x\\,y}/d/e', ['a/(b|c)/\\{x,y\\}/d/e']);
+        match('a/{b,c}/{x\\,y}/d/e', ['a/(b|c)/{x,y}/d/e']);
       });
 
       it('should not expand escaped braces.', function() {
-        match('{a,b\\}c,d}', ['(a|b\\}c|d)']);
-        match('\\{a,b,c,d,e}', ['\\{a,b,c,d,e\\}']);
-        match('a/{z,\\{a,b,c,d,e}/d', ['a/(z|\\{a|b|c|d|e)/d']);
-        match('a/\\{b,c}/{d,e}/f', ['a/\\{b,c\\}/(d|e)/f']);
-        match('./\\{x,y}/{a..z..3}/', ['./\\{x,y\\}/(a|d|g|j|m|p|s|v|y)/']);
+        match('{a,b\\}c,d}', ['(a|b}c|d)']);
+        match('\\{a,b,c,d,e}', ['{a,b,c,d,e}']);
+        match('a/{z,\\{a,b,c,d,e}/d', ['a/(z|{a|b|c|d|e)/d']);
+        match('a/\\{b,c}/{d,e}/f', ['a/{b,c}/(d|e)/f']);
+        match('./\\{x,y}/{a..z..3}/', ['./{x,y}/(a|d|g|j|m|p|s|v|y)/']);
       });
 
       it('should not expand escaped braces or commas.', function() {
-        match('{x\\,y,\\{abc\\},trie}', ['(x,y|\\{abc\\}|trie)']);
+        match('{x\\,y,\\{abc\\},trie}', ['(x,y|{abc}|trie)']);
       });
     });
 
@@ -114,7 +117,7 @@ describe('optimized', function() {
         match('a{b,c{d,e},h}x/z', ['a(b|c(d|e)|h)x/z']);
         match('a{b,c{d,e},h}x{y,z}', ['a(b|c(d|e)|h)x(y|z)']);
         match('a{b,c{d,e},{f,g}h}x{y,z}', ['a(b|c(d|e)|(f|g)h)x(y|z)']);
-        match('a-{b{d,e}}-c', ['a-\\{b(d|e)\\}-c']);
+        match('a-{b{d,e}}-c', ['a-{b(d|e)}-c']);
       });
 
       it('should expand not modify non-brace characters', function() {
@@ -150,8 +153,8 @@ describe('optimized', function() {
   describe('ranges', function() {
     describe('escaping / invalid ranges', function() {
       it('should not try to expand ranges with decimals', function() {
-        match('{1.1..2.1}', ['\\{1.1..2.1\\}']);
-        match('{1.1..~2.1}', ['\\{1.1..~2.1\\}']);
+        match('{1.1..2.1}', ['{1.1..2.1}']);
+        match('{1.1..~2.1}', ['{1.1..~2.1}']);
       });
 
       it('should escape invalid ranges:', function() {
@@ -169,13 +172,13 @@ describe('optimized', function() {
       });
 
       it('weirdly-formed brace expansions -- fixed in post-bash-3.1', function() {
-        match('a-{b{d,e}}-c', ['a-\\{b(d|e)\\}-c']);
-        match('a-{bdef-{g,i}-c', ['a-\\{bdef-(g|i)-c']);
+        match('a-{b{d,e}}-c', ['a-{b(d|e)}-c']);
+        match('a-{bdef-{g,i}-c', ['a-{bdef-(g|i)-c']);
       });
 
       it('should not expand quoted strings.', function() {
-        match('{"klklkl"}{1,2,3}', ['\\{klklkl\\}(1|2|3)']);
-        match('{"x,x"}', ['\\{x,x\\}']);
+        match('{"klklkl"}{1,2,3}', ['{klklkl}(1|2|3)']);
+        match('{"x,x"}', ['{x,x}']);
       });
 
       it('should escaped outer braces in nested non-sets', function() {
@@ -184,24 +187,24 @@ describe('optimized', function() {
       });
 
       it('should escape imbalanced braces', function() {
-        match('a-{bdef-{g,i}-c', ['a-\\{bdef-(g|i)-c']);
-        match('abc{', ['abc\\{']);
-        match('{abc{', ['\\{abc\\{']);
-        match('{abc', ['\\{abc']);
-        match('}abc', ['\\}abc']);
-        match('ab{c', ['ab\\{c']);
-        match('{{a,b}', ['\\{(a|b)']);
-        match('{a,b}}', ['(a|b)\\}']);
-        match('abcd{efgh', ['abcd\\{efgh']);
+        match('a-{bdef-{g,i}-c', ['a-{bdef-(g|i)-c']);
+        match('abc{', ['abc{']);
+        match('{abc{', ['{abc{']);
+        match('{abc', ['{abc']);
+        match('}abc', ['}abc']);
+        match('ab{c', ['ab{c']);
+        match('{{a,b}', ['{(a|b)']);
+        match('{a,b}}', ['(a|b)}']);
+        match('abcd{efgh', ['abcd{efgh']);
         match('a{b{c{d,e}f}g}h', ['a(b(c(d|e)f)g)h']);
         match('f{x,y{{g,z}}h}', ['f(x|y((g|z))h)']);
-        match('z{a,b},c}d', ['z(a|b),c\\}d']);
-        match('a{b{c{d,e}f{x,y{{g}h', ['a\\{b\\{c(d|e)f\\{x,y\\{\\{g\\}h']);
-        match('f{x,y{{g}h', ['f\\{x,y\\{\\{g\\}h']);
+        match('z{a,b},c}d', ['z(a|b),c}d']);
+        match('a{b{c{d,e}f{x,y{{g}h', ['a{b{c(d|e)f{x,y{{g}h']);
+        match('f{x,y{{g}h', ['f{x,y{{g}h']);
         match('f{x,y{{g}}h', ['f{x,y{{g}}h']);
         match('a{b{c{d,e}f{x,y{}g}h', ['a{b{c(d|e)f(x|y{}g)h']);
-        match('f{x,y{}g}h', ['f(x|y\\{\\}g)h']);
-        match('z{a,b{,c}d', ['z\\{a,b(|c)d']);
+        match('f{x,y{}g}h', ['f(x|y{}g)h']);
+        match('z{a,b{,c}d', ['z{a,b(|c)d']);
       });
     });
 
@@ -333,7 +336,7 @@ describe('optimized', function() {
       match('../{2..10..2}/../foo', ['../(2|4|6|8|10)/../foo']);
       match('../{1..3}/../{a,b,c}/foo', ['../([1-3])/../(a|b|c)/foo']);
       match('./{a..z..3}/', ['./(a|d|g|j|m|p|s|v|y)/']);
-      match('./{"x,y"}/{a..z..3}/', ['./\\{x,y\\}/(a|d|g|j|m|p|s|v|y)/']);
+      match('./{"x,y"}/{a..z..3}/', ['./{x,y}/(a|d|g|j|m|p|s|v|y)/']);
     });
 
     it('should expand a complex combination of ranges and sets:', function() {
@@ -341,7 +344,7 @@ describe('optimized', function() {
     });
 
     it('should expand complex sets and ranges in `bash` mode:', function() {
-      match('a/{x,{1..5},y}/c{d}e', ['a/(x|([1-5])|y)/c\\{d\\}e']);
+      match('a/{x,{1..5},y}/c{d}e', ['a/(x|([1-5])|y)/c{d}e']);
     });
   });
 });
