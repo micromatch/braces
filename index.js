@@ -35,7 +35,7 @@ var cache = {};
 function braces(pattern, options) {
   debug('initializing from <%s>', __filename);
 
-  var key = createKey(pattern, options);
+  var key = utils.createKey(pattern, options);
   options = options || {};
 
   if (options.cache !== false && cache.hasOwnProperty(key)) {
@@ -47,21 +47,16 @@ function braces(pattern, options) {
     var idx = -1;
     var arr = [];
     while (++idx < len) {
-      arr.push(braces.optimize(pattern[idx], options));
+      arr.push.apply(arr, braces.optimize(pattern[idx], options));
     }
     return arr;
   }
 
-  var results = [];
-  if (options && options.expand === true) {
-    results = braces.expand(pattern, options);
-  } else {
-    results = braces.optimize(pattern, options);
-  }
-
+  var results = braces.create(pattern, options);
   if (options && options.nodupes === true) {
     results = utils.unique(results);
   }
+
   return (cache[key] = results);
 }
 
@@ -81,22 +76,7 @@ function braces(pattern, options) {
  */
 
 braces.expand = function(pattern, options) {
-  if (pattern === '' || pattern.length <= 2) {
-    return [pattern];
-  }
-
-  if (pattern === '{,}') {
-    return [];
-  }
-
-  var quoted = /^(['"`])(.*)(\1)$/g.exec(pattern);
-  if (quoted) {
-    return [quoted[2]];
-  }
-
-  var opts = utils.extend({}, options, {expand: true});
-  var proto = new Braces(options);
-  return proto.expand(pattern, opts).filter(Boolean);
+  return braces.create(pattern, utils.extend({}, options, {expand: true}));
 };
 
 /**
@@ -115,6 +95,10 @@ braces.expand = function(pattern, options) {
  */
 
 braces.optimize = function(pattern, options) {
+  return braces.create(pattern, utils.extend({}, options));
+};
+
+braces.create = function(pattern, options) {
   if (pattern === '' || pattern.length <= 2) {
     return [pattern];
   }
@@ -123,14 +107,25 @@ braces.optimize = function(pattern, options) {
     return [];
   }
 
+  var key = utils.createKey(pattern, options);
+  options = options || {};
+
+  if (options.cache !== false && cache[key]) {
+    return cache[key];
+  }
+
   var quoted = /^(['"`])(.*)(\1)$/g.exec(pattern);
   if (quoted) {
     return [quoted[2]];
   }
 
-  var opts = utils.extend({}, options, {optimize: true});
+  var opts = utils.extend({}, options);
   var proto = new Braces(options);
-  return proto.optimize(pattern, opts).filter(Boolean);
+  var arr = !opts.expand
+    ? proto.optimize(pattern, opts)
+    : proto.expand(pattern, opts);
+
+  return (cache[key] = arr);
 };
 
 /**
@@ -156,7 +151,7 @@ braces.makeRe = function(pattern, options) {
     throw new Error('expected pattern to be less than ' + MAX_LENGTH + ' characters');
   }
 
-  var key = createKey('makeRe:' + pattern, options);
+  var key = utils.createKey('makeRe:' + pattern, options);
 
   options = options || {};
   if (options.cache !== false && cache.hasOwnProperty(key)) {
@@ -172,25 +167,6 @@ braces.makeRe = function(pattern, options) {
   }
   return regex;
 };
-
-/**
- * Create the key to use for memoization. The key is generated
- * by iterating over the options and concatenating key-value pairs
- * to the pattern string.
- */
-
-function createKey(pattern, options) {
-  var key = pattern;
-  if (typeof options === 'undefined') {
-    return key;
-  }
-  for (var prop in options) {
-    if (options.hasOwnProperty(prop)) {
-      key += ';' + prop + '=' + String(options[prop]);
-    }
-  }
-  return key;
-}
 
 /**
  * Expose `braces`

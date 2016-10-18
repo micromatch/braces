@@ -33,11 +33,12 @@
     "define-property": "^0.2.5",
     "extend-shallow": "^2.0.1",
     "fill-range": "^3.0.3",
+    "fragment-cache": "^0.2.0",
     "isobject": "^2.1.0",
     "regex-not": "^1.0.0",
     "repeat-element": "^1.1.2",
-    "snapdragon": "^0.7.0",
-    "to-regex": "^2.1.0"
+    "snapdragon": "^0.8.1",
+    "to-regex": "^3.0.1"
   },
   "devDependencies": {
     "ansi-cyan": "^0.1.1",
@@ -51,10 +52,12 @@
     "gulp-istanbul": "^1.1.1",
     "gulp-mocha": "^3.0.1",
     "gulp-unused": "^0.2.0",
+    "is-windows": "^0.2.0",
     "minimatch": "^3.0.3",
     "mocha": "^3.1.0",
     "noncharacters": "^1.1.0",
     "stringify-object": "^2.4.0",
+    "time-diff": "^0.3.1",
     "write": "^0.3.2",
     "yargs-parser": "^4.0.0"
   },
@@ -83,28 +86,33 @@
     "sh"
   ],
   "verb": {
-    "plugins": [
-      "gulp-format-md"
-    ],
-    "reflinks": [
-      "verb",
-      "brace-expansion",
-      "verb-generate-readme"
-    ],
     "toc": false,
     "layout": "default",
-    "lint": {
-      "reflinks": true
-    },
     "tasks": [
       "readme"
     ],
+    "lint": {
+      "reflinks": true
+    },
+    "plugins": [
+      "gulp-format-md"
+    ],
     "related": {
       "list": [
-        "expand-range",
+        "extglob",
+        "expand-brackets",
         "fill-range",
-        "micromatch"
+        "micromatch",
+        "nanomatch"
       ]
-    }
+    },
+    "reflinks": [
+      "brace-expansion",
+      "verb",
+      "verb-generate-readme",
+      "grunt",
+      "gulp",
+      "snapdragon"
+    ]
   }
 }
