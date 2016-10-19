@@ -33,7 +33,6 @@
     "define-property": "^0.2.5",
     "extend-shallow": "^2.0.1",
     "fill-range": "^3.0.3",
-    "fragment-cache": "^0.2.0",
     "isobject": "^2.1.0",
     "regex-not": "^1.0.0",
     "repeat-element": "^1.1.2",
@@ -54,12 +53,11 @@
     "gulp-unused": "^0.2.0",
     "is-windows": "^0.2.0",
     "minimatch": "^3.0.3",
-    "mocha": "^3.1.0",
+    "mocha": "^3.1.2",
     "noncharacters": "^1.1.0",
-    "stringify-object": "^2.4.0",
+    "text-table": "^0.2.0",
     "time-diff": "^0.3.1",
-    "write": "^0.3.2",
-    "yargs-parser": "^4.0.0"
+    "yargs-parser": "^4.0.2"
   },
   "keywords": [
     "alpha",

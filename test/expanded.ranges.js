@@ -2,7 +2,6 @@
 
 var assert = require('assert');
 var braces = require('..');
-var expand = braces.expand;
 
 function match(pattern, expected) {
   var actual = braces.expand(pattern).sort();
