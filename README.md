@@ -368,17 +368,16 @@ These numbers are actually pretty small as far as numeric ranges are concerned. 
 
 Even when brace patterns are fully expanded, `braces` is still much faster.
 
-**Pattern**       | **minimatch**               | **braces**
-
----               | ---                         | ---
-`a/{1..10000000}` | `98.9 MB` (19s 754ms 376μs) | `98.9 MB` (5s 734ms 419μs)
-`a/{1..1000000}`  | `8.89 MB` (1s 866ms 968μs)  | `8.89 MB` (561ms 594μs)
-`a/{1..100000}`   | `789 kB` (178ms 311μs)      | `789 kB` (29ms 823μs)
-`a/{1..10000}`    | `68.9 kB` (17ms 692μs)      | `68.9 kB` (2ms 351μs)
-`a/{1..1000}`     | `5.89 kB` (1ms 823μs)       | `5.89 kB` (706μs)
-`a/{1..100}`      | `491 B` (609μs)             | `491 B` (267μs)
-`a/{1..10}`       | `40 B` (61μs)               | `40 B` (636μs)
-`a/{1..3}`        | `11 B` (206μs)              | `11 B` (207μs)
+| **Pattern** | **minimatch** | **braces** | 
+| --- | --- | --- | --- | --- | --- |
+| `a/{1..10000000}` | `98.9 MB` (19s 754ms 376μs) | `98.9 MB` (5s 734ms 419μs) |
+| `a/{1..1000000}` | `8.89 MB` (1s 866ms 968μs) | `8.89 MB` (561ms 594μs) |
+| `a/{1..100000}` | `789 kB` (178ms 311μs) | `789 kB` (29ms 823μs) |
+| `a/{1..10000}` | `68.9 kB` (17ms 692μs) | `68.9 kB` (2ms 351μs) |
+| `a/{1..1000}` | `5.89 kB` (1ms 823μs) | `5.89 kB` (706μs) |
+| `a/{1..100}` | `491 B` (609μs) | `491 B` (267μs) |
+| `a/{1..10}` | `40 B` (61μs) | `40 B` (636μs) |
+| `a/{1..3}` | `11 B` (206μs) | `11 B` (207μs) |
 
 ### Why is braces so fast?
 
@@ -411,7 +410,7 @@ Pull requests and stars are always welcome. For bugs and feature requests, [plea
 ### Contributors
 
 | **Commits** | **Contributor**<br/> | 
-| --- | --- | --- | --- | --- |
+| --- | --- | --- | --- | --- | --- | --- | --- |
 | 130 | [jonschlinkert](https://github.com/jonschlinkert) |
 | 4 | [doowb](https://github.com/doowb) |
 | 1 | [eush77](https://github.com/eush77) |
