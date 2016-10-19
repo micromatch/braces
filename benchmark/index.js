@@ -18,9 +18,6 @@ function run(type, fixtures) {
       console.log(cyan('%s > %s'), code.key, fixture.key);
       var args = require(fixture.path);
       var res = code.run(args);
-      // if (Array.isArray(res)) {
-      //   res = res.length;
-      // }
       console.log(util.inspect(res, null, 10));
       console.log();
     });
@@ -29,4 +26,5 @@ function run(type, fixtures) {
   }
 }
 
-run(argv._[0] || '*', argv._[1] || '*');
+run(argv.code || '*', argv._[0] || '!(match)*');
+// run('braces', 'no-*');
