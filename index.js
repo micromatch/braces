@@ -193,9 +193,12 @@ braces.makeRe = function(pattern, options) {
   }
 
   function makeRe() {
-    var res = braces(pattern, options);
+    var arr = braces(pattern, options)
+    for (var i = 0; i < arr.length; i++) {
+      arr[i] = arr[i].replace(/([{}])/g, '\\$1');
+    }
     var opts = extend({strictErrors: false}, options);
-    return toRegex(res, opts);
+    return toRegex(arr, opts);
   }
 
   return memoize('makeRe', pattern, options, makeRe);
