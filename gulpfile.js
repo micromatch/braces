@@ -18,7 +18,7 @@ gulp.task('test', ['coverage'], function() {
     .pipe(istanbul.writeReports());
 });
 
-gulp.task('lint', function() {
+gulp.task('eslint', function() {
   return gulp.src(['*.js', 'lib/*.js', 'test/*.js'])
     .pipe(eslint())
     .pipe(eslint.format());
@@ -29,4 +29,4 @@ gulp.task('unused', function() {
     .pipe(unused({keys: Object.keys(require('./lib/utils.js'))}));
 });
 
-gulp.task('default', ['test', 'lint']);
+gulp.task('default', ['test', 'eslint']);
