@@ -350,6 +350,8 @@ Brace patterns are meant to be expanded - at least, if you're using Bash, that i
 
 For example, here is how generated regex size and processing time compare as patterns increase in complexity:
 
+_(the following results were generated using `braces()` and `minimatch.braceExpand()`)_
+
 | **Pattern** | **minimatch** | **braces** | 
 | --- | --- | --- |
 | `{1..9007199254740991}`<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup> | N/A (freezes) | `300 B` (12ms 878μs) |
@@ -366,7 +368,9 @@ These numbers are actually pretty small as far as numeric ranges are concerned. 
 
 ### Braces is performant
 
-Even when brace patterns are fully expanded, `braces` is still much faster.
+Even when brace patterns are fully **expanded**, `braces` is still much faster.
+
+_(the following results were generated using `braces.expand()` and `minimatch.braceExpand()`)_
 
 | **Pattern** | **minimatch** | **braces** | 
 | --- | --- | --- | --- | --- | --- |
