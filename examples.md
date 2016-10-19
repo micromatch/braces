@@ -38,8 +38,6 @@ Numbers with step:
 
 ## Lists
 
-Basic
-
 ```js
 '{a,b}'
 //=> ['a', 'b']
@@ -48,7 +46,7 @@ Basic
 //=> ['a/b', 'a/c']
 ```
 
-Nested
+## Nesting
 
 ```js
 'a/{b,c/{d,e}}/f'
@@ -56,4 +54,7 @@ Nested
 
 'a/{b,c/{d,e}/f,g}/h'
 //=> ['a/b/h', 'a/c/d/f/h', 'a/c/e/f/h', 'a/g/h']
+
+'a/{b,c/{2..8..2}}/f'
+//=> ['a/b/f', 'a/c/2/f', 'a/c/4/f', 'a/c/6/f', 'a/c/8/f']
 ```
