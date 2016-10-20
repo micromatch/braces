@@ -28,7 +28,6 @@
   "dependencies": {
     "arr-flatten": "^1.0.1",
     "array-unique": "^0.3.2",
-    "clone-deep": "^0.2.4",
     "debug": "^2.2.0",
     "define-property": "^0.2.5",
     "extend-shallow": "^2.0.1",
@@ -98,8 +97,8 @@
     ],
     "related": {
       "list": [
-        "extglob",
         "expand-brackets",
+        "extglob",
         "fill-range",
         "micromatch",
         "nanomatch"
@@ -107,11 +106,9 @@
     },
     "reflinks": [
       "brace-expansion",
+      "to-regex-range",
       "verb",
-      "verb-generate-readme",
-      "grunt",
-      "gulp",
-      "snapdragon"
+      "verb-generate-readme"
     ]
   }
 }
