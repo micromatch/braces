@@ -1,399 +1,305 @@
-/*!
- * braces <https://github.com/jonschlinkert/braces>
- *
- * Copyright (c) 2014-2015, Jon Schlinkert.
- * Licensed under the MIT license.
- */
-
 'use strict';
 
 /**
  * Module dependencies
  */
 
-var expand = require('expand-range');
-var repeat = require('repeat-element');
-var tokens = require('preserve');
+var toRegex = require('to-regex');
+var unique = require('array-unique');
+var extend = require('extend-shallow');
+var debug = require('debug')('braces');
 
 /**
- * Expose `braces`
+ * Local dependencies
  */
 
-module.exports = function(str, options) {
-  if (typeof str !== 'string') {
-    throw new Error('braces expects a string');
+var compilers = require('./lib/compilers');
+var parsers = require('./lib/parsers');
+var Braces = require('./lib/braces');
+var utils = require('./lib/utils');
+var MAX_LENGTH = 1024 * 64;
+
+/**
+ * Session cache (disable with `options.cache`)
+ */
+
+var cache = {};
+
+/**
+ * Convert the given `braces` pattern into a regex-compatible string. Set `options.expand`
+ * to true to return an array of patterns.
+ *
+ * ```js
+ * var braces = require('braces');
+ * console.log(braces('{a,b,c}'));
+ * //=> ['(a|b|c)']
+ *
+ * console.log(braces('{a,b,c}', {expand: true}));
+ * //=> ['a', 'b', 'c']
+ * ```
+ * @param {String} `str`
+ * @param {Object} `options`
+ * @return {String}
+ * @api public
+ */
+
+function braces(pattern, options) {
+  debug('initializing from <%s>', __filename);
+
+  var key = utils.createKey(pattern, options);
+  options = options || {};
+
+  if (options.cache !== false && cache.hasOwnProperty(key)) {
+    return cache[key];
   }
-  return braces(str, options);
+
+  var results = [];
+  if (Array.isArray(pattern)) {
+    for (var i = 0; i < pattern.length; i++) {
+      results.push.apply(results, braces.create(pattern[i], options));
+    }
+
+    if (options && options.nodupes === true) {
+      results = unique(results);
+    }
+  } else {
+    results = braces.create(pattern, options);
+  }
+
+  return (cache[key] = results);
+}
+
+/**
+ * Expands a brace pattern into an array. This method is called by the main
+ * [braces](#braces) function when `options.expand` is true.
+ *
+ * ```js
+ * var braces = require('braces');
+ * console.log(braces.expand('a/{b,c}/d'));
+ * //=> ['a/b/d', 'a/c/d'];
+ * ```
+ * @param {String} `pattern` Brace pattern
+ * @param {Object} `options`
+ * @return {Array} Returns an array of expanded values.
+ * @api public
+ */
+
+braces.expand = function(pattern, options) {
+  return braces.create(pattern, extend({}, options, {expand: true}));
 };
 
 /**
- * Expand `{foo,bar}` or `{1..5}` braces in the
- * given `string`.
+ * Expands a brace pattern into a regex-compatible, optimized string. This method
+ * is called by the main [braces](#braces) function by default.
  *
- * @param  {String} `str`
- * @param  {Array} `arr`
- * @param  {Object} `options`
- * @return {Array}
+ * ```js
+ * var braces = require('braces');
+ * console.log(braces.expand('a/{b,c}/d'));
+ * //=> ['a/(b|c)/d']
+ * ```
+ * @param {String} `pattern` Brace pattern
+ * @param {Object} `options`
+ * @return {Array} Returns an array of expanded values.
+ * @api public
  */
 
-function braces(str, arr, options) {
-  if (str === '') {
-    return [];
-  }
-
-  if (!Array.isArray(arr)) {
-    options = arr;
-    arr = [];
-  }
-
-  var opts = options || {};
-  arr = arr || [];
-
-  if (typeof opts.nodupes === 'undefined') {
-    opts.nodupes = true;
-  }
-
-  var fn = opts.fn;
-  var es6;
-
-  if (typeof opts === 'function') {
-    fn = opts;
-    opts = {};
-  }
-
-  if (!(patternRe instanceof RegExp)) {
-    patternRe = patternRegex();
-  }
-
-  var matches = str.match(patternRe) || [];
-  var m = matches[0];
-
-  switch(m) {
-    case '\\,':
-      return escapeCommas(str, arr, opts);
-    case '\\.':
-      return escapeDots(str, arr, opts);
-    case '\/.':
-      return escapePaths(str, arr, opts);
-    case ' ':
-      return splitWhitespace(str);
-    case '{,}':
-      return exponential(str, opts, braces);
-    case '{}':
-      return emptyBraces(str, arr, opts);
-    case '\\{':
-    case '\\}':
-      return escapeBraces(str, arr, opts);
-    case '${':
-      if (!/\{[^{]+\{/.test(str)) {
-        return arr.concat(str);
-      } else {
-        es6 = true;
-        str = tokens.before(str, es6Regex());
-      }
-  }
-
-  if (!(braceRe instanceof RegExp)) {
-    braceRe = braceRegex();
-  }
-
-  var match = braceRe.exec(str);
-  if (match == null) {
-    return [str];
-  }
-
-  var outter = match[1];
-  var inner = match[2];
-  if (inner === '') { return [str]; }
-
-  var segs, segsLength;
-
-  if (inner.indexOf('..') !== -1) {
-    segs = expand(inner, opts, fn) || inner.split(',');
-    segsLength = segs.length;
-
-  } else if (inner[0] === '"' || inner[0] === '\'') {
-    return arr.concat(str.split(/['"]/).join(''));
-
-  } else {
-    segs = inner.split(',');
-    if (opts.makeRe) {
-      return braces(str.replace(outter, wrap(segs, '|')), opts);
-    }
-
-    segsLength = segs.length;
-    if (segsLength === 1 && opts.bash) {
-      segs[0] = wrap(segs[0], '\\');
-    }
-  }
-
-  var len = segs.length;
-  var i = 0, val;
-
-  while (len--) {
-    var path = segs[i++];
-
-    if (/(\.[^.\/])/.test(path)) {
-      if (segsLength > 1) {
-        return segs;
-      } else {
-        return [str];
-      }
-    }
-
-    val = splice(str, outter, path);
-
-    if (/\{[^{}]+?\}/.test(val)) {
-      arr = braces(val, arr, opts);
-    } else if (val !== '') {
-      if (opts.nodupes && arr.indexOf(val) !== -1) { continue; }
-      arr.push(es6 ? tokens.after(val) : val);
-    }
-  }
-
-  if (opts.strict) { return filter(arr, filterEmpty); }
-  return arr;
-}
+braces.optimize = function(pattern, options) {
+  return braces.create(pattern, options);
+};
 
 /**
- * Expand exponential ranges
+ * Processes a brace pattern and returns either an expanded array
+ * (if `options.expand` is true), a highly optimized regex-compatible
+ * string. This method is called by the main [braces](#braces) function.
  *
- *   `a{,}{,}` => ['a', 'a', 'a', 'a']
+ * ```js
+ * var braces = require('braces');
+ * console.log(braces.create('user-{200..300}/project-{a,b,c}-{1..10}'))
+ * //=> 'user-(20[0-9]|2[1-9][0-9]|300)/project-(a|b|c)-([1-9]|10)'
+ * ```
+ * @param {String} `pattern` Brace pattern
+ * @param {Object} `options`
+ * @return {Array} Returns an array of expanded values.
+ * @api public
  */
 
-function exponential(str, options, fn) {
-  if (typeof options === 'function') {
-    fn = options;
-    options = null;
+braces.create = function(pattern, options) {
+  if (pattern instanceof RegExp) {
+    pattern = pattern.source;
   }
 
-  var opts = options || {};
-  var esc = '__ESC_EXP__';
-  var exp = 0;
-  var res;
-
-  var parts = str.split('{,}');
-  if (opts.nodupes) {
-    return fn(parts.join(''), opts);
+  if (typeof pattern !== 'string') {
+    throw new TypeError('expected a string');
   }
 
-  exp = parts.length - 1;
-  res = fn(parts.join(esc), opts);
-  var len = res.length;
-  var arr = [];
-  var i = 0;
+  if (pattern.length > MAX_LENGTH) {
+    throw new Error('expected pattern to be less than ' + MAX_LENGTH + ' characters');
+  }
 
-  while (len--) {
-    var ele = res[i++];
-    var idx = ele.indexOf(esc);
-
-    if (idx === -1) {
-      arr.push(ele);
-
-    } else {
-      ele = ele.split('__ESC_EXP__').join('');
-      if (!!ele && opts.nodupes !== false) {
-        arr.push(ele);
-
-      } else {
-        var num = Math.pow(2, exp);
-        arr.push.apply(arr, repeat(ele, num));
-      }
+  function create() {
+    if (pattern === '' || pattern.length <= 2) {
+      return [pattern];
     }
+
+    if (/^(?:{,})+$/.test(pattern)) {
+      return [];
+    }
+
+    var quoted = /^(['"`])(.*)(\1)$/g.exec(pattern);
+    if (quoted) {
+      return [quoted[2]];
+    }
+
+    var proto = new Braces(options);
+    var arr = !options || !options.expand
+      ? proto.optimize(pattern, options)
+      : proto.expand(pattern, options);
+
+    if (options && options.nodupes === true) {
+      return unique(arr);
+    }
+
+    return arr;
   }
-  return arr;
-}
+
+  return memoize('create', pattern, options, create);
+};
 
 /**
- * Wrap a value with parens, brackets or braces,
- * based on the given character/separator.
+ * Create a regular expression from the given string `pattern`.
  *
- * @param  {String|Array} `val`
- * @param  {String} `ch`
- * @return {String}
+ * ```js
+ * var braces = require('braces');
+ * console.log(braces.makeRe('user-{200..300}'))
+ * //=> /^(?:user-(20[0-9]|2[1-9][0-9]|300))$/
+ * ```
+ * @param {String} `pattern` The pattern to convert to regex.
+ * @param {Object} `options`
+ * @return {RegExp}
+ * @api public
  */
 
-function wrap(val, ch) {
-  if (ch === '|') {
-    return '(' + val.join(ch) + ')';
+braces.makeRe = function(pattern, options) {
+  if (pattern instanceof RegExp) {
+    return pattern;
   }
-  if (ch === ',') {
-    return '{' + val.join(ch) + '}';
+
+  if (typeof pattern !== 'string') {
+    throw new TypeError('expected a string');
   }
-  if (ch === '-') {
-    return '[' + val.join(ch) + ']';
+
+  if (pattern.length > MAX_LENGTH) {
+    throw new Error('expected pattern to be less than ' + MAX_LENGTH + ' characters');
   }
-  if (ch === '\\') {
-    return '\\{' + val + '\\}';
+
+  function makeRe() {
+    var arr = braces(pattern, options)
+    for (var i = 0; i < arr.length; i++) {
+      arr[i] = arr[i].replace(/([{}])/g, '\\$1');
+    }
+    var opts = extend({strictErrors: false}, options);
+    return toRegex(arr, opts);
   }
-}
+
+  return memoize('makeRe', pattern, options, makeRe);
+};
 
 /**
- * Handle empty braces: `{}`
+ * Parse the given `str` with the given `options`.
+ *
+ * ```js
+ * var braces = require('braces');
+ * var ast = braces.parse('a/{b,c}/d');
+ * console.log(ast);
+ * // { type: 'root',
+ * //   errors: [],
+ * //   input: 'a/{b,c}/d',
+ * //   nodes:
+ * //    [ { type: 'bos', val: '' },
+ * //      { type: 'text', val: 'a/' },
+ * //      { type: 'brace',
+ * //        nodes:
+ * //         [ { type: 'brace.open', val: '{' },
+ * //           { type: 'text', val: 'b,c' },
+ * //           { type: 'brace.close', val: '}' } ] },
+ * //      { type: 'text', val: '/d' },
+ * //      { type: 'eos', val: '' } ] }
+ * ```
+ * @param {String} `str`
+ * @param {Object} `options`
+ * @return {Object} Returns an AST
+ * @api public
  */
 
-function emptyBraces(str, arr, opts) {
-  return braces(str.split('{}').join('\\{\\}'), arr, opts);
-}
+braces.parse = function(str, options) {
+  var inst = new Braces(options);
+  return inst.parse(str, options);
+};
 
 /**
- * Filter out empty-ish values
+ * Compile the given `ast` or string with the given `options`.
+ *
+ * ```js
+ * var braces = require('braces');
+ * var ast = braces.parse('a/{b,c}/d');
+ * console.log(braces.compile(ast));
+ * // { options: { source: 'string' },
+ * //   state: {},
+ * //   compilers:
+ * //    { eos: [Function],
+ * //      noop: [Function],
+ * //      bos: [Function],
+ * //      brace: [Function],
+ * //      'brace.open': [Function],
+ * //      text: [Function],
+ * //      'brace.close': [Function] },
+ * //   output: [ 'a/(b|c)/d' ],
+ * //   ast:
+ * //    { ... },
+ * //   parsingErrors: [] }
+ * ```
+ * @param {Object|String} `ast`
+ * @param {Object} `options`
+ * @return {Object} Returns an object that has an `output` property with the compiled string.
+ * @api public
  */
 
-function filterEmpty(ele) {
-  return !!ele && ele !== '\\';
-}
+braces.compile = function(ast, options) {
+  var inst = new Braces(options);
+  return inst.compile(ast, options);
+};
 
 /**
- * Handle patterns with whitespace
+ * Memoize if `options.cache` is not false
  */
 
-function splitWhitespace(str) {
-  var segs = str.split(' ');
-  var len = segs.length;
-  var res = [];
-  var i = 0;
+function memoize(type, pattern, options, fn) {
+  var key = utils.createKey(type + ':' + pattern, options);
+  options = options || {};
 
-  while (len--) {
-    res.push.apply(res, braces(segs[i++]));
+  if (options.cache !== false && cache.hasOwnProperty(key)) {
+    return cache[key];
+  }
+
+  var res = fn(pattern, options);
+  if (options.cache !== false) {
+    cache[key] = res;
   }
   return res;
 }
 
 /**
- * Handle escaped braces: `\\{foo,bar}`
+ * Expose `braces`
+ * @type {Function}
  */
 
-function escapeBraces(str, arr, opts) {
-  if (!/\{[^{]+\{/.test(str)) {
-    return arr.concat(str.split('\\').join(''));
-  } else {
-    str = str.split('\\{').join('__LT_BRACE__');
-    str = str.split('\\}').join('__RT_BRACE__');
-    return map(braces(str, arr, opts), function(ele) {
-      ele = ele.split('__LT_BRACE__').join('{');
-      return ele.split('__RT_BRACE__').join('}');
-    });
-  }
-}
+module.exports = braces;
 
 /**
- * Handle escaped dots: `{1\\.2}`
+ * Expose `Braces` constructor
+ * @type {Function}
  */
 
-function escapeDots(str, arr, opts) {
-  if (!/[^\\]\..+\\\./.test(str)) {
-    return arr.concat(str.split('\\').join(''));
-  } else {
-    str = str.split('\\.').join('__ESC_DOT__');
-    return map(braces(str, arr, opts), function(ele) {
-      return ele.split('__ESC_DOT__').join('.');
-    });
-  }
-}
-
-/**
- * Handle escaped dots: `{1\\.2}`
- */
-
-function escapePaths(str, arr, opts) {
-  str = str.split('\/.').join('__ESC_PATH__');
-  return map(braces(str, arr, opts), function(ele) {
-    return ele.split('__ESC_PATH__').join('\/.');
-  });
-}
-
-/**
- * Handle escaped commas: `{a\\,b}`
- */
-
-function escapeCommas(str, arr, opts) {
-  if (!/\w,/.test(str)) {
-    return arr.concat(str.split('\\').join(''));
-  } else {
-    str = str.split('\\,').join('__ESC_COMMA__');
-    return map(braces(str, arr, opts), function(ele) {
-      return ele.split('__ESC_COMMA__').join(',');
-    });
-  }
-}
-
-/**
- * Regex for common patterns
- */
-
-function patternRegex() {
-  return /\${|( (?=[{,}])|(?=[{,}]) )|{}|{,}|\\,(?=.*[{}])|\/\.(?=.*[{}])|\\\.(?={)|\\{|\\}/;
-}
-
-/**
- * Braces regex.
- */
-
-function braceRegex() {
-  return /.*(\\?\{([^}]+)\})/;
-}
-
-/**
- * es6 delimiter regex.
- */
-
-function es6Regex() {
-  return /\$\{([^}]+)\}/;
-}
-
-var braceRe;
-var patternRe;
-
-/**
- * Faster alternative to `String.replace()` when the
- * index of the token to be replaces can't be supplied
- */
-
-function splice(str, token, replacement) {
-  var i = str.indexOf(token);
-  return str.substr(0, i) + replacement
-    + str.substr(i + token.length);
-}
-
-/**
- * Fast array map
- */
-
-function map(arr, fn) {
-  if (arr == null) {
-    return [];
-  }
-
-  var len = arr.length;
-  var res = new Array(len);
-  var i = -1;
-
-  while (++i < len) {
-    res[i] = fn(arr[i], i, arr);
-  }
-
-  return res;
-}
-
-/**
- * Fast array filter
- */
-
-function filter(arr, cb) {
-  if (arr == null) return [];
-  if (typeof cb !== 'function') {
-    throw new TypeError('braces: filter expects a callback function.');
-  }
-
-  var len = arr.length;
-  var res = arr.slice();
-  var i = 0;
-
-  while (len--) {
-    if (!cb(arr[len], i++)) {
-      res.splice(len, 1);
-    }
-  }
-  return res;
-}
+module.exports.Braces = Braces;
+module.exports.compilers = compilers;
+module.exports.parsers = parsers;

@@ -1,16 +1,22 @@
 {
   "name": "braces",
-  "description": "Fastest brace expansion for node.js, with the most complete support for the Bash 4.3 braces specification.",
+  "description": "Fast, comprehensive, bash-like brace expansion implemented in JavaScript. Complete support for the Bash 4.3 braces specification, without sacrificing speed.",
   "version": "1.8.5",
   "homepage": "https://github.com/jonschlinkert/braces",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
+  "contributors": [
+    "Brian Woodward <brian.woodward@gmail.com> (https://github.com/doowb)",
+    "Eugene Sharygin (https://github.com/eush77)",
+    "Jon Schlinkert <jon.schlinkert@sellside.com> (http://twitter.com/jonschlinkert)"
+  ],
   "repository": "jonschlinkert/braces",
   "bugs": {
     "url": "https://github.com/jonschlinkert/braces/issues"
   },
   "license": "MIT",
   "files": [
-    "index.js"
+    "index.js",
+    "lib"
   ],
   "main": "index.js",
   "engines": {
@@ -20,25 +26,46 @@
     "test": "mocha"
   },
   "dependencies": {
-    "expand-range": "^1.8.1",
-    "preserve": "^0.2.0",
-    "repeat-element": "^1.1.2"
+    "arr-flatten": "^1.0.1",
+    "array-unique": "^0.3.2",
+    "clone-deep": "^0.2.4",
+    "debug": "^2.2.0",
+    "define-property": "^0.2.5",
+    "extend-shallow": "^2.0.1",
+    "fill-range": "^3.0.3",
+    "isobject": "^2.1.0",
+    "regex-not": "^1.0.0",
+    "repeat-element": "^1.1.2",
+    "snapdragon": "^0.8.1",
+    "to-regex": "^3.0.1"
   },
   "devDependencies": {
-    "benchmarked": "^0.1.5",
-    "brace-expansion": "^1.1.3",
-    "chalk": "^1.1.3",
-    "gulp-format-md": "^0.1.8",
-    "minimatch": "^3.0.0",
-    "minimist": "^1.2.0",
-    "mocha": "^2.4.5",
-    "should": "^8.3.1"
+    "ansi-cyan": "^0.1.1",
+    "benchmarked": "^0.2.5",
+    "brace-expansion": "^1.1.6",
+    "cross-spawn": "^4.0.2",
+    "fs-exists-sync": "^0.1.0",
+    "gulp": "^3.9.1",
+    "gulp-eslint": "^3.0.1",
+    "gulp-format-md": "^0.1.11",
+    "gulp-istanbul": "^1.1.1",
+    "gulp-mocha": "^3.0.1",
+    "gulp-unused": "^0.2.0",
+    "is-windows": "^0.2.0",
+    "minimatch": "^3.0.3",
+    "mocha": "^3.1.2",
+    "noncharacters": "^1.1.0",
+    "pretty-bytes": "^4.0.2",
+    "text-table": "^0.2.0",
+    "time-diff": "^0.3.1",
+    "yargs-parser": "^4.0.2"
   },
   "keywords": [
     "alpha",
     "alphabetical",
     "bash",
     "brace",
+    "braces",
     "expand",
     "expansion",
     "filepath",
@@ -58,26 +85,33 @@
     "sh"
   ],
   "verb": {
-    "plugins": [
-      "gulp-format-md"
-    ],
-    "reflinks": [
-      "verb"
-    ],
     "toc": false,
     "layout": "default",
-    "lint": {
-      "reflinks": true
-    },
     "tasks": [
       "readme"
     ],
+    "lint": {
+      "reflinks": true
+    },
+    "plugins": [
+      "gulp-format-md"
+    ],
     "related": {
       "list": [
+        "extglob",
+        "expand-brackets",
+        "fill-range",
         "micromatch",
-        "expand-range",
-        "fill-range"
+        "nanomatch"
       ]
-    }
+    },
+    "reflinks": [
+      "brace-expansion",
+      "verb",
+      "verb-generate-readme",
+      "grunt",
+      "gulp",
+      "snapdragon"
+    ]
   }
 }
