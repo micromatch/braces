@@ -193,7 +193,7 @@ braces.makeRe = function(pattern, options) {
   }
 
   function makeRe() {
-    var arr = braces(pattern, options)
+    var arr = braces(pattern, options);
     for (var i = 0; i < arr.length; i++) {
       arr[i] = arr[i].replace(/([{}])/g, '\\$1');
     }
