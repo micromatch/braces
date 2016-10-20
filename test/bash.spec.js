@@ -15,7 +15,7 @@ function match(pattern, expected, options) {
 
 describe('bash', function() {
   var fixtures = [
-    [ '{x,x}', {}, [ 'x', 'x' ] ],
+    [ '{1\\.2}', {}, [ '{1.2}' ] ],
     [ '{"x,x"}', {}, [ '{x,x}' ] ],
     [ '{x","x}', {}, [ '{x,x}' ] ],
     [ '\'{x,x}\'', {}, [ '{x,x}' ] ],
@@ -99,7 +99,7 @@ describe('bash', function() {
     [ '{a,\\\\{a,b}c}', {}, [ 'a', '\\\\ac', '\\\\bc' ] ],
     [ '{a,\\{a,b}c}', {}, [ 'ac}', '{ac}', 'bc}' ] ],
     [ 'a,\\{b,c}', {}, [ 'a,{b,c}' ] ],
-    [ '{-10.\\.00}', {}, [ '{-10.\\.00}' ] ],
+    [ '{-10.\\.00}', {}, [ '{-10..00}' ] ],
     [ 'ff{c,b,a}', {}, [ 'ffc', 'ffb', 'ffa' ] ],
     [ 'f{d,e,f}g', {}, [ 'fdg', 'feg', 'ffg' ] ],
     [ '{l,n,m}xyz', {}, [ 'lxyz', 'nxyz', 'mxyz' ] ],
