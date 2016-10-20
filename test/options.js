@@ -58,6 +58,7 @@ describe('options', function() {
 
   describe('options.quantifiers:', function() {
     it('should not expand regex quantifiers when `options.quantifiers` is true', function() {
+      match('a{2}c', ['a{2}c']);
       match('a{2}c', ['a{2}c'], {quantifiers: true});
       match('a{2,}c', ['a{2,}c'], {quantifiers: true});
       match('a{,2}c', ['a{,2}c'], {quantifiers: true});
