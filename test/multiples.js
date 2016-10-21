@@ -10,6 +10,8 @@ function match(pattern, expected, options) {
 
 describe('multiples', function() {
   var patterns = [
+    ['-v{,,,,}', ['-v', '-v', '-v', '-v', '-v']],
+    ['-v{,,,,}{,}', ['-v', '-v', '-v', '-v', '-v', '-v', '-v', '-v', '-v', '-v']],
     ['a/b{,}', ['a/b', 'a/b']],
     ['a/{,}/b', ['a//b', 'a//b']],
     ['a/{,}{c,d}/e', ['a/c/e', 'a/c/e', 'a/d/e', 'a/d/e']],
