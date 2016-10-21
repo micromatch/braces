@@ -26,8 +26,10 @@ var MAX_LENGTH = 1024 * 64;
 var cache = {};
 
 /**
- * Convert the given `braces` pattern into a regex-compatible string. Set `options.expand`
- * to true to return an array of patterns.
+ * Convert the given `braces` pattern into a regex-compatible string.
+ * By default, only one string is generated for every input string.
+ * Set `options.expand` to true to return an array of patterns (similar
+ * to Bash or minimatch. See the [performance notes](#performance)).
  *
  * ```js
  * var braces = require('braces');
