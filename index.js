@@ -26,10 +26,7 @@ var MAX_LENGTH = 1024 * 64;
 var cache = {};
 
 /**
- * Convert the given `braces` pattern into a regex-compatible string.
- * By default, only one string is generated for every input string.
- * Set `options.expand` to true to return an array of patterns (similar
- * to Bash or minimatch. See the [performance notes](#performance)).
+ * Convert the given `braces` pattern into a regex-compatible string. By default, only one string is generated for every input string. Set `options.expand` to true to return an array of patterns (similar to Bash or minimatch. Before using `options.expand`, it's recommended that you read the [performance notes](#performance)).
  *
  * ```js
  * var braces = require('braces');
@@ -72,8 +69,7 @@ function braces(pattern, options) {
 }
 
 /**
- * Expands a brace pattern into an array. This method is called by the main
- * [braces](#braces) function when `options.expand` is true.
+ * Expands a brace pattern into an array. This method is called by the main [braces](#braces) function when `options.expand` is true. Before using this method it's recommended that you read the [performance notes](#performance)) and advantages of using [.optimize](#optimize) instead.
  *
  * ```js
  * var braces = require('braces');
@@ -91,8 +87,7 @@ braces.expand = function(pattern, options) {
 };
 
 /**
- * Expands a brace pattern into a regex-compatible, optimized string. This method
- * is called by the main [braces](#braces) function by default.
+ * Expands a brace pattern into a regex-compatible, optimized string. This method is called by the main [braces](#braces) function by default.
  *
  * ```js
  * var braces = require('braces');
@@ -110,9 +105,7 @@ braces.optimize = function(pattern, options) {
 };
 
 /**
- * Processes a brace pattern and returns either an expanded array
- * (if `options.expand` is true), a highly optimized regex-compatible
- * string. This method is called by the main [braces](#braces) function.
+ * Processes a brace pattern and returns either an expanded array (if `options.expand` is true), a highly optimized regex-compatible string. This method is called by the main [braces](#braces) function.
  *
  * ```js
  * var braces = require('braces');
