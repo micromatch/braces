@@ -7,7 +7,6 @@
 var toRegex = require('to-regex');
 var unique = require('array-unique');
 var extend = require('extend-shallow');
-var debug = require('debug')('braces');
 
 /**
  * Local dependencies
@@ -43,8 +42,6 @@ var cache = {};
  */
 
 function braces(pattern, options) {
-  debug('initializing from <%s>', __filename);
-
   var key = utils.createKey(pattern, options);
   options = options || {};
 
