@@ -248,6 +248,7 @@ describe('bash.expanded', function() {
 
     [ '{"klklkl"}{1,2,3}', {}, [ '{klklkl}1', '{klklkl}2', '{klklkl}3' ] ],
     [ '{"x,x"}', {}, [ '{x,x}' ] ],
+    [ '{\'x,x\'}', {}, [ '{x,x}' ] ],
 
     'should escaped outer braces in nested non-sets',
 

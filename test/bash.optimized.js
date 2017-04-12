@@ -165,6 +165,7 @@ describe('bash.expanded', function() {
     // should not expand braces in sets with es6/bash-like variables
     ['abc/${ddd}/xyz', {}, ['abc/${ddd}/xyz']],
     ['a${b}c', {}, ['a${b}c']],
+    ['a${b{a,b}}c', {}, ['a${b{a,b}}c']],
     ['a/{${b},c}/d', {}, ['a/(${b}|c)/d']],
     ['a${b,d}/{foo,bar}c', {}, ['a${b,d}/(foo|bar)c']],
 
