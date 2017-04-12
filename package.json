@@ -5,7 +5,7 @@
   "homepage": "https://github.com/jonschlinkert/braces",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
   "contributors": [
-    "Brian Woodward <brian.woodward@gmail.com> (https://github.com/doowb)",
+    "Brian Woodward <brian.woodward@gmail.com> (https://twitter.com/doowb)",
     "Elan Shanker (https://github.com/es128)",
     "Eugene Sharygin (https://github.com/eush77)",
     "hemanth.hm <hemanth.hm@gmail.com> (http://h3manth.com)",
@@ -32,25 +32,26 @@
     "array-unique": "^0.3.2",
     "define-property": "^0.2.5",
     "extend-shallow": "^2.0.1",
-    "fill-range": "^3.0.3",
+    "fill-range": "^3.1.1",
     "isobject": "^3.0.0",
     "regex-not": "^1.0.0",
     "repeat-element": "^1.1.2",
     "snapdragon": "^0.8.1",
+    "split-string": "^2.0.0",
     "to-regex": "^3.0.1"
   },
   "devDependencies": {
     "ansi-cyan": "^0.1.1",
     "benchmarked": "^0.2.5",
-    "brace-expansion": "^1.1.6",
-    "cross-spawn": "^5.0.1",
+    "brace-expansion": "^1.1.7",
+    "cross-spawn": "^5.1.0",
     "fs-exists-sync": "^0.1.0",
     "gulp": "^3.9.1",
     "gulp-eslint": "^3.0.1",
-    "gulp-format-md": "^0.1.11",
+    "gulp-format-md": "^0.1.12",
     "gulp-istanbul": "^1.1.1",
-    "gulp-mocha": "^3.0.1",
-    "gulp-unused": "^0.2.0",
+    "gulp-mocha": "^3.0.0",
+    "gulp-unused": "^0.2.1",
     "is-windows": "^1.0.0",
     "minimatch": "^3.0.3",
     "mocha": "^3.2.0",
@@ -58,7 +59,7 @@
     "pretty-bytes": "^4.0.2",
     "text-table": "^0.2.0",
     "time-diff": "^0.3.1",
-    "yargs-parser": "^4.2.0"
+    "yargs-parser": "^5.0.0"
   },
   "keywords": [
     "alpha",
@@ -106,10 +107,8 @@
       ]
     },
     "reflinks": [
-      "brace-expansion",
-      "to-regex-range",
-      "verb",
-      "verb-generate-readme"
+      "multimatch",
+      "to-regex-range"
     ]
   }
 }
