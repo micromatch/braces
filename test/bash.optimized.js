@@ -4,7 +4,7 @@ var extend = require('extend-shallow');
 var assert = require('assert');
 var braces = require('..');
 
-function match(pattern, expected, options) {
+function equal(pattern, expected, options) {
   var actual = braces.optimize(pattern, options).sort();
   assert.deepEqual(actual, expected.sort(), pattern);
 }
@@ -13,7 +13,7 @@ function match(pattern, expected, options) {
  * Bash 4.3 unit tests with `braces.optimize()`
  */
 
-describe('bash.expanded', function() {
+describe('bash.optimized', function() {
   var fixtures = [
     ['a{b,c{1..100}/{foo,bar}/,h}x/z', {}, ['a(b|c([1-9]|[1-9][0-9]|100)/(foo|bar)/|h)x/z']],
     ['0{1..9} {10..20}', {}, ['0([1-9]) (1[0-9]|20)']],
@@ -78,7 +78,7 @@ describe('bash.expanded', function() {
     ['{1..ff}', {}, ['{1..ff}']],
     ['{1.20..2}', {}, ['{1.20..2}']],
     ['{10..1}', {}, ['([1-9]|10)']],
-    ['{214748364..2147483649}', {}, ['(21474836[4-9]|2147483[7-9][0-9]|214748[4-9][0-9]{2}|214749[0-9]{3}|2147[5-9][0-9]{4}|214[8-9][0-9]{5}|21[5-9][0-9]{6}|2[2-9][0-9]{7}|[3-9][0-9]{8}|1[0-9]{9}|20[0-9]{8}|21[0-3][0-9]{7}|214[0-6][0-9]{6}|2147[0-3][0-9]{5}|21474[0-7][0-9]{4}|214748[0-2][0-9]{3}|2147483[0-5][0-9]{2}|21474836[0-4][0-9])']],
+    ['{214748364..2147483649}', {}, ['(21474836[4-9]|2147483[7-9][0-9]|214748[4-9][0-9]{2}|214749[0-9]{3}|2147[5-9][0-9]{4}|214[89][0-9]{5}|21[5-9][0-9]{6}|2[2-9][0-9]{7}|[3-9][0-9]{8}|1[0-9]{9}|20[0-9]{8}|21[0-3][0-9]{7}|214[0-6][0-9]{6}|2147[0-3][0-9]{5}|21474[0-7][0-9]{4}|214748[0-2][0-9]{3}|2147483[0-5][0-9]{2}|21474836[0-4][0-9])']],
     ['{2147483645..2147483649}', {}, ['(214748364[5-9])']],
     ['{3..3}', {}, ['3']],
     ['{5..8}', {}, ['([5-8])']],
@@ -232,7 +232,7 @@ describe('bash.expanded', function() {
     ['a{ ,c{d, },h}x', {}, ['a( |c(d| )|h)x']],
     ['a{ ,c{d, },h} ', {}, ['a( |c(d| )|h) ']],
 
-    // see https://github.com/jonschlinkert/micromatch/issues/66
+    // see https://github.com/jonschlinkert/microequal/issues/66
     ['/Users/tobiasreich/Sites/aaa/bbb/ccc 2016/src/**/[^_]*.{html,ejs}', {}, ['/Users/tobiasreich/Sites/aaa/bbb/ccc 2016/src/**/[^_]*.(html|ejs)']],
 
     /**
@@ -329,10 +329,10 @@ describe('bash.expanded', function() {
     // should expand numerical ranges - positive and negative
     ['{-10..10}', {}, ['(-[1-9]|-?10|[0-9])']],
 
-    // HEADS UP! If you're using the `--mm` flag minimatch freezes on these
+    // HEADS UP! If you're using the `--mm` flag miniequal freezes on these
     // should expand large numbers
     ['{2147483645..2147483649}', {}, ['(214748364[5-9])']],
-    ['{214748364..2147483649}', {}, ['(21474836[4-9]|2147483[7-9][0-9]|214748[4-9][0-9]{2}|214749[0-9]{3}|2147[5-9][0-9]{4}|214[8-9][0-9]{5}|21[5-9][0-9]{6}|2[2-9][0-9]{7}|[3-9][0-9]{8}|1[0-9]{9}|20[0-9]{8}|21[0-3][0-9]{7}|214[0-6][0-9]{6}|2147[0-3][0-9]{5}|21474[0-7][0-9]{4}|214748[0-2][0-9]{3}|2147483[0-5][0-9]{2}|21474836[0-4][0-9])']],
+    ['{214748364..2147483649}', {}, ['(21474836[4-9]|2147483[7-9][0-9]|214748[4-9][0-9]{2}|214749[0-9]{3}|2147[5-9][0-9]{4}|214[89][0-9]{5}|21[5-9][0-9]{6}|2[2-9][0-9]{7}|[3-9][0-9]{8}|1[0-9]{9}|20[0-9]{8}|21[0-3][0-9]{7}|214[0-6][0-9]{6}|2147[0-3][0-9]{5}|21474[0-7][0-9]{4}|214748[0-2][0-9]{3}|2147483[0-5][0-9]{2}|21474836[0-4][0-9])']],
 
     // should expand ranges using steps
     ['{1..10..1}', {bash: false}, ['([1-9]|10)']],
@@ -404,7 +404,7 @@ describe('bash.expanded', function() {
     }
 
     it('should compile: ' + pattern, function() {
-      match(pattern, expected, options);
+      equal(pattern, expected, options);
     });
   });
 });

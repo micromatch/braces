@@ -4,7 +4,7 @@ var extend = require('extend-shallow');
 var assert = require('assert');
 var braces = require('..');
 
-function match(pattern, expected, options) {
+function equal(pattern, expected, options) {
   var actual = braces.expand(pattern, options).sort();
   assert.deepEqual(actual, expected.sort(), pattern);
 }
@@ -217,7 +217,7 @@ describe('bash.expanded', function() {
     [ 'a{ ,c{d, },h}x', {}, [ 'a x', 'ac x', 'acdx', 'ahx' ] ],
     [ 'a{ ,c{d, },h} ', {}, [ 'a  ', 'ac  ', 'acd ', 'ah ' ] ],
 
-    'see https://github.com/jonschlinkert/micromatch/issues/66',
+    'see https://github.com/jonschlinkert/microequal/issues/66',
 
     [ '/Users/tobiasreich/Sites/aaa/bbb/ccc 2016/src/**/[^_]*.{html,ejs}', {}, [ '/Users/tobiasreich/Sites/aaa/bbb/ccc 2016/src/**/[^_]*.ejs', '/Users/tobiasreich/Sites/aaa/bbb/ccc 2016/src/**/[^_]*.html' ] ],
 
@@ -323,7 +323,7 @@ describe('bash.expanded', function() {
     'HEADS UP! If you\'re using the `--mm` flag minimatch freezes on these', 'should expand large numbers',
 
     [ '{2147483645..2147483649}', { minimatch: false, optimize: true }, [ '2147483645', '2147483646', '2147483647', '2147483648', '2147483649' ] ],
-    [ '{214748364..2147483649}', { minimatch: false, optimize: true }, [ '(21474836[4-9]|2147483[7-9][0-9]|214748[4-9][0-9]{2}|214749[0-9]{3}|2147[5-9][0-9]{4}|214[8-9][0-9]{5}|21[5-9][0-9]{6}|2[2-9][0-9]{7}|[3-9][0-9]{8}|1[0-9]{9}|20[0-9]{8}|21[0-3][0-9]{7}|214[0-6][0-9]{6}|2147[0-3][0-9]{5}|21474[0-7][0-9]{4}|214748[0-2][0-9]{3}|2147483[0-5][0-9]{2}|21474836[0-4][0-9])' ] ],
+    [ '{214748364..2147483649}', { minimatch: false, optimize: true }, [ '(21474836[4-9]|2147483[7-9][0-9]|214748[4-9][0-9]{2}|214749[0-9]{3}|2147[5-9][0-9]{4}|214[89][0-9]{5}|21[5-9][0-9]{6}|2[2-9][0-9]{7}|[3-9][0-9]{8}|1[0-9]{9}|20[0-9]{8}|21[0-3][0-9]{7}|214[0-6][0-9]{6}|2147[0-3][0-9]{5}|21474[0-7][0-9]{4}|214748[0-2][0-9]{3}|2147483[0-5][0-9]{2}|21474836[0-4][0-9])' ] ],
 
     'should expand ranges using steps',
 
@@ -406,7 +406,7 @@ describe('bash.expanded', function() {
     }
 
     it('should compile: ' + pattern, function() {
-      match(pattern, expected, options);
+      equal(pattern, expected, options);
     });
   });
 });

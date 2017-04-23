@@ -4,7 +4,7 @@ var extend = require('extend-shallow');
 var assert = require('assert');
 var braces = require('..');
 
-function match(pattern, expected, options) {
+function equal(pattern, expected, options) {
   var actual = braces.expand(pattern, options).sort();
   assert.deepEqual(actual, expected.sort(), pattern);
 }
@@ -182,7 +182,7 @@ describe('bash', function() {
     }
 
     it('should compile: ' + pattern, function() {
-      match(pattern, expected, options);
+      equal(pattern, expected, options);
     });
   });
 });

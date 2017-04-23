@@ -28,11 +28,11 @@
     "test": "mocha"
   },
   "dependencies": {
-    "arr-flatten": "^1.0.1",
+    "arr-flatten": "^1.0.3",
     "array-unique": "^0.3.2",
-    "define-property": "^0.2.5",
+    "define-property": "^1.0.0",
     "extend-shallow": "^2.0.1",
-    "fill-range": "^3.1.1",
+    "fill-range": "^4.0.0",
     "isobject": "^3.0.0",
     "regex-not": "^1.0.0",
     "repeat-element": "^1.1.2",
@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "ansi-cyan": "^0.1.1",
-    "benchmarked": "^0.2.5",
+    "benchmarked": "^1.0.0",
     "brace-expansion": "^1.1.7",
     "cross-spawn": "^5.1.0",
     "fs-exists-sync": "^0.1.0",

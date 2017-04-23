@@ -3,7 +3,7 @@
 var assert = require('assert');
 var braces = require('..');
 
-function match(pattern, expected, options) {
+function equal(pattern, expected, options) {
   var actual = braces.expand(pattern, options).sort();
   assert.deepEqual(actual, expected.sort(), pattern);
 }
@@ -54,7 +54,7 @@ describe('multiples', function() {
 
   patterns.forEach(function(pattern) {
     it('should expand: ' + pattern[0], function() {
-      match(pattern[0], pattern[1]);
+      equal(pattern[0], pattern[1]);
     });
   });
 });
