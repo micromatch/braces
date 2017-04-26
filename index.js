@@ -129,21 +129,21 @@ braces.create = function(pattern, options) {
   }
 
   function create() {
-    if (pattern === '' || pattern.length <= 2) {
+    if (pattern === '' || pattern.length < 3) {
       return [pattern];
     }
 
-    if (/^(?:{,})+$/.test(pattern)) {
+    if (/^(?:\{,\})+$/.test(pattern)) {
       return [];
     }
 
-    var quoted = /^(['"`])(.*)(\1)$/g.exec(pattern);
-    if (quoted) {
-      return [quoted[2]];
+    var ch = pattern.charAt(0);
+    if (ch === '\'' || ch === '"' && pattern.slice(-1) === ch) {
+      return [pattern.slice(1, -1)];
     }
 
     var proto = new Braces(options);
-    var arr = !options || !options.expand
+    var arr = !options || options.expand !== true
       ? proto.optimize(pattern, options)
       : proto.expand(pattern, options);
 
