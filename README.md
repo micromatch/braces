@@ -1,4 +1,4 @@
-# braces [![NPM version](https://img.shields.io/npm/v/braces.svg?style=flat)](https://www.npmjs.com/package/braces) [![NPM monthly downloads](https://img.shields.io/npm/dm/braces.svg?style=flat)](https://npmjs.org/package/braces)  [![NPM total downloads](https://img.shields.io/npm/dt/braces.svg?style=flat)](https://npmjs.org/package/braces) [![Linux Build Status](https://img.shields.io/travis/jonschlinkert/braces.svg?style=flat&label=Travis)](https://travis-ci.org/jonschlinkert/braces) [![Windows Build Status](https://img.shields.io/appveyor/ci/jonschlinkert/braces.svg?style=flat&label=AppVeyor)](https://ci.appveyor.com/project/jonschlinkert/braces)
+# braces [![NPM version](https://img.shields.io/npm/v/braces.svg?style=flat)](https://www.npmjs.com/package/braces) [![NPM monthly downloads](https://img.shields.io/npm/dm/braces.svg?style=flat)](https://npmjs.org/package/braces)  [![NPM total downloads](https://img.shields.io/npm/dt/braces.svg?style=flat)](https://npmjs.org/package/braces) [![Linux Build Status](https://img.shields.io/travis/micromatch/braces.svg?style=flat&label=Travis)](https://travis-ci.org/micromatch/braces) [![Windows Build Status](https://img.shields.io/appveyor/ci/micromatch/braces.svg?style=flat&label=AppVeyor)](https://ci.appveyor.com/project/micromatch/braces)
 
 > Fast, comprehensive, bash-like brace expansion implemented in JavaScript. Complete support for the Bash 4.3 braces specification, without sacrificing speed.
 
@@ -10,6 +10,12 @@ Install with [npm](https://www.npmjs.com/):
 $ npm install --save braces
 ```
 
+Install with [yarn](https://yarnpkg.com):
+
+```sh
+$ yarn add braces
+```
+
 ## Usage
 
 The main export is a function that takes a brace `pattern` to expand and an `options` object if necessary.
@@ -19,7 +25,7 @@ var braces = require('braces');
 braces(pattern[, options]);
 ```
 
-## Highlights
+## Why use braces?
 
 * **Safer**: Braces isn't [vulnerable to DoS attacks](#braces-is-safe), unlike [brace-expansion](https://github.com/juliangruber/brace-expansion), [minimatch](https://github.com/isaacs/minimatch) and [multimatch](https://github.com/sindresorhus/multimatch) (this not the same [DoS bug](https://medium.com/node-security/minimatch-redos-vulnerability-590da24e6d3c#.jew0b6mpc) that was found in minimatch and multimatch recently)
 * **Accurate**: complete support for the [Bash 4.3 Brace Expansion](www.gnu.org/software/bash/) specification (passes all of the Bash braces tests)
@@ -28,6 +34,8 @@ braces(pattern[, options]);
 * **Well-tested**: 900+ unit tests with thousands of actual patterns tested. Passes 100% of the [minimatch](https://github.com/isaacs/minimatch) and [brace-expansion](https://github.com/juliangruber/brace-expansion) unit tests as well.
 * **Optimized braces**: By default returns an optimized string that can be used for creating regular expressions for matching.
 * **Expanded braces**: Optionally returns an array (like bash). See a [comparison](#optimized-vs-expanded) between optimized and expanded.
+
+### Optimized vs. expanded braces
 
 **Optimized**
 
@@ -44,6 +52,13 @@ To expand patterns the same way as Bash or [minimatch](https://github.com/isaacs
 
 ```js
 console.log(braces.expand('a/{x,y,z}/b'));
+//=> ['a/x/b', 'a/y/b', 'a/z/b']
+```
+
+Or use [options.expand](#optionsexpand):
+
+```js
+console.log(braces('a/{x,y,z}/b', {expand: true}));
 //=> ['a/x/b', 'a/y/b', 'a/z/b']
 ```
 
@@ -72,15 +87,15 @@ console.log(braces.expand('a/{foo,bar,baz}/*.js'));
 Uses [fill-range](https://github.com/jonschlinkert/fill-range) for expanding alphabetical or numeric ranges (bash "sequences"):
 
 ```js
-// padding is not retained when string is optimized
-console.log(braces('a{01..03}b')); // ['a([1-3])b']
-console.log(braces('a{1..3}b'));   // ['a([1-3])b']
-
 console.log(braces.expand('{1..3}'));     // ['1', '2', '3']
 console.log(braces.expand('a{01..03}b')); // ['a01b', 'a02b', 'a03b']
 console.log(braces.expand('a{1..3}b'));   // ['a1b', 'a2b', 'a3b']
 console.log(braces.expand('{a..c}'));     // ['a', 'b', 'c']
 console.log(braces.expand('foo/{a..c}')); // ['foo/a', 'foo/b', 'foo/c']
+
+// supports padded ranges
+console.log(braces('a{01..03}b'));   //=> [ 'a(0[1-3])b' ]
+console.log(braces('a{001..300}b')); //=> [ 'a(0{2}[1-9]|0[1-9][0-9]|[12][0-9]{2}|300)b' ]
 ```
 
 ### Steps
@@ -101,7 +116,7 @@ When the [.optimize](#optimize) method is used, or [options.optimize](#optionsop
 
 Brace patterns may be nested. The results of each expanded string are not sorted, and left to right order is preserved.
 
-**"Expanded" examples**
+**"Expanded" braces**
 
 ```js
 console.log(braces.expand('a{b,c,/{x,y}}/e'));
@@ -111,7 +126,7 @@ console.log(braces.expand('a/{x,{1..5},y}/c'));
 //=> ['a/x/c', 'a/1/c', 'a/2/c', 'a/3/c', 'a/4/c', 'a/5/c', 'a/y/c']
 ```
 
-**"Optimized" examples**
+**"Optimized" braces**
 
 ```js
 console.log(braces('a{b,c,/{x,y}}/e'));
@@ -125,7 +140,7 @@ console.log(braces('a/{x,{1..5},y}/c'));
 
 **Escaping braces**
 
-Prevent braces from being expanded or evaluted by escaping either the opening or closing brace:
+A brace pattern will not be expanded or evaluted if _either the opening or closing brace is escaped_:
 
 ```js
 console.log(braces.expand('a\\{d,c,b}e'));
@@ -140,31 +155,31 @@ console.log(braces.expand('a{d,c,b\\}e'));
 Commas inside braces may also be escaped:
 
 ```js
+console.log(braces.expand('a{b\\,c}d'));
+//=> ['a{b,c}d']
+
 console.log(braces.expand('a{d\\,c,b}e'));
 //=> ['ad,ce', 'abe']
 ```
 
 **Single items**
 
-A brace pattern is also considered to be escaped when it contains a single item:
+Following bash conventions, a brace pattern is also not expanded when it contains a single character:
 
 ```js
 console.log(braces.expand('a{b}c'));
 //=> ['a{b}c']
-
-console.log(braces.expand('a{b\\,c}d'));
-//=> ['a{b,c}d']
 ```
 
 ## Options
 
 ### options.expand
 
-Type: `Boolean`
+**Type**: `Boolean`
 
-Default: `undefined`
+**Default**: `undefined`
 
-Generate an "expanded" brace pattern (this option is unncessary with the `.expand` method, which does the same thing).
+**Description**: Generate an "expanded" brace pattern (this option is unncessary with the `.expand` method, which does the same thing).
 
 ```js
 console.log(braces('a/{b,c}/d', {expand: true}));
@@ -173,11 +188,11 @@ console.log(braces('a/{b,c}/d', {expand: true}));
 
 ### options.optimize
 
-Type: `Boolean`
+**Type**: `Boolean`
 
-Default: `true`
+**Default**: `true`
 
-Enabled by default.
+**Description**: Enabled by default.
 
 ```js
 console.log(braces('a/{b,c}/d'));
@@ -186,19 +201,19 @@ console.log(braces('a/{b,c}/d'));
 
 ### options.nodupes
 
-Type: `Boolean`
+**Type**: `Boolean`
 
-Default: `true`
+**Default**: `true`
 
-Duplicates are removed by default. To keep duplicates, pass `{nodupes: false}` on the options
+**Description**: Duplicates are removed by default. To keep duplicates, pass `{nodupes: false}` on the options
 
 ### options.rangeLimit
 
-Type: `Number`
+**Type**: `Number`
 
-Default: `250`
+**Default**: `250`
 
-When `braces.expand()` is used, or `options.expand` is true, brace patterns will automatically be [optimized](#optionsoptimize) when the difference between the range minimum and range maximum exceeds the `rangeLimit`. This is to prevent huge ranges from freezing your application.
+**Description**: When `braces.expand()` is used, or `options.expand` is true, brace patterns will automatically be [optimized](#optionsoptimize) when the difference between the range minimum and range maximum exceeds the `rangeLimit`. This is to prevent huge ranges from freezing your application.
 
 You can set this to any number, or change `options.rangeLimit` to `Inifinity` to disable this altogether.
 
@@ -216,11 +231,11 @@ console.log(braces.expand('{1..100}'));
 
 ### options.transform
 
-Type: `Function`
+**Type**: `Function`
 
-Default: `undefined`
+**Default**: `undefined`
 
-Customize range expansion.
+**Description**: Customize range expansion.
 
 ```js
 var range = braces.expand('x{a..e}y', {
@@ -235,11 +250,11 @@ console.log(range);
 
 ### options.quantifiers
 
-Type: `Boolean`
+**Type**: `Boolean`
 
-Default: `undefined`
+**Default**: `undefined`
 
-In regular expressions, quanitifiers can be used to specify how many times a token can be repeated. For example, `a{1,3}` will match the letter `a` one to three times.
+**Description**: In regular expressions, quanitifiers can be used to specify how many times a token can be repeated. For example, `a{1,3}` will match the letter `a` one to three times.
 
 Unfortunately, regex quantifiers happen to share the same syntax as [Bash lists](#lists)
 
@@ -256,6 +271,14 @@ console.log(braces('a/b{1,3}/{x,y,z}', {quantifiers: true}));
 console.log(braces('a/b{1,3}/{x,y,z}', {quantifiers: true, expand: true}));
 //=> [ 'a/b{1,3}/x', 'a/b{1,3}/y', 'a/b{1,3}/z' ]
 ```
+
+### options.unescape
+
+**Type**: `Boolean`
+
+**Default**: `undefined`
+
+**Description**: Strip backslashes that were used for escaping from the result.
 
 ## Benchmarks
 
@@ -354,17 +377,17 @@ For example, here is how generated regex size and processing time compare as pat
 
 _(the following results were generated using `braces()` and `minimatch.braceExpand()`)_
 
-| **Pattern** | **minimatch** | **braces** | 
-| --- | --- | --- |
-| `{1..9007199254740991}`<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup> | N/A (freezes) | `300 B` (12ms 878μs) |
-| `{1..10000000}` | `98.9 MB` (20s 193ms 13μs) | `34 B` (11ms 204μs) |
-| `{1..1000000}` | `8.89 MB` (1s 838ms 718μs) | `33 B` (1ms 761μs) |
-| `{1..100000}` | `789 kB` (181ms 518μs) | `32 B` (1ms 76μs) |
-| `{1..10000}` | `68.9 kB` (17ms 436μs) | `31 B` (1ms 382μs) |
-| `{1..1000}` | `5.89 kB` (1ms 773μs) | `30 B` (1ms 509μs) |
-| `{1..100}` | `491 B` (321μs) | `24 B` (309μs) |
-| `{1..10}` | `40 B` (56μs) | `12 B` (333μs) |
-| `{1..3}` | `11 B` (80μs) | `9 B` (370μs) |
+| **Pattern** | **minimatch** | **braces** |
+| ---                     | ---                        | ---                  |
+| `{1..9007199254740991}`[^1] | N/A (freezes)          | `300 B` (12ms 878μs) |
+| `{1..10000000}`         | `98.9 MB` (20s 193ms 13μs) | `34 B` (11ms 204μs)  |
+| `{1..1000000}`          | `8.89 MB` (1s 838ms 718μs) | `33 B` (1ms 761μs)   |
+| `{1..100000}`           | `789 kB` (181ms 518μs)     | `32 B` (1ms 76μs)    |
+| `{1..10000}`            | `68.9 kB` (17ms 436μs)     | `31 B` (1ms 382μs)   |
+| `{1..1000}`             | `5.89 kB` (1ms 773μs)      | `30 B` (1ms 509μs)   |
+| `{1..100}`              | `491 B` (321μs)            | `24 B` (309μs)       |
+| `{1..10}`               | `40 B` (56μs)              | `12 B` (333μs)       |
+| `{1..3}`                | `11 B` (80μs)              | `9 B` (370μs)        |
 
 These numbers are actually pretty small as far as numeric ranges are concerned. Regardless, we shouldn't have to consider such things when creating a glob pattern. The tool should get out of your way and let you be as creative as you want.
 
@@ -374,24 +397,29 @@ Even when brace patterns are fully **expanded**, `braces` is still much faster.
 
 _(the following results were generated using `braces.expand()` and `minimatch.braceExpand()`)_
 
-| **Pattern** | **minimatch** | **braces** | 
-| --- | --- | --- |
+| **Pattern** | **minimatch** | **braces** |
+| ---               | ---                         | ---                        |
 | `a/{1..10000000}` | `98.9 MB` (19s 754ms 376μs) | `98.9 MB` (5s 734ms 419μs) |
-| `a/{1..1000000}` | `8.89 MB` (1s 866ms 968μs) | `8.89 MB` (561ms 594μs) |
-| `a/{1..100000}` | `789 kB` (178ms 311μs) | `789 kB` (29ms 823μs) |
-| `a/{1..10000}` | `68.9 kB` (17ms 692μs) | `68.9 kB` (2ms 351μs) |
-| `a/{1..1000}` | `5.89 kB` (1ms 823μs) | `5.89 kB` (706μs) |
-| `a/{1..100}` | `491 B` (609μs) | `491 B` (267μs) |
-| `a/{1..10}` | `40 B` (61μs) | `40 B` (636μs) |
-| `a/{1..3}` | `11 B` (206μs) | `11 B` (207μs) |
+| `a/{1..1000000}`  | `8.89 MB` (1s 866ms 968μs)  | `8.89 MB` (561ms 594μs)    |
+| `a/{1..100000}`   | `789 kB` (178ms 311μs)      | `789 kB` (29ms 823μs)      |
+| `a/{1..10000}`    | `68.9 kB` (17ms 692μs)      | `68.9 kB` (2ms 351μs)      |
+| `a/{1..1000}`     | `5.89 kB` (1ms 823μs)       | `5.89 kB` (706μs)          |
+| `a/{1..100}`      | `491 B` (609μs)             | `491 B` (267μs)            |
+| `a/{1..10}`       | `40 B` (61μs)               | `40 B` (636μs)             |
+| `a/{1..3}`        | `11 B` (206μs)              | `11 B` (207μs)             |
 
-### Why is braces so fast?
+### Braces is fast
 
+* caching
+* parsing
+* looping
+* regex: smaller patterns, optimized to match faster
+* 
 Braces was built from the ground up to be as performant as possible when matching, using a combination of the following:
 
-* **minimizes loops and iterating**: we try to pass over the pattern once to parse it before passing it to the compiler.
+* **minimizes loops and iterating**: the parser makes every effort to only evaluate each character in the pattern once.
 * **generates an optimized string**: sequences/ranges are optimized by [to-regex-range](https://github.com/jonschlinkert/to-regex-range), which is not only highly accurate, but produces patterns that are a fraction of the size of patterns generated by other brace expansion libraries, such as Bash and [minimatch](https://github.com/isaacs/minimatch) (via [brace-expansion](https://github.com/juliangruber/brace-expansion))
-* **generates results faster**: can handle even the most complex patterns that cause other implementations like [minimatch](https://github.com/isaacs/minimatch) and Bash to fail.
+* **generates results faster**: can handle even the most complex patterns that cause other implementations like [minimatch](https://github.com/isaacs/minimatch) and Bash to freeze or fail.
 
 ### Braces is safe
 
@@ -435,13 +463,13 @@ Pull requests and stars are always welcome. For bugs and feature requests, [plea
 
 ### Contributors
 
-| **Commits** | **Contributor** | 
-| --- | --- |
-| 148 | [jonschlinkert](https://github.com/jonschlinkert) |
-| 4 | [doowb](https://github.com/doowb) |
-| 1 | [es128](https://github.com/es128) |
-| 1 | [eush77](https://github.com/eush77) |
-| 1 | [hemanth](https://github.com/hemanth) |
+| **Commits** | **Contributor** |  
+| --- | --- |  
+| 155 | [jonschlinkert](https://github.com/jonschlinkert) |  
+| 4   | [doowb](https://github.com/doowb) |  
+| 1   | [es128](https://github.com/es128) |  
+| 1   | [eush77](https://github.com/eush77) |  
+| 1   | [hemanth](https://github.com/hemanth) |  
 
 ### Building docs
 
@@ -475,13 +503,4 @@ Released under the [MIT License](LICENSE).
 
 ***
 
-_This file was generated by [verb-generate-readme](https://github.com/verbose/verb-generate-readme), v0.5.0, on April 11, 2017._
-
-<hr class="footnotes-sep">
-<section class="footnotes">
-<ol class="footnotes-list">
-<li id="fn1"  class="footnote-item">this is the largest safe integer allowed in JavaScript. <a href="#fnref1" class="footnote-backref">↩</a>
-
-</li>
-</ol>
-</section>
+_This file was generated by [verb-generate-readme](https://github.com/verbose/verb-generate-readme), v0.6.0, on April 26, 2017._

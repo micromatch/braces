@@ -2,7 +2,7 @@
   "name": "braces",
   "description": "Fast, comprehensive, bash-like brace expansion implemented in JavaScript. Complete support for the Bash 4.3 braces specification, without sacrificing speed.",
   "version": "2.0.4",
-  "homepage": "https://github.com/jonschlinkert/braces",
+  "homepage": "https://github.com/micromatch/braces",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
   "contributors": [
     "Brian Woodward <brian.woodward@gmail.com> (https://twitter.com/doowb)",
@@ -11,9 +11,9 @@
     "hemanth.hm <hemanth.hm@gmail.com> (http://h3manth.com)",
     "Jon Schlinkert <jon.schlinkert@sellside.com> (http://twitter.com/jonschlinkert)"
   ],
-  "repository": "jonschlinkert/braces",
+  "repository": "micromatch/braces",
   "bugs": {
-    "url": "https://github.com/jonschlinkert/braces/issues"
+    "url": "https://github.com/micromatch/braces/issues"
   },
   "license": "MIT",
   "files": [
