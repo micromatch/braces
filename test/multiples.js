@@ -16,6 +16,7 @@ describe('multiples', function() {
     ['a/{,}/b', ['a//b', 'a//b']],
     ['a/{,}{c,d}/e', ['a/c/e', 'a/c/e', 'a/d/e', 'a/d/e']],
     ['a/{a,b,{,}{,}{,},c}/b', ['a//b', 'a//b', 'a//b', 'a//b', 'a//b', 'a//b', 'a//b', 'a//b', 'a/a/b', 'a/b/b', 'a/c/b']],
+    ['a/{a,b,{,},c}/b', ['a//b', 'a//b', 'a/a/b', 'a/b/b', 'a/c/b']],
     ['a/{a,b,{,}{,}{,}}/b', ['a//b', 'a//b', 'a//b', 'a//b', 'a//b', 'a//b', 'a//b', 'a//b', 'a/a/b', 'a/b/b']],
     ['a/{b,cz{,}}/{d{,},ef}{,}', ['a/b/d', 'a/b/d', 'a/b/d', 'a/b/d', 'a/b/ef', 'a/b/ef', 'a/cz/d', 'a/cz/d', 'a/cz/d', 'a/cz/d', 'a/cz/d', 'a/cz/d', 'a/cz/d', 'a/cz/d', 'a/cz/ef', 'a/cz/ef', 'a/cz/ef', 'a/cz/ef']],
     ['a/{b,cz}{,}/{d{,},ef}{,}', ['a/b/d', 'a/b/d', 'a/b/d', 'a/b/d', 'a/b/d', 'a/b/d', 'a/b/d', 'a/b/d', 'a/b/ef', 'a/b/ef', 'a/b/ef', 'a/b/ef', 'a/cz/d', 'a/cz/d', 'a/cz/d', 'a/cz/d', 'a/cz/d', 'a/cz/d', 'a/cz/d', 'a/cz/d', 'a/cz/ef', 'a/cz/ef', 'a/cz/ef', 'a/cz/ef']],
