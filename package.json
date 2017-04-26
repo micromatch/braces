@@ -1,7 +1,7 @@
 {
   "name": "braces",
   "description": "Fast, comprehensive, bash-like brace expansion implemented in JavaScript. Complete support for the Bash 4.3 braces specification, without sacrificing speed.",
-  "version": "2.0.4",
+  "version": "2.1.0",
   "homepage": "https://github.com/micromatch/braces",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
   "contributors": [
