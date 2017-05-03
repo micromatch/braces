@@ -16,10 +16,12 @@ function equal(pattern, expected, options) {
 describe('bash', function() {
   var fixtures = [
     [ '{1\\.2}', {}, [ '{1.2}' ] ],
+    [ '{1\\.2}', {unescape: false}, [ '{1\\.2}' ] ],
     [ '{"x,x"}', {}, [ '{x,x}' ] ],
     [ '{x","x}', {}, [ '{x,x}' ] ],
     [ '\'{x,x}\'', {}, [ '{x,x}' ] ],
-    [ '{x`,`x}', {}, [ '{x`,`x}' ] ],
+    [ '{x`,`x}', {}, [ '{x,x}' ] ],
+    [ '{x`,`x}', {unescape: false}, [ '{x`,`x}' ] ],
     [ '\'{a,b}{{a,b},a,b}\'', {}, [ '{a,b}{{a,b},a,b}' ] ],
     [ 'A{b,{d,e},{f,g}}Z', {}, [ 'AbZ', 'AdZ', 'AeZ', 'AfZ', 'AgZ' ] ],
     [ 'PRE-{a,b}{{a,b},a,b}-POST', {}, [ 'PRE-aa-POST', 'PRE-ab-POST', 'PRE-aa-POST', 'PRE-ab-POST', 'PRE-ba-POST', 'PRE-bb-POST', 'PRE-ba-POST', 'PRE-bb-POST' ] ],
