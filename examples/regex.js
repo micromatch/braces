@@ -12,6 +12,8 @@ var braces = require('..');
 // console.log('minimatch.makeRe: "foo/{1..20000}/bar/{a..j}/baz"');
 // console.log(mm.makeRe('foo/{1..20000}/bar/{a..j}/baz'));
 
-var re = braces.makeRe('a/{foo/bar}/z');
-console.log(re);
-console.log(re.test('a/{foo/bar}/z'));
+// var re = braces.makeRe('a/{foo/bar}/z');
+// console.log(re);
+// console.log(re.test('a/{foo/bar}/z'));
+
+console.log(braces.makeRe('{00000001..99999999}'));
