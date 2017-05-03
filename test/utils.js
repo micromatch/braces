@@ -12,7 +12,23 @@ var assert = require('assert');
 var utils = require('../lib/utils');
 
 describe('utils', function() {
-  describe('split', function() {
+  describe('.isEmptySets', function() {
+    it('should return true if string contains only empty stems', function() {
+      assert(utils.isEmptySets('{,}'));
+      assert(utils.isEmptySets('{,}{,}'));
+      assert(utils.isEmptySets('{,}{,}{,}{,}{,}'));
+    });
+
+    it('should return false if string contains more than empty stems', function() {
+      assert(!utils.isEmptySets('{,}foo'));
+    });
+
+    it('should return false if string contains other than empty stems', function() {
+      assert(!utils.isEmptySets('foo'));
+    });
+  });
+
+  describe('.split', function() {
     it('should split on commas by default', function() {
       assert.deepEqual(utils.split('a,b,c'), ['a', 'b', 'c']);
       assert.deepEqual(utils.split('{a,b,c}'), ['{a', 'b', 'c}']);

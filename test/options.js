@@ -22,6 +22,31 @@ describe('options', function() {
     });
   });
 
+  describe('options.cache', function() {
+    it('should disable caching', function() {
+      braces('a/{b,c}/d');
+      assert(braces.cache.hasOwnProperty('a/{b,c}/d'));
+      braces('a/{b,c}/d');
+      assert(braces.cache.hasOwnProperty('a/{b,c}/d'));
+      braces('a/{b,c}/d');
+      assert(braces.cache.hasOwnProperty('a/{b,c}/d'));
+      braces('a/{b,c}/d', {cache: false});
+      braces('a/{b,c}/d', {cache: false});
+      braces('a/{b,c}/d', {cache: false});
+      assert.deepEqual(braces.cache, {});
+    });
+  });
+
+  describe('options.noempty', function() {
+    it('should not remove empty values by default', function() {
+      equal('{,b{,a}}', ['', 'b', 'ba'], {expand: true});
+    });
+
+    it('should remove empty values when `options.noempty` is false', function() {
+      equal('{,b{,a}}', ['b', 'ba'], {expand: true, noempty: true});
+    });
+  });
+
   describe('options.nodupes', function() {
     it('should not remove duplicates by default', function() {
       equal('a/{b,b,b}/c', ['a/b/c', 'a/b/c', 'a/b/c'], {expand: true});

@@ -176,7 +176,6 @@ describe('bash', function() {
     var options = extend({}, arr[1]);
     var pattern = arr[0];
     var expected = arr[2];
-
     if (options.skip === true) {
       return;
     }

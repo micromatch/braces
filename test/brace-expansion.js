@@ -5,7 +5,7 @@ var braces = require('..');
 
 function equal(pattern, expected, options) {
   var actual = braces.expand(pattern, options).sort();
-  assert.deepEqual(actual, expected.sort(), pattern);
+  assert.deepEqual(actual.filter(Boolean), expected.sort(), pattern);
 }
 
 /**
@@ -70,7 +70,7 @@ describe('unit tests from brace-expand', function() {
   describe('nested', function() {
     it('should support nested sets', function() {
       equal('{a,b{1..3},c}', ['a', 'b1', 'b2', 'b3', 'c']);
-      equal('{{A..Z},{a..z}}', [ 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' ].sort());
+      equal('{{A..Z},{a..z}}', ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'].sort());
       equal('ppp{,config,oe{,conf}}', ['ppp', 'pppconfig', 'pppoe', 'pppoeconf']);
     });
   });

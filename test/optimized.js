@@ -262,7 +262,7 @@ describe('optimized', function() {
       });
     });
 
-    // HEADS UP! If you're using the `--mm` flag miniequal freezes on these
+    // HEADS UP! If you're using the `--mm` flag minimatch freezes on these
     describe('large numbers', function() {
       it('should expand large numbers', function() {
         equal('{2147483645..2147483649}', ['(214748364[5-9])']);

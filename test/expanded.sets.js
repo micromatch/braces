@@ -4,7 +4,8 @@ var assert = require('assert');
 var braces = require('..');
 
 function equal(pattern, expected) {
-  assert.deepEqual(braces.expand(pattern).sort(), expected.sort());
+  var actual = braces.expand(pattern);
+  assert.deepEqual(actual.sort(), expected.sort());
 }
 
 describe('expanded sets', function() {
