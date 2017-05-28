@@ -1,15 +1,15 @@
 {
   "name": "braces",
-  "description": "Fast, comprehensive, bash-like brace expansion implemented in JavaScript. Complete support for the Bash 4.3 braces specification, without sacrificing speed.",
-  "version": "2.1.1",
+  "description": "Bash-like brace expansion, implemented in JavaScript. Safer than other brace expansion libs, with complete support for the Bash 4.3 braces specification, without sacrificing speed.",
+  "version": "2.2.0",
   "homepage": "https://github.com/micromatch/braces",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
   "contributors": [
-    "Brian Woodward <brian.woodward@gmail.com> (https://twitter.com/doowb)",
+    "Brian Woodward (https://twitter.com/doowb)",
     "Elan Shanker (https://github.com/es128)",
     "Eugene Sharygin (https://github.com/eush77)",
-    "hemanth.hm <hemanth.hm@gmail.com> (http://h3manth.com)",
-    "Jon Schlinkert <jon.schlinkert@sellside.com> (http://twitter.com/jonschlinkert)"
+    "hemanth.hm (http://h3manth.com)",
+    "Jon Schlinkert (http://twitter.com/jonschlinkert)"
   ],
   "repository": "micromatch/braces",
   "bugs": {
@@ -25,7 +25,8 @@
     "node": ">=0.10.0"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "benchmark": "node benchmark"
   },
   "dependencies": {
     "arr-flatten": "^1.0.3",
@@ -45,7 +46,6 @@
     "benchmarked": "^1.0.0",
     "brace-expansion": "^1.1.7",
     "cross-spawn": "^5.1.0",
-    "fs-exists-sync": "^0.1.0",
     "gulp": "^3.9.1",
     "gulp-eslint": "^3.0.1",
     "gulp-format-md": "^0.1.12",
@@ -105,10 +105,6 @@
         "micromatch",
         "nanomatch"
       ]
-    },
-    "reflinks": [
-      "multimatch",
-      "to-regex-range"
-    ]
+    }
   }
 }
