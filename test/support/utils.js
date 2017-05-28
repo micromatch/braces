@@ -1,5 +1,6 @@
 'use strict';
 
+var fs = require('fs');
 var util = require('util');
 var bashPath = '';
 
@@ -7,15 +8,14 @@ var bashPath = '';
  * Utils
  */
 
-exports.exists = require('fs-exists-sync');
 exports.extend = require('extend-shallow');
 exports.nc = require('noncharacters');
 
 exports.getBashPath = function() {
   if (bashPath) return bashPath;
-  if (exports.exists('/usr/local/bin/bash')) {
+  if (fs.existsSync('/usr/local/bin/bash')) {
     bashPath = '/usr/local/bin/bash';
-  } else if (exports.exists('/bin/bash')) {
+  } else if (fs.existsSync('/bin/bash')) {
     bashPath = '/bin/bash';
   } else {
     bashPath = 'bash';

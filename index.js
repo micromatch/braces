@@ -7,6 +7,7 @@
 var toRegex = require('to-regex');
 var unique = require('array-unique');
 var extend = require('extend-shallow');
+var define = require('define-property');
 
 /**
  * Local dependencies
@@ -17,11 +18,6 @@ var parsers = require('./lib/parsers');
 var Braces = require('./lib/braces');
 var utils = require('./lib/utils');
 var MAX_LENGTH = 1024 * 64;
-
-/**
- * Session cache (disable with `options.cache`)
- */
-
 var cache = {};
 
 /**
@@ -42,27 +38,30 @@ var cache = {};
  */
 
 function braces(pattern, options) {
-  var key = utils.createKey(pattern, options);
-  options = options || {};
+  var key = utils.createKey(String(pattern), options);
+  var arr = [];
 
-  if (options.cache !== false && cache.hasOwnProperty(key)) {
+  var disabled = options && options.cache === false;
+  if (!disabled && cache.hasOwnProperty(key)) {
     return cache[key];
   }
 
-  var results = [];
   if (Array.isArray(pattern)) {
     for (var i = 0; i < pattern.length; i++) {
-      results.push.apply(results, braces.create(pattern[i], options));
-    }
-
-    if (options && options.nodupes === true) {
-      results = unique(results);
+      arr.push.apply(arr, braces.create(pattern[i], options));
     }
   } else {
-    results = braces.create(pattern, options);
+    arr = braces.create(pattern, options);
   }
 
-  return (cache[key] = results);
+  if (options && options.nodupes === true) {
+    arr = unique(arr);
+  }
+
+  if (!disabled) {
+    cache[key] = arr;
+  }
+  return arr;
 }
 
 /**
@@ -116,15 +115,11 @@ braces.optimize = function(pattern, options) {
  */
 
 braces.create = function(pattern, options) {
-  if (pattern instanceof RegExp) {
-    pattern = pattern.source;
-  }
-
   if (typeof pattern !== 'string') {
     throw new TypeError('expected a string');
   }
 
-  if (pattern.length > MAX_LENGTH) {
+  if (pattern.length >= MAX_LENGTH) {
     throw new Error('expected pattern to be less than ' + MAX_LENGTH + ' characters');
   }
 
@@ -133,24 +128,33 @@ braces.create = function(pattern, options) {
       return [pattern];
     }
 
-    if (/^(?:\{,\})+$/.test(pattern)) {
+    if (utils.isEmptySets(pattern)) {
       return [];
     }
 
-    var ch = pattern.charAt(0);
-    if (ch === '\'' || ch === '"' && pattern.slice(-1) === ch) {
+    if (utils.isQuotedString(pattern)) {
       return [pattern.slice(1, -1)];
     }
 
     var proto = new Braces(options);
-    var arr = !options || options.expand !== true
+    var result = !options || options.expand !== true
       ? proto.optimize(pattern, options)
       : proto.expand(pattern, options);
 
-    if (options && options.nodupes === true) {
-      return unique(arr);
+    // get the generated pattern(s)
+    var arr = result.output;
+
+    // filter out empty strings if specified
+    if (options && options.noempty === true) {
+      arr = arr.filter(Boolean);
     }
 
+    // filter out duplicates if specified
+    if (options && options.nodupes === true) {
+      arr = unique(arr);
+    }
+
+    define(arr, 'result', result);
     return arr;
   }
 
@@ -162,8 +166,9 @@ braces.create = function(pattern, options) {
  *
  * ```js
  * var braces = require('braces');
- * console.log(braces.makeRe('user-{200..300}'))
- * //=> /^(?:user-(20[0-9]|2[1-9][0-9]|300))$/
+ *
+ * console.log(braces.makeRe('id-{200..300}'));
+ * //=> /^(?:id-(20[0-9]|2[1-9][0-9]|300))$/
  * ```
  * @param {String} `pattern` The pattern to convert to regex.
  * @param {Object} `options`
@@ -172,15 +177,11 @@ braces.create = function(pattern, options) {
  */
 
 braces.makeRe = function(pattern, options) {
-  if (pattern instanceof RegExp) {
-    return pattern;
-  }
-
   if (typeof pattern !== 'string') {
     throw new TypeError('expected a string');
   }
 
-  if (pattern.length > MAX_LENGTH) {
+  if (pattern.length >= MAX_LENGTH) {
     throw new Error('expected pattern to be less than ' + MAX_LENGTH + ' characters');
   }
 
@@ -214,15 +215,15 @@ braces.makeRe = function(pattern, options) {
  * //      { type: 'text', val: '/d' },
  * //      { type: 'eos', val: '' } ] }
  * ```
- * @param {String} `str`
+ * @param {String} `pattern` Brace pattern to parse
  * @param {Object} `options`
  * @return {Object} Returns an AST
  * @api public
  */
 
-braces.parse = function(str, options) {
-  var inst = new Braces(options);
-  return inst.parse(str, options);
+braces.parse = function(pattern, options) {
+  var proto = new Braces(options);
+  return proto.parse(pattern, options);
 };
 
 /**
@@ -247,35 +248,62 @@ braces.parse = function(str, options) {
  * //    { ... },
  * //   parsingErrors: [] }
  * ```
- * @param {Object|String} `ast`
+ * @param {Object|String} `ast` AST from [.parse](#parse). If a string is passed it will be parsed first.
  * @param {Object} `options`
  * @return {Object} Returns an object that has an `output` property with the compiled string.
  * @api public
  */
 
 braces.compile = function(ast, options) {
-  var inst = new Braces(options);
-  return inst.compile(ast, options);
+  var proto = new Braces(options);
+  return proto.compile(ast, options);
 };
 
 /**
- * Memoize if `options.cache` is not false
+ * Clear the regex cache.
+ *
+ * ```js
+ * braces.clearCache();
+ * ```
+ * @api public
+ */
+
+braces.clearCache = function() {
+  cache = braces.cache = {};
+};
+
+/**
+ * Memoize a generated regex or function. A unique key is generated
+ * from the method name, pattern, and user-defined options. Set
+ * options.memoize to false to disable.
  */
 
 function memoize(type, pattern, options, fn) {
   var key = utils.createKey(type + ':' + pattern, options);
-  options = options || {};
+  var disabled = options && options.cache === false;
+  if (disabled) {
+    braces.clearCache();
+    return fn(pattern, options);
+  }
 
-  if (options.cache !== false && cache.hasOwnProperty(key)) {
+  if (cache.hasOwnProperty(key)) {
     return cache[key];
   }
 
   var res = fn(pattern, options);
-  if (options.cache !== false) {
-    cache[key] = res;
-  }
+  cache[key] = res;
   return res;
 }
+
+/**
+ * Expose `Braces` constructor and methods
+ * @type {Function}
+ */
+
+braces.Braces = Braces;
+braces.compilers = compilers;
+braces.parsers = parsers;
+braces.cache = cache;
 
 /**
  * Expose `braces`
@@ -283,12 +311,3 @@ function memoize(type, pattern, options, fn) {
  */
 
 module.exports = braces;
-
-/**
- * Expose `Braces` constructor
- * @type {Function}
- */
-
-module.exports.Braces = Braces;
-module.exports.compilers = compilers;
-module.exports.parsers = parsers;
