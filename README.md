@@ -1,6 +1,6 @@
-# braces [![NPM version](https://img.shields.io/npm/v/braces.svg?style=flat)](https://www.npmjs.com/package/braces) [![NPM monthly downloads](https://img.shields.io/npm/dm/braces.svg?style=flat)](https://npmjs.org/package/braces)  [![NPM total downloads](https://img.shields.io/npm/dt/braces.svg?style=flat)](https://npmjs.org/package/braces) [![Linux Build Status](https://img.shields.io/travis/micromatch/braces.svg?style=flat&label=Travis)](https://travis-ci.org/micromatch/braces) [![Windows Build Status](https://img.shields.io/appveyor/ci/micromatch/braces.svg?style=flat&label=AppVeyor)](https://ci.appveyor.com/project/micromatch/braces)
+# braces [![NPM version](https://img.shields.io/npm/v/braces.svg?style=flat)](https://www.npmjs.com/package/braces) [![NPM monthly downloads](https://img.shields.io/npm/dm/braces.svg?style=flat)](https://npmjs.org/package/braces) [![NPM total downloads](https://img.shields.io/npm/dt/braces.svg?style=flat)](https://npmjs.org/package/braces) [![Linux Build Status](https://img.shields.io/travis/micromatch/braces.svg?style=flat&label=Travis)](https://travis-ci.org/micromatch/braces) [![Windows Build Status](https://img.shields.io/appveyor/ci/micromatch/braces.svg?style=flat&label=AppVeyor)](https://ci.appveyor.com/project/micromatch/braces)
 
-> Fast, comprehensive, bash-like brace expansion implemented in JavaScript. Complete support for the Bash 4.3 braces specification, without sacrificing speed.
+> Bash-like brace expansion, implemented in JavaScript. Safer than other brace expansion libs, with complete support for the Bash 4.3 braces specification, without sacrificing speed.
 
 ## Install
 
@@ -10,36 +10,34 @@ Install with [npm](https://www.npmjs.com/):
 $ npm install --save braces
 ```
 
-Install with [yarn](https://yarnpkg.com):
+## Why use braces?
 
-```sh
-$ yarn add braces
-```
+Brace patterns are great for matching ranges. Users (and implementors) shouldn't have to think about whether or not they will break their application (or yours) from accidentally defining an aggressive brace pattern. _Braces is the only library that offers a [solution to this problem](#performance)_.
+
+* **Safe(r)**: Braces isn't vulnerable to DoS attacks like [brace-expansion](https://github.com/juliangruber/brace-expansion), [minimatch](https://github.com/isaacs/minimatch) and [multimatch](https://github.com/sindresorhus/multimatch) (a different bug than the [other regex DoS bug](https://medium.com/node-security/minimatch-redos-vulnerability-590da24e6d3c#.jew0b6mpc)).
+* **Accurate**: complete support for the [Bash 4.3 Brace Expansion](www.gnu.org/software/bash/) specification (passes all of the Bash braces tests)
+* **[fast and performant](#benchmarks)**: Starts fast, runs fast and [scales well](#performance) as patterns increase in complexity.
+* **Organized code base**: with parser and compiler that are eas(y|ier) to maintain and update when edge cases crop up.
+* **Well-tested**: thousands of test assertions. Passes 100% of the [minimatch](https://github.com/isaacs/minimatch) and [brace-expansion](https://github.com/juliangruber/brace-expansion) unit tests as well (as of the writing of this).
 
 ## Usage
 
-The main export is a function that takes a brace `pattern` to expand and an `options` object if necessary.
+The main export is a function that takes one or more brace `patterns` and `options`.
 
 ```js
 var braces = require('braces');
 braces(pattern[, options]);
 ```
 
-## Why use braces?
+By default, braces returns an optimized regex-source string. To get an array of brace patterns, use `brace.expand()`.
 
-* **Safer**: Braces isn't [vulnerable to DoS attacks](#braces-is-safe), unlike [brace-expansion](https://github.com/juliangruber/brace-expansion), [minimatch](https://github.com/isaacs/minimatch) and [multimatch](https://github.com/sindresorhus/multimatch) (this not the same [DoS bug](https://medium.com/node-security/minimatch-redos-vulnerability-590da24e6d3c#.jew0b6mpc) that was found in minimatch and multimatch recently)
-* **Accurate**: complete support for the [Bash 4.3 Brace Expansion](www.gnu.org/software/bash/) specification (passes all of the Bash braces tests)
-* **[fast and performant](#benchmarks)**: not only runs fast, but scales well as patterns increase in complexity (other libs don't - see the notes on [performance](#performance)).
-* **Organized code base**: with parser and compiler that are easy to maintain and update when edge cases crop up.
-* **Well-tested**: 900+ unit tests with thousands of actual patterns tested. Passes 100% of the [minimatch](https://github.com/isaacs/minimatch) and [brace-expansion](https://github.com/juliangruber/brace-expansion) unit tests as well.
-* **Optimized braces**: By default returns an optimized string that can be used for creating regular expressions for matching.
-* **Expanded braces**: Optionally returns an array (like bash). See a [comparison](#optimized-vs-expanded) between optimized and expanded.
+The following section explains the difference in more detail. _(If you're curious about "why" braces does this by default, see [brace matching pitfalls](#brace-matching-pitfalls)_.
 
 ### Optimized vs. expanded braces
 
 **Optimized**
 
-Patterns are optimized for regex and matching by default:
+By default, patterns are optimized for regex and matching:
 
 ```js
 console.log(braces('a/{x,y,z}/b'));
@@ -280,6 +278,194 @@ console.log(braces('a/b{1,3}/{x,y,z}', {quantifiers: true, expand: true}));
 
 **Description**: Strip backslashes that were used for escaping from the result.
 
+## What is "brace expansion"?
+
+Brace expansion is a type of parameter expansion that was made popular by unix shells for generating lists of strings, as well as regex-like matching when used alongside wildcards (globs).
+
+In addition to "expansion", braces are also used for matching. In other words:
+
+* [brace expansion](#brace-expansion) is for generating new lists
+* [brace matching](#brace-matching) is for filtering existing lists
+
+<details>
+<summary><strong>More about brace expansion</strong> (click to expand)</summary>
+
+There are two main types of brace expansion:
+
+1. **lists**: which are defined using comma-separated values inside curly braces: `{a,b,c}`
+2. **sequences**: which are defined using a starting value and an ending value, separated by two dots: `a{1..3}b`. Optionally, a third argument may be passed to define a "step" or increment to use: `a{1..100..10}b`. These are also sometimes referred to as "ranges".
+
+Here are some example brace patterns to illustrate how they work:
+
+**Sets**
+
+```
+{a,b,c}       => a b c
+{a,b,c}{1,2}  => a1 a2 b1 b2 c1 c2
+```
+
+**Sequences**
+
+```
+{1..9}        => 1 2 3 4 5 6 7 8 9
+{4..-4}       => 4 3 2 1 0 -1 -2 -3 -4
+{1..20..3}    => 1 4 7 10 13 16 19
+{a..j}        => a b c d e f g h i j
+{j..a}        => j i h g f e d c b a
+{a..z..3}     => a d g j m p s v y
+```
+
+**Combination**
+
+Sets and sequences can be mixed together or used along with any other strings.
+
+```
+{a,b,c}{1..3}   => a1 a2 a3 b1 b2 b3 c1 c2 c3
+foo/{a,b,c}/bar => foo/a/bar foo/b/bar foo/c/bar
+```
+
+The fact that braces can be "expanded" from relatively simple patterns makes them ideal for quickly generating test fixtures, file paths, and similar use cases.
+
+## Brace matching
+
+In addition to _expansion_, brace patterns are also useful for performing regular-expression-like matching.
+
+For example, the pattern `foo/{1..3}/bar` would match any of following strings:
+
+```
+foo/1/bar
+foo/2/bar
+foo/3/bar
+```
+
+But not:
+
+```
+baz/1/qux
+baz/2/qux
+baz/3/qux
+```
+
+Braces can also be combined with [glob patterns](https://github.com/jonschlinkert/micromatch) to perform more advanced wildcard matching. For example, the pattern `*/{1..3}/*` would match any of following strings:
+
+```
+foo/1/bar
+foo/2/bar
+foo/3/bar
+baz/1/qux
+baz/2/qux
+baz/3/qux
+```
+
+## Brace matching pitfalls
+
+Although brace patterns offer a user-friendly way of matching ranges or sets of strings, there are also some major disadvantages and potential risks you should be aware of.
+
+### tldr
+
+**"brace bombs"**
+
+* brace expansion can eat up a huge amount of processing resources
+* as brace patterns increase _linearly in size_, the system resources required to expand the pattern increase exponentially
+* users can accidentally (or intentially) exhaust your system's resources resulting in the equivalent of a DoS attack (bonus: no programming knowledge is required!)
+
+For a more detailed explanation with examples, see the [geometric complexity](#geometric-complexity) section.
+
+### The solution
+
+Jump to the [performance section](#performance) to see how Braces solves this problem in comparison to other libraries.
+
+### Geometric complexity
+
+At minimum, brace patterns with sets limited to two elements have quadradic or `O(n^2)` complexity. But the complexity of the algorithm increases exponentially as the number of sets, _and elements per set_, increases, which is `O(n^c)`.
+
+For example, the following sets demonstrate quadratic (`O(n^2)`) complexity:
+
+```
+{1,2}{3,4}      => (2X2)    => 13 14 23 24
+{1,2}{3,4}{5,6} => (2X2X2)  => 135 136 145 146 235 236 245 246
+```
+
+But add an element to a set, and we get a n-fold Cartesian product with `O(n^c)` complexity:
+
+```
+{1,2,3}{4,5,6}{7,8,9} => (3X3X3) => 147 148 149 157 158 159 167 168 169 247 248 
+                                    249 257 258 259 267 268 269 347 348 349 357 
+                                    358 359 367 368 369
+```
+
+Now, imagine how this complexity grows given that each element is a n-tuple:
+
+```
+{1..100}{1..100}         => (100X100)     => 10,000 elements (38.4 kB)
+{1..100}{1..100}{1..100} => (100X100X100) => 1,000,000 elements (5.76 MB)
+```
+
+Although these examples are clearly contrived, they demonstrate how brace patterns can quickly grow out of control.
+
+**More information**
+
+Interested in learning more about brace expansion?
+
+* [linuxjournal/bash-brace-expansion](http://www.linuxjournal.com/content/bash-brace-expansion)
+* [rosettacode/Brace_expansion](https://rosettacode.org/wiki/Brace_expansion)
+* [cartesian product](https://en.wikipedia.org/wiki/Cartesian_product)
+
+</details>
+
+## Performance
+
+Braces is not only screaming fast, it's also more accurate the other brace expansion libraries.
+
+### Better algorithms
+
+Fortunately there is a solution to the ["brace bomb" problem](#brace-matching-pitfalls): _don't expand brace patterns into an array when they're used for matching_.
+
+Instead, convert the pattern into an optimized regular expression. This is easier said than done, and braces is the only library that does this currently.
+
+**The proof is in the numbers**
+
+Minimatch gets exponentially slower as patterns increase in complexity, braces does not. The following results were generated using `braces()` and `minimatch.braceExpand()`, respectively.
+
+| **Pattern** | **braces** | **[minimatch](https://github.com/isaacs/minimatch)** | 
+| --- | --- | --- |
+| `{1..9007199254740991}`<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup> | `298 B` (5ms 459μs) | N/A (freezes) |
+| `{1..1000000000000000}` | `41 B` (1ms 15μs) | N/A (freezes) |
+| `{1..100000000000000}` | `40 B` (890μs) | N/A (freezes) |
+| `{1..10000000000000}` | `39 B` (2ms 49μs) | N/A (freezes) |
+| `{1..1000000000000}` | `38 B` (608μs) | N/A (freezes) |
+| `{1..100000000000}` | `37 B` (397μs) | N/A (freezes) |
+| `{1..10000000000}` | `35 B` (983μs) | N/A (freezes) |
+| `{1..1000000000}` | `34 B` (798μs) | N/A (freezes) |
+| `{1..100000000}` | `33 B` (733μs) | N/A (freezes) |
+| `{1..10000000}` | `32 B` (5ms 632μs) | `78.89 MB` (16s 388ms 569μs) |
+| `{1..1000000}` | `31 B` (1ms 381μs) | `6.89 MB` (1s 496ms 887μs) |
+| `{1..100000}` | `30 B` (950μs) | `588.89 kB` (146ms 921μs) |
+| `{1..10000}` | `29 B` (1ms 114μs) | `48.89 kB` (14ms 187μs) |
+| `{1..1000}` | `28 B` (760μs) | `3.89 kB` (1ms 453μs) |
+| `{1..100}` | `22 B` (345μs) | `291 B` (196μs) |
+| `{1..10}` | `10 B` (533μs) | `20 B` (37μs) |
+| `{1..3}` | `7 B` (190μs) | `5 B` (27μs) |
+
+### Faster algorithms
+
+When you need expansion, braces is still much faster.
+
+_(the following results were generated using `braces.expand()` and `minimatch.braceExpand()`, respectively)_
+
+| **Pattern** | **braces** | **[minimatch](https://github.com/isaacs/minimatch)** | 
+| --- | --- | --- |
+| `{1..10000000}` | `78.89 MB` (2s 698ms 642μs) | `78.89 MB` (18s 601ms 974μs) |
+| `{1..1000000}` | `6.89 MB` (458ms 576μs) | `6.89 MB` (1s 491ms 621μs) |
+| `{1..100000}` | `588.89 kB` (20ms 728μs) | `588.89 kB` (156ms 919μs) |
+| `{1..10000}` | `48.89 kB` (2ms 202μs) | `48.89 kB` (13ms 641μs) |
+| `{1..1000}` | `3.89 kB` (1ms 796μs) | `3.89 kB` (1ms 958μs) |
+| `{1..100}` | `291 B` (424μs) | `291 B` (211μs) |
+| `{1..10}` | `20 B` (487μs) | `20 B` (72μs) |
+| `{1..3}` | `5 B` (166μs) | `5 B` (27μs) |
+
+If you'd like to run these comparisons yourself, see [test/support/generate.js](test/support/generate.js).
+
 ## Benchmarks
 
 ### Running benchmarks
@@ -358,94 +544,7 @@ Benchmarking: (8 of 8)
   minimatch x 109 ops/sec ±1.16% (76 runs sampled)
 
   fastest is braces
-
 ```
-
-## Performance
-
-### What's the big deal?
-
-If you use globbing a lot, whether in your build tool chain or in your application, the speed of the glob matcher not only impacts your experience, but a slow glob matcher can slow everything else down, limitimg what you thought was possible in your application.
-
-### Braces is fast
-
-> minimatch gets exponentially slower as patterns increase in complexity, braces does not
-
-Brace patterns are meant to be expanded - at least, if you're using Bash, that is. It's not at all unusual for users to want to use brace patterns for dates or similar ranges. It's also very easy to define a brace pattern that appears to be very simple but in fact is fairly complex.
-
-For example, here is how generated regex size and processing time compare as patterns increase in complexity:
-
-_(the following results were generated using `braces()` and `minimatch.braceExpand()`)_
-
-| **Pattern** | **minimatch** | **braces** |
-| ---                     | ---                        | ---                  |
-| `{1..9007199254740991}`[^1] | N/A (freezes)          | `300 B` (12ms 878μs) |
-| `{1..10000000}`         | `98.9 MB` (20s 193ms 13μs) | `34 B` (11ms 204μs)  |
-| `{1..1000000}`          | `8.89 MB` (1s 838ms 718μs) | `33 B` (1ms 761μs)   |
-| `{1..100000}`           | `789 kB` (181ms 518μs)     | `32 B` (1ms 76μs)    |
-| `{1..10000}`            | `68.9 kB` (17ms 436μs)     | `31 B` (1ms 382μs)   |
-| `{1..1000}`             | `5.89 kB` (1ms 773μs)      | `30 B` (1ms 509μs)   |
-| `{1..100}`              | `491 B` (321μs)            | `24 B` (309μs)       |
-| `{1..10}`               | `40 B` (56μs)              | `12 B` (333μs)       |
-| `{1..3}`                | `11 B` (80μs)              | `9 B` (370μs)        |
-
-These numbers are actually pretty small as far as numeric ranges are concerned. Regardless, we shouldn't have to consider such things when creating a glob pattern. The tool should get out of your way and let you be as creative as you want.
-
-### Braces is performant
-
-Even when brace patterns are fully **expanded**, `braces` is still much faster.
-
-_(the following results were generated using `braces.expand()` and `minimatch.braceExpand()`)_
-
-| **Pattern** | **minimatch** | **braces** |
-| ---               | ---                         | ---                        |
-| `a/{1..10000000}` | `98.9 MB` (19s 754ms 376μs) | `98.9 MB` (5s 734ms 419μs) |
-| `a/{1..1000000}`  | `8.89 MB` (1s 866ms 968μs)  | `8.89 MB` (561ms 594μs)    |
-| `a/{1..100000}`   | `789 kB` (178ms 311μs)      | `789 kB` (29ms 823μs)      |
-| `a/{1..10000}`    | `68.9 kB` (17ms 692μs)      | `68.9 kB` (2ms 351μs)      |
-| `a/{1..1000}`     | `5.89 kB` (1ms 823μs)       | `5.89 kB` (706μs)          |
-| `a/{1..100}`      | `491 B` (609μs)             | `491 B` (267μs)            |
-| `a/{1..10}`       | `40 B` (61μs)               | `40 B` (636μs)             |
-| `a/{1..3}`        | `11 B` (206μs)              | `11 B` (207μs)             |
-
-### Braces is fast
-
-* caching
-* parsing
-* looping
-* regex: smaller patterns, optimized to match faster
-* 
-Braces was built from the ground up to be as performant as possible when matching, using a combination of the following:
-
-* **minimizes loops and iterating**: the parser makes every effort to only evaluate each character in the pattern once.
-* **generates an optimized string**: sequences/ranges are optimized by [to-regex-range](https://github.com/jonschlinkert/to-regex-range), which is not only highly accurate, but produces patterns that are a fraction of the size of patterns generated by other brace expansion libraries, such as Bash and [minimatch](https://github.com/isaacs/minimatch) (via [brace-expansion](https://github.com/juliangruber/brace-expansion))
-* **generates results faster**: can handle even the most complex patterns that cause other implementations like [minimatch](https://github.com/isaacs/minimatch) and Bash to freeze or fail.
-
-### Braces is safe
-
-Last, but perhaps most important of all, unlike [brace-expansion](https://github.com/juliangruber/brace-expansion) and [minimatch](https://github.com/isaacs/minimatch), braces will not freeze your application when a user passes a complex brace pattern.
-
-**The trouble with ~~tribbles~~ brace patterns**
-
-There are unlimited scenarios where brace patterns cause the resulting array to grow geometrically. If you define two brace patterns for example, the result is multiplicative if not exponential. For example, given the pattern `{1..1000}`, we would end up with 1 thousand strings. But if two patterns are given, such as `{1...1000}{1...1000}`, we would end up with 1 million strings.
-
-It's easy to think, "I wouldn't do that", but that's not the point. Even though those example patterns are contrived:
-
-1. it's not uncommon for users to define brace patterns that result in similarly huge strings (consider date ranges `1-2016`, for example, and how easy it might be for someone to also add an alphabetical range if searching records of some kind)
-2. we can't control how users define their patterns (and we shouldn't have to care)
-3. even if it's uncommon for user to define unwieldy patterns, there is still potential for intentionally exploiting this feature to [cause a DoS](https://en.wikipedia.org/wiki/Denial-of-service_attack) in your application (and given that this is a not-very-technically-advanced method for causing a DoS - e.g. anyone can do it, you should be concerned!)
-
-**Potential for DoS attacks**
-
-Most brace expansion libraries, including Bash, [minimatch](https://github.com/isaacs/minimatch), [multimatch](https://github.com/sindresorhus/multimatch) and [brace-expansion](https://github.com/juliangruber/brace-expansion) are vulnerable to DoS attacks (similar to the [ReDoS bug](https://medium.com/node-security/minimatch-redos-vulnerability-590da24e6d3c#.jew0b6mpc) minimatch had recently).
-
-Braces mitigates this risk in three ways:
-
-1. Braces prevents malicious strings from being used by checking the length of the input strings, as well as generated regex
-2. Braces [optimizes](#optimize) the generated result by default, so that only _one output string is generated for every input string_.
-3. When [.expand](#expand) or [options.expand](#optionsexpand) are used, braces has checks in place to prevent huge ranges from being (accidentally) created. By default, when more than 250 strings will result from the given pattern, braces will [optimize](#optimize) the result instead of expanding it. You can override this limit of 250 by passing a custom number on [options.rangeLimit](#optionsrangelimit).
-
-_(you might also want to consider using [micromatch](https://github.com/jonschlinkert/micromatch) for glob matching, as a safer alternative to minimatch and multimatch)_
 
 ## About
 
@@ -463,13 +562,13 @@ Pull requests and stars are always welcome. For bugs and feature requests, [plea
 
 ### Contributors
 
-| **Commits** | **Contributor** |  
-| --- | --- |  
-| 155 | [jonschlinkert](https://github.com/jonschlinkert) |  
-| 4   | [doowb](https://github.com/doowb) |  
-| 1   | [es128](https://github.com/es128) |  
-| 1   | [eush77](https://github.com/eush77) |  
-| 1   | [hemanth](https://github.com/hemanth) |  
+| **Commits** | **Contributor** | 
+| --- | --- |
+| 167 | [jonschlinkert](https://github.com/jonschlinkert) |
+| 4 | [doowb](https://github.com/doowb) |
+| 1 | [es128](https://github.com/es128) |
+| 1 | [eush77](https://github.com/eush77) |
+| 1 | [hemanth](https://github.com/hemanth) |
 
 ### Building docs
 
@@ -503,4 +602,13 @@ Released under the [MIT License](LICENSE).
 
 ***
 
-_This file was generated by [verb-generate-readme](https://github.com/verbose/verb-generate-readme), v0.6.0, on April 26, 2017._
+_This file was generated by [verb-generate-readme](https://github.com/verbose/verb-generate-readme), v0.6.0, on May 28, 2017._
+
+<hr class="footnotes-sep">
+<section class="footnotes">
+<ol class="footnotes-list">
+<li id="fn1"  class="footnote-item">this is the largest safe integer allowed in JavaScript. <a href="#fnref1" class="footnote-backref">↩</a>
+
+</li>
+</ol>
+</section>
