@@ -9,57 +9,57 @@ Benchmarking: (8 of 8)
  · sequence-multiple
 
 # benchmark/fixtures/combination-nested.js (52 bytes)
-  brace-expansion x 5,936 ops/sec ±1.15% (85 runs sampled)
-  braces x 15,076,302 ops/sec ±1.14% (84 runs sampled)
-  minimatch x 5,936 ops/sec ±1.39% (86 runs sampled)
+  brace-expansion x 5,605 ops/sec ±1.14% (83 runs sampled)
+  braces x 14,410,490 ops/sec ±1.15% (85 runs sampled)
+  minimatch x 5,977 ops/sec ±1.28% (85 runs sampled)
 
   fastest is braces
 
 # benchmark/fixtures/combination.js (51 bytes)
-  brace-expansion x 632 ops/sec ±1.33% (86 runs sampled)
-  braces x 13,059,942 ops/sec ±0.91% (89 runs sampled)
-  minimatch x 771 ops/sec ±1.29% (87 runs sampled)
+  brace-expansion x 755 ops/sec ±1.18% (83 runs sampled)
+  braces x 10,759,364 ops/sec ±0.94% (85 runs sampled)
+  minimatch x 723 ops/sec ±0.98% (84 runs sampled)
 
   fastest is braces
 
 # benchmark/fixtures/escaped.js (44 bytes)
-  brace-expansion x 177,138 ops/sec ±0.96% (88 runs sampled)
-  braces x 10,775,925 ops/sec ±1.46% (85 runs sampled)
-  minimatch x 147,911 ops/sec ±1.39% (85 runs sampled)
+  brace-expansion x 189,901 ops/sec ±1.23% (86 runs sampled)
+  braces x 10,832,036 ops/sec ±0.89% (85 runs sampled)
+  minimatch x 150,475 ops/sec ±1.29% (88 runs sampled)
 
   fastest is braces
 
 # benchmark/fixtures/list-basic.js (40 bytes)
-  brace-expansion x 132,550 ops/sec ±1.17% (88 runs sampled)
-  braces x 12,421,008 ops/sec ±1.39% (87 runs sampled)
-  minimatch x 115,527 ops/sec ±1.26% (87 runs sampled)
+  brace-expansion x 126,961 ops/sec ±0.70% (85 runs sampled)
+  braces x 11,004,254 ops/sec ±1.29% (84 runs sampled)
+  minimatch x 111,199 ops/sec ±1.26% (85 runs sampled)
 
   fastest is braces
 
 # benchmark/fixtures/list-multiple.js (52 bytes)
-  brace-expansion x 40,855 ops/sec ±1.24% (87 runs sampled)
-  braces x 8,878,850 ops/sec ±1.54% (85 runs sampled)
-  minimatch x 39,669 ops/sec ±1.53% (83 runs sampled)
+  brace-expansion x 36,894 ops/sec ±0.70% (86 runs sampled)
+  braces x 8,609,924 ops/sec ±1.03% (85 runs sampled)
+  minimatch x 41,010 ops/sec ±1.17% (88 runs sampled)
 
   fastest is braces
 
 # benchmark/fixtures/no-braces.js (48 bytes)
-  brace-expansion x 298,368 ops/sec ±1.15% (86 runs sampled)
-  braces x 9,704,670 ops/sec ±1.37% (84 runs sampled)
-  minimatch x 2,145,548 ops/sec ±1.17% (84 runs sampled)
+  brace-expansion x 309,785 ops/sec ±0.82% (88 runs sampled)
+  braces x 8,709,136 ops/sec ±1.23% (88 runs sampled)
+  minimatch x 2,208,995 ops/sec ±1.03% (88 runs sampled)
 
   fastest is braces
 
 # benchmark/fixtures/sequence-basic.js (41 bytes)
-  brace-expansion x 7,381 ops/sec ±1.13% (84 runs sampled)
-  braces x 9,401,818 ops/sec ±1.37% (88 runs sampled)
-  minimatch x 6,574 ops/sec ±1.62% (87 runs sampled)
+  brace-expansion x 6,236 ops/sec ±0.94% (83 runs sampled)
+  braces x 9,241,779 ops/sec ±1.26% (83 runs sampled)
+  minimatch x 7,230 ops/sec ±1.35% (85 runs sampled)
 
   fastest is braces
 
 # benchmark/fixtures/sequence-multiple.js (51 bytes)
-  brace-expansion x 131 ops/sec ±1.09% (77 runs sampled)
-  braces x 9,042,941 ops/sec ±1.28% (88 runs sampled)
-  minimatch x 140 ops/sec ±1.25% (76 runs sampled)
+  brace-expansion x 133 ops/sec ±1.08% (73 runs sampled)
+  braces x 8,859,756 ops/sec ±1.31% (85 runs sampled)
+  minimatch x 135 ops/sec ±0.94% (73 runs sampled)
 
   fastest is braces
