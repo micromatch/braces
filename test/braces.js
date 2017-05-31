@@ -22,14 +22,6 @@ describe('braces', function() {
     equal('a/{b,c}/d', ['a/(b|c)/d']);
   });
 
-  it('should not optimize when preceded by an extglob character', function() {
-    equal('a/@{b,c}/d', ['a/@b/d', 'a/@c/d']);
-    equal('a/!{b,c}/d', ['a/!b/d', 'a/!c/d']);
-    equal('a/*{b,c}/d', ['a/*b/d', 'a/*c/d']);
-    equal('a/+{b,c}/d', ['a/+b/d', 'a/+c/d']);
-    equal('a/?{b,c}/d', ['a/?b/d', 'a/?c/d']);
-  });
-
   it('should return an expanded array if defined on options', function() {
     equal('a/{b,c}/d', ['a/b/d', 'a/c/d'], {expand: true});
   });

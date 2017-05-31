@@ -24,6 +24,20 @@ describe('optimized', function() {
       });
     });
 
+    describe('extglobs', function() {
+      it('should not optimize when preceded by an extglob character', function() {
+        equal('a/@{b,c}/d', ['a/@b/d', 'a/@c/d']);
+        equal('a/!{b,c}/d', ['a/!b/d', 'a/!c/d']);
+        equal('a/*{b,c}/d', ['a/*b/d', 'a/*c/d']);
+        equal('a/+{b,c}/d', ['a/+b/d', 'a/+c/d']);
+        equal('a/?{b,c}/d', ['a/?b/d', 'a/?c/d']);
+      });
+
+      it('should not optimize when brace set contains extglobs', function() {
+        equal('{b,[F-Z],!([B-F])}.js', ['b.js', '[F-Z].js', '!([B-F]).js']);
+      });
+    });
+
     describe('escaping', function() {
       it('should not expand escaped braces', function() {
         equal('\\{a,b,c,d,e}', ['{a,b,c,d,e}']);
