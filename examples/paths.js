@@ -2,5 +2,5 @@
 
 var braces = require('..');
 
-var res = braces('foo*{/*,*}');
-console.log(res);
+console.log(braces('foo*{/*,*}'));
+console.log(braces('foo (abc, 1990)'));

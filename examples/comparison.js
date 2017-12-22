@@ -4,6 +4,7 @@ var braceExpansion = require('brace-expansion');
 var braces = require('..');
 
 console.log('braces');
+console.log(braces('http://any.org/archive{1996..1999}/vol({1..4})/part{a,b,c}.html'));
 console.log(braces('http://any.org/archive{1996..1999}/vol{1..4}/part{a,b,c}.html'));
 console.log(braces('http://www.numericals.com/file{1..100..10}.txt'));
 console.log(braces('http://www.letters.com/file{a..z..2}.txt'));

@@ -8,8 +8,6 @@ visit(ast, function(node) {
   if (node.val) str += node.val;
 });
 
-console.log(str);
-
 function visit(node, fn) {
   return node.nodes ? mapVisit(node, fn) : fn(node);
 }
