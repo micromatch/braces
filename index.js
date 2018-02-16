@@ -119,8 +119,9 @@ braces.create = function(pattern, options) {
     throw new TypeError('expected a string');
   }
 
-  if (pattern.length >= MAX_LENGTH) {
-    throw new Error('expected pattern to be less than ' + MAX_LENGTH + ' characters');
+  var maxLength = (options && options.maxLength) || MAX_LENGTH;
+  if (pattern.length >= maxLength) {
+    throw new Error('expected pattern to be less than ' + maxLength + ' characters');
   }
 
   function create() {
@@ -181,8 +182,9 @@ braces.makeRe = function(pattern, options) {
     throw new TypeError('expected a string');
   }
 
-  if (pattern.length >= MAX_LENGTH) {
-    throw new Error('expected pattern to be less than ' + MAX_LENGTH + ' characters');
+  var maxLength = (options && options.maxLength) || MAX_LENGTH;
+  if (pattern.length >= maxLength) {
+    throw new Error('expected pattern to be less than ' + maxLength + ' characters');
   }
 
   function makeRe() {
