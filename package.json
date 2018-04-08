@@ -31,11 +31,9 @@
   "dependencies": {
     "arr-flatten": "^1.1.0",
     "array-unique": "^0.3.2",
-    "define-property": "^1.0.0",
     "extend-shallow": "^2.0.1",
     "fill-range": "^4.0.0",
     "isobject": "^3.0.1",
-    "kind-of": "^6.0.2",
     "repeat-element": "^1.1.2",
     "snapdragon": "^0.8.1",
     "snapdragon-node": "^2.0.1",
