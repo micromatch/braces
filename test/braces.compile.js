@@ -1,19 +1,55 @@
 'use strict';
 
 require('mocha');
-var assert = require('assert');
-var braces = require('..');
+const assert = require('assert').strict;
+const compile = require('../lib/compile');
+const parse = require('../lib/parse');
 
-describe('.compile', function() {
-  it('should return an object', function() {
-    var res = braces.compile('a/{b,c}/d');
-    assert(res);
-    assert.equal(typeof res, 'object');
+describe('braces.compile()', () => {
+  describe('invalid characters', () => {
+    it('should escape invalid bracket characters', () => {
+      assert.equal(compile(parse(']{a,b,c}')), '\\]{a,b,c}');
+    });
   });
 
-  it('should return output as an array', function() {
-    var res = braces.compile('a/{b,c}/d');
-    assert(Array.isArray(res.output));
-    assert.deepEqual(res.output, ['a/(b|c)/d']);
+  describe('sets', () => {
+    it('should support empty sets', () => {
+      assert.equal(compile(parse('{a,,,}')), '{a,,,}');
+    });
+  });
+
+  describe('ranges', () => {
+    it('should support empty sets', () => {
+      assert.equal(compile(parse('{a,,,}')), '{a,,,}');
+    });
+
+    it('should escape braces with invalid ranges', () => {
+      assert.equal(compile(parse('{a...b}')), '{a...b}');
+      assert.equal(compile(parse('{a...b}', { escapeInvalid: true })), '\\{a...b\\}');
+    });
+
+    it('should escape braces with too many range expressions', () => {
+      assert.equal(compile(parse('{a..e..x..z}')), '{a..e..x..z}');
+      assert.equal(compile(parse('{a..e..x..z}', { escapeInvalid: true })), '\\{a..e..x..z\\}');
+    });
+  });
+
+  describe('invalid', () => {
+    it('should escape incomplete brace patterns', () => {
+      assert.equal(compile(parse(']{a/b')), '\\]\\{a/b');
+      assert.equal(compile(parse(']{a/b', { escapeInvalid: true })), '\\]\\{a/b');
+    });
+
+    it('should escape brace patterns with both sets and ranges', () => {
+      assert.equal(compile(parse('{a..e,z}')), '{a..e,z}');
+      assert.equal(compile(parse('{a..e,a..z}')), '{a..e,a..z}');
+      assert.equal(compile(parse('{a..e,z}', { escapeInvalid: true })), '\\{a..e,z\\}');
+      assert.equal(compile(parse('{a..e,a..z}', { escapeInvalid: true })), '\\{a..e,a..z\\}');
+    });
+
+    it('should escape non-brace patterns (no sets or ranges)', () => {
+      assert.equal(compile(parse(']{a/b}')), '\\]{a/b}');
+      assert.equal(compile(parse(']{a/b}', { escapeInvalid: true })), '\\]\\{a/b\\}');
+    });
   });
 });

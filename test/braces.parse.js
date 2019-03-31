@@ -1,18 +1,42 @@
 'use strict';
 
 require('mocha');
-var assert = require('assert');
-var braces = require('..');
+const assert = require('assert').strict;
+const parse = require('../lib/parse');
 
-describe('.parse', function() {
-  it('should return an AST object', function() {
-    var ast = braces.parse('a/{b,c}/d');
-    assert(ast);
-    assert.equal(typeof ast, 'object');
+describe('braces.parse()', () => {
+  describe('valid', () => {
+    it('should return an AST', () => {
+      let ast = parse('a/{b,c}/d');
+      let brace = ast.nodes.find(node => node.type === 'brace');
+      assert(brace);
+      assert.equal(brace.nodes.length, 5);
+    });
+
+    it('should ignore braces inside brackets', () => {
+      let ast = parse('a/[{b,c}]/d');
+      assert.equal(ast.nodes[1].type, 'text');
+      assert.equal(ast.nodes[1].value, 'a/[{b,c}]/d');
+    });
+
+    it('should parse braces with brackets inside', () => {
+      let ast = parse('a/{a,b,[{c,d}]}/e');
+      let brace = ast.nodes[2];
+      let bracket = brace.nodes.find(node => node.value[0] === '[');
+      assert(bracket);
+      assert.equal(bracket.value, '[{c,d}]');
+    });
   });
 
-  it('should have an array of nodes', function() {
-    var ast = braces.parse('a/{b,c}/d');
-    assert(Array.isArray(ast.nodes));
+  describe('invalid', () => {
+    it('should escape standalone closing braces', () => {
+      let one = parse('}');
+      assert.equal(one.nodes[1].type, 'text');
+      assert.equal(one.nodes[1].value, '\\}');
+
+      let two = parse('a}b');
+      assert.equal(two.nodes[1].type, 'text');
+      assert.equal(two.nodes[1].value, 'a\\}b');
+    });
   });
 });

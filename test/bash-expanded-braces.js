@@ -1,21 +1,31 @@
 'use strict';
 
-var extend = require('extend-shallow');
-var assert = require('assert');
-var braces = require('..');
+require('mocha');
+const assert = require('assert');
+const braces = require('..');
 
-function equal(pattern, expected, options) {
-  var actual = braces.expand(pattern, options);
-  assert.deepEqual(actual.sort(), expected.sort(), pattern);
-}
+const equal = (input, expected, options) => {
+  assert.deepStrictEqual(braces.expand(input, options), expected, input);
+};
 
 /**
  * Bash 4.3 unit tests with `braces.expand()`
  */
 
-describe('bash.expanded', function() {
-  it('should throw an error when range exceeds rangeLimit', function() {
-    assert.throws(function() {
+describe('bash.expanded', () => {
+  it.only('should expand', () => {
+    // console.log(expand('{a,{b,c},d}'));
+    // console.log(expand('{{a,b},{c,d},{e,f}}'));
+    // console.log(expand('{a,b}{c,d}{e,f}'));
+    // console.log(expand('a/{b,c{x,y}d,e}/f'));
+    // console.log(expand('{{a,b}/{c,d{e,f}g,h}/i,j,k}'));
+    // console.log(braces.expand('{{a,b}/i,j,k}'));
+    console.log(braces.expand('{1..5..2..}'));
+    console.log(braces.expand('{1..5..2}'));
+  });
+
+  it.skip('should throw an error when range exceeds rangeLimit', () => {
+    assert.throws(() => {
       braces.expand('{214748364..2147483649}');
     });
   });
@@ -397,21 +407,17 @@ describe('bash.expanded', function() {
     [ 'a/{x,{1..5},y}/c{d}e', {}, [ 'a/1/c{d}e', 'a/2/c{d}e', 'a/3/c{d}e', 'a/4/c{d}e', 'a/5/c{d}e', 'a/x/c{d}e', 'a/y/c{d}e' ] ]
   ];
 
-  fixtures.forEach(function(arr) {
+  fixtures.forEach(arr => {
     if (typeof arr === 'string') {
       return;
     }
 
-    var options = extend({}, arr[1]);
-    var pattern = arr[0];
-    var expected = arr[2];
+    let options = { ...arr[1] };
+    let pattern = arr[0];
+    let expected = arr[2];
 
-    if (options.skip === true) {
-      return;
+    if (options.skip !== true) {
+      it('should compile: ' + pattern, () => equal(pattern, expected, options));
     }
-
-    it('should compile: ' + pattern, function() {
-      equal(pattern, expected, options);
-    });
   });
 });

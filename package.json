@@ -29,35 +29,16 @@
     "benchmark": "node benchmark"
   },
   "dependencies": {
-    "arr-flatten": "^1.1.0",
     "array-unique": "^0.3.2",
-    "extend-shallow": "^2.0.1",
-    "fill-range": "^4.0.0",
-    "isobject": "^3.0.1",
-    "repeat-element": "^1.1.2",
-    "snapdragon": "^0.8.1",
-    "snapdragon-node": "^2.0.1",
-    "split-string": "^3.0.2",
-    "to-regex": "^3.0.1"
+    "extend-shallow": "^3.0.2",
+    "to-regex": "^3.0.2"
   },
   "devDependencies": {
-    "ansi-cyan": "^0.1.1",
-    "benchmarked": "^2.0.0",
-    "brace-expansion": "^1.1.8",
-    "cross-spawn": "^5.1.0",
-    "gulp": "^3.9.1",
-    "gulp-eslint": "^4.0.0",
-    "gulp-format-md": "^1.0.0",
-    "gulp-istanbul": "^1.1.2",
-    "gulp-mocha": "^3.0.1",
-    "gulp-unused": "^0.2.1",
-    "is-windows": "^1.0.1",
+    "ansi-colors": "^3.2.4",
+    "brace-expansion": "^1.1.11",
+    "gulp-format-md": "^2.0.0",
     "minimatch": "^3.0.4",
-    "mocha": "^3.2.0",
-    "noncharacters": "^1.1.0",
-    "text-table": "^0.2.0",
-    "time-diff": "^0.3.1",
-    "yargs-parser": "^8.0.0"
+    "mocha": "^6.0.2"
   },
   "keywords": [
     "alpha",
