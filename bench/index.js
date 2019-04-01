@@ -50,20 +50,20 @@ bench.skip = name => {
   return skip;
 };
 
-// bench('expand - set')
-//   .add('   braces', () => braces.expand('foo/{a,b,c}/bar'))
-//   .add('minimatch', () => minimatch.braceExpand('foo/{a,b,c}/bar'))
-//   .run();
+bench('expand - set')
+  .add('   braces', () => braces.expand('foo/{a,b,c}/bar'))
+  .add('minimatch', () => minimatch.braceExpand('foo/{a,b,c}/bar'))
+  .run();
 
-// bench('expand - nested sets')
-//   .add('   braces', () => braces.expand('foo/{a,b,{x,y,z}}/bar'))
-//   .add('minimatch', () => minimatch.braceExpand('foo/{a,b,{x,y,z}}/bar'))
-//   .run();
+bench('expand - nested sets')
+  .add('   braces', () => braces.expand('foo/{a,b,{x,y,z}}/bar'))
+  .add('minimatch', () => minimatch.braceExpand('foo/{a,b,{x,y,z}}/bar'))
+  .run();
 
-// bench('expand - range')
-//   .add('   braces', () => braces.expand('foo/{a..z}/bar'))
-//   .add('minimatch', () => minimatch.braceExpand('foo/{a..z}/bar'))
-//   .run();
+bench('expand - range')
+  .add('   braces', () => braces.expand('foo/{a..z}/bar'))
+  .add('minimatch', () => minimatch.braceExpand('foo/{a..z}/bar'))
+  .run();
 
 bench('compile regex - set')
   .add('   braces', () => braces.makeRe(parse('foo/{a,b,c}/bar')))

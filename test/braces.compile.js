@@ -8,13 +8,17 @@ const parse = require('../lib/parse');
 describe('braces.compile()', () => {
   describe('invalid characters', () => {
     it('should escape invalid bracket characters', () => {
-      assert.equal(compile(parse(']{a,b,c}')), '\\]{a,b,c}');
+      assert.equal(compile(parse(']{a,b,c}')), '\\](a|b|c)');
     });
   });
 
   describe('sets', () => {
     it('should support empty sets', () => {
-      assert.equal(compile(parse('{a,,,}')), '{a,,,}');
+      assert.equal(compile(parse('{a,}')), '(a|)');
+      assert.equal(compile(parse('{a,,}')), '(a|)');
+      assert.equal(compile(parse('{a,,,}')), '(a|)');
+      assert.equal(compile(parse('{a,,,,}')), '(a|)');
+      assert.equal(compile(parse('{a,,,,,}')), '(a|)');
     });
   });
 

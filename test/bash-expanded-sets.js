@@ -193,9 +193,10 @@ describe('bash - expanded brace sets', () => {
 
     // 'should not expand quoted strings',
 
-    // [ '{"foo"}{1,2,3}', {}, [ '{foo}1', '{foo}2', '{foo}3' ] ],
-    [ '{"x,x"}', {}, [ '{"x,x"}' ] ],
-    [ '{\'x,x\'}', {}, [ '{\'x,x\'}' ] ],
+    [ '{"foo"}{1,2,3}', {}, [ '{foo}1', '{foo}2', '{foo}3' ] ],
+    [ '{"foo"}{1,2,3}', { keepQuotes: true }, [ '{"foo"}1', '{"foo"}2', '{"foo"}3' ] ],
+    [ '{"x,x"}', { keepQuotes: true }, [ '{"x,x"}' ] ],
+    [ '{\'x,x\'}', { keepQuotes: true }, [ '{\'x,x\'}' ] ],
 
     'should escape outer braces in nested non-sets',
 

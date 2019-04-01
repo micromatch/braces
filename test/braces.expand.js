@@ -32,10 +32,16 @@ describe('unit tests from brace-expand', () => {
     });
 
     it('should support expanded nested empty sets', function() {
-      equal('{\`foo,bar\`}', ['{`foo,bar`}']);
+      equal('{\`foo,bar\`}', ['{`foo,bar`}'], { keepQuotes: true });
+      equal('{\\`foo,bar\\`}', ['`foo', 'bar`'], { keepQuotes: true });
+      equal('{`foo\,bar`}', ['{`foo,bar`}'], { keepQuotes: true });
+      equal('{`foo\\,bar`}', ['{`foo\\,bar`}'], { keepQuotes: true });
+
+      equal('{\`foo,bar\`}', ['{foo,bar}']);
       equal('{\\`foo,bar\\`}', ['`foo', 'bar`']);
-      equal('{`foo\,bar`}', ['{`foo,bar`}']);
-      equal('{`foo\\,bar`}', ['{`foo\\,bar`}']);
+      equal('{`foo\,bar`}', ['{foo,bar}']);
+      equal('{`foo\\,bar`}', ['{foo\\,bar}']);
+
       equal('{a,\\\\{a,b}c}', ['a', '\\ac', '\\bc']);
       equal('{a,\\{a,b}c}', ['ac}', '{ac}', 'bc}']);
       equal('{,eno,thro,ro}ugh', ['ugh', 'enough', 'through', 'rough']);
