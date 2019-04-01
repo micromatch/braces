@@ -53,26 +53,26 @@ bench.skip = name => {
 };
 
 bench('parse set')
-  .add('picomatch', () => parse('foo/{a,b,c}/bar'))
+  .add('   braces', () => parse('foo/{a,b,c}/bar'))
   .add('minimatch', () => minimatch.braceExpand('foo/{a,b,c}/bar'))
   .run();
 
 bench('parse nested sets')
-  .add('picomatch', () => parse('foo/{a,b,{x,y,z}}/bar'))
+  .add('   braces', () => parse('foo/{a,b,{x,y,z}}/bar'))
   .add('minimatch', () => minimatch.braceExpand('foo/{a,b,{x,y,z}}/bar'))
   .run();
 
 bench('parse range')
-  .add('picomatch', () => parse('foo/{a..z}/bar'))
+  .add('   braces', () => parse('foo/{a..z}/bar'))
   .add('minimatch', () => minimatch.braceExpand('foo/{a..z}/bar'))
   .run();
 
 bench.skip('expand')
-  .add('picomatch', () => expand(parse('foo/{a,b,c}/bar')))
+  .add('   braces', () => expand(parse('foo/{a,b,c}/bar')))
   .add('minimatch', () => minimatch.braceExpand('foo/{a,b,c}/bar'))
   .run();
 
 bench.skip('compile')
-  .add('picomatch', () => compile(parse('foo/{a,b,c}/bar')))
+  .add('   braces', () => compile(parse('foo/{a,b,c}/bar')))
   .add('minimatch', () => minimatch.makeRe('foo/{a,b,c}/bar'))
   .run();

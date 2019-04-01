@@ -32,11 +32,11 @@ describe('braces.parse()', () => {
     it('should escape standalone closing braces', () => {
       let one = parse('}');
       assert.equal(one.nodes[1].type, 'text');
-      assert.equal(one.nodes[1].value, '\\}');
+      assert.equal(one.nodes[1].value, '}');
 
       let two = parse('a}b');
       assert.equal(two.nodes[1].type, 'text');
-      assert.equal(two.nodes[1].value, 'a\\}b');
+      assert.equal(two.nodes[1].value, 'a}b');
     });
   });
 });

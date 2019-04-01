@@ -28,14 +28,10 @@
     "test": "mocha",
     "benchmark": "node benchmark"
   },
-  "dependencies": {
-    "array-unique": "^0.3.2",
-    "extend-shallow": "^3.0.2",
-    "to-regex": "^3.0.2"
-  },
   "devDependencies": {
-    "ansi-colors": "^3.2.4",
+    "bash-path": "^2.0.1",
     "brace-expansion": "^1.1.11",
+    "cross-spawn": "^6.0.5",
     "gulp-format-md": "^2.0.0",
     "minimatch": "^3.0.4",
     "mocha": "^6.0.2"
