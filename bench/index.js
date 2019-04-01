@@ -4,9 +4,7 @@ const { Suite } = require('benchmark');
 const colors = require('ansi-colors');
 const argv = require('minimist')(process.argv.slice(2));
 const minimatch = require('minimatch');
-const compile = require('../lib/compile');
-const expand = require('../lib/expand');
-const parse = require('../lib/parse');
+const braces = require('..');
 
 /**
  * Setup
@@ -52,27 +50,22 @@ bench.skip = name => {
   return skip;
 };
 
-bench('parse set')
-  .add('   braces', () => parse('foo/{a,b,c}/bar'))
-  .add('minimatch', () => minimatch.braceExpand('foo/{a,b,c}/bar'))
-  .run();
+// bench('expand - set')
+//   .add('   braces', () => braces.expand('foo/{a,b,c}/bar'))
+//   .add('minimatch', () => minimatch.braceExpand('foo/{a,b,c}/bar'))
+//   .run();
 
-bench('parse nested sets')
-  .add('   braces', () => parse('foo/{a,b,{x,y,z}}/bar'))
-  .add('minimatch', () => minimatch.braceExpand('foo/{a,b,{x,y,z}}/bar'))
-  .run();
+// bench('expand - nested sets')
+//   .add('   braces', () => braces.expand('foo/{a,b,{x,y,z}}/bar'))
+//   .add('minimatch', () => minimatch.braceExpand('foo/{a,b,{x,y,z}}/bar'))
+//   .run();
 
-bench('parse range')
-  .add('   braces', () => parse('foo/{a..z}/bar'))
-  .add('minimatch', () => minimatch.braceExpand('foo/{a..z}/bar'))
-  .run();
+// bench('expand - range')
+//   .add('   braces', () => braces.expand('foo/{a..z}/bar'))
+//   .add('minimatch', () => minimatch.braceExpand('foo/{a..z}/bar'))
+//   .run();
 
-bench.skip('expand')
-  .add('   braces', () => expand(parse('foo/{a,b,c}/bar')))
-  .add('minimatch', () => minimatch.braceExpand('foo/{a,b,c}/bar'))
-  .run();
-
-bench.skip('compile')
-  .add('   braces', () => compile(parse('foo/{a,b,c}/bar')))
+bench('compile regex - set')
+  .add('   braces', () => braces.makeRe(parse('foo/{a,b,c}/bar')))
   .add('minimatch', () => minimatch.makeRe('foo/{a,b,c}/bar'))
   .run();

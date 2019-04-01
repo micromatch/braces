@@ -22,18 +22,16 @@
   ],
   "main": "index.js",
   "engines": {
-    "node": ">=0.10.0"
+    "node": ">=8"
   },
   "scripts": {
     "test": "mocha",
     "benchmark": "node benchmark"
   },
   "devDependencies": {
+    "ansi-colors": "^3.2.4",
     "bash-path": "^2.0.1",
-    "brace-expansion": "^1.1.11",
-    "cross-spawn": "^6.0.5",
     "gulp-format-md": "^2.0.0",
-    "minimatch": "^3.0.4",
     "mocha": "^6.0.2"
   },
   "keywords": [
@@ -81,5 +79,8 @@
         "nanomatch"
       ]
     }
+  },
+  "dependencies": {
+    "to-regex": "^3.0.2"
   }
 }
