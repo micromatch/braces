@@ -1,14 +1,24 @@
-'use strict';
 
-var mm = require('minimatch');
-var braces = require('..');
+const colors = require('ansi-colors');
+const parse = require('./parse');
+const color = (arr, c) => arr.map(s => c(s)).join(', ');
+const cp = require('child_process');
+const braces = input => {
+  return cp.execSync(`echo ${input}`).toString().trim().split(' ');
+};
 
-console.log(braces.expand('a/{b,c}/d'));
-//=> [ 'a/b/d', 'a/c/d' ]
-
-var ast = braces.parse('a{b{a,b}}c');
-var res = braces.compile(ast, {expand: true});
-console.log(res)
-
-console.log(braces.expand('{1..100}{1..100}').length);
-console.log(braces.expand('{1..10}{1..10}{1..10}').length);
+// const fixture = '{a,{b,c},d}';
+// const fixture = '{a,b}{c,d}{e,f}';
+// const fixture = 'a/{b,c{x,y}d,e}/f';
+// const fixture = '{{a,b}/i,j,k}';
+// const fixture = '{c,d{e,f}g,h}';
+// const fixture = '{{c,d{e,f}g,h}/i,j,k}';
+// const fixture = '{a,b}/{c,d{e,f}g,h}';
+// const fixture = '{{a,b}/{c,d{e,f}g,h}/i,j,k}';
+// const fixture = '{x,y,{a,b,c\\}}';
+const fixture = 'a{,b}c';
+console.log();
+console.log(' FIXTURE:', colors.magenta(fixture));
+console.log('  ACTUAL:', color(expand(parse(fixture)), colors.yellow));
+console.log('EXPECTED:', color(braces(fixture), colors.blue));
+console.log();
