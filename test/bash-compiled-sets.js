@@ -21,7 +21,7 @@ const equal = (input, expected = bash(input), options) => {
  * Bash 4.3 unit tests with `braces.expand()`
  */
 
-describe('bash.optimized', () => {
+describe('bash sets - braces.compile()', () => {
   const fixtures = [
     ['{a,b,c,d,e}', {}, '(a|b|c|d|e)'],
     ['a/\\{b,c,d,{x,y}}{e,f\\}/g', {}, 'a/{b,c,d,(x|y)}{e,f}/g'],
@@ -160,7 +160,7 @@ describe('bash.optimized', () => {
     ['a{ ,c{d, },h} ', {}, 'a( |c(d| )|h) '],
 
     // see https://github.com/jonschlinkert/microequal/issues/66
-    ['/Users/tobiasreich/Sites/aaa/bbb/ccc 2016/src/**/[^_]*.{html,ejs}', {}, '/Users/tobiasreich/Sites/aaa/bbb/ccc 2016/src/**/[^_]*.(html|ejs)'],
+    ['/Users/tobiasreich/Sites/aaa/bbb/ccc 2016/src/**/[^_]*.{html,ejs}', {}, '/Users/tobiasreich/Sites/aaa/bbb/ccc 2016/src/**/[^_]*.(html|ejs)']
   ];
 
   let seen = new Map();

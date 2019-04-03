@@ -81,7 +81,6 @@
     }
   },
   "dependencies": {
-    "fill-range": "^6.0.0",
-    "to-regex": "^3.0.2"
+    "fill-range": "^6.0.0"
   }
 }

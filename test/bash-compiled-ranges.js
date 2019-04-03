@@ -21,7 +21,7 @@ const equal = (input, expected = bash(input), options) => {
  * Bash 4.3 unit tests with `braces.compile()`
  */
 
-describe('bash tests - braces.compile()', () => {
+describe('bash ranges - braces.compile()', () => {
   const fixtures = [
     ['a{b,c{1..100}/{foo,bar}/,h}x/z', {}, 'a(b|c([1-9]|[1-9][0-9]|100)/(foo|bar)/|h)x/z'],
     ['0{1..9} {10..20}', {}, '0([1-9]) (1[0-9]|20)'],
@@ -171,15 +171,15 @@ describe('bash tests - braces.compile()', () => {
     ['**/{1..5}/a.js', {}, '**/([1-5])/a.js'],
     ['x{{0..10},braces}y', {}, 'x(([0-9]|10)|braces)y'],
 
-    // should handle invalid ranges
-    ['{0..10,braces}', {}, '{0..10,braces}'],
-    ['{1..10,braces}', {}, '{1..10,braces}'],
+    // should handle sets with invalid ranges
+    ['{0..10,braces}', {}, '(0..10|braces)'],
+    ['{1..10,braces}', {}, '(1..10|braces)'],
 
     ['./\\{x,y}/{a..z..3}/', {}, './{x,y}/(a|d|g|j|m|p|s|v|y)/'],
     ['{braces,{0..10}}', {}, '(braces|([0-9]|10))'],
     ['{{0..10},braces}', {}, '(([0-9]|10)|braces)'],
     ['{{1..10..2},braces}', { bash: false }, '((1|3|5|7|9)|braces)'],
-    ['{{1..10..2},braces}', {}, '((1|3|5|7|9)|braces)'],
+    ['{{1..10..2},braces}', {}, '((1|3|5|7|9)|braces)']
   ];
 
   fixtures.forEach(arr => {

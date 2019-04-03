@@ -1,11 +1,9 @@
 'use strict';
 
-const { MAX_LENGTH } = require('./lib/constants');
 const stringify = require('./lib/stringify');
 const compile = require('./lib/compile');
 const expand = require('./lib/expand');
 const parse = require('./lib/parse');
-const toRegex = require('to-regex');
 
 /**
  * Expand the given pattern or create a regex-compatible string.
@@ -53,19 +51,7 @@ const braces = (input, options = {}) => {
  * @api public
  */
 
-braces.parse = (input, options = {}) => {
-  if (typeof input !== 'string') {
-    throw new TypeError('Expected a string');
-  }
-
-  let opts = options || {};
-  let max = typeof opts.maxLength === 'number' ? Math.min(MAX_LENGTH, opts.maxLength) : MAX_LENGTH;
-  if (input.length > max) {
-    throw new SyntaxError(`Input length (${input.length}), exceeds max characters (${max})`);
-  }
-
-  return parse(input, options);
-};
+braces.parse = (input, options = {}) => parse(input, options);
 
 /**
  * Creates a braces string from an AST, or an AST node.
@@ -129,9 +115,16 @@ braces.compile = (input, options = {}) => {
 
 braces.expand = (input, options = {}) => {
   if (typeof input === 'string') {
-    return expand(braces.parse(input, options), options);
+    input = braces.parse(input, options);
   }
-  return expand(input, options);
+
+  let result = expand(input, options);
+
+  // filter out duplicates if specified
+  if (options.nodupes === true) {
+    result = [...new Set(result)];
+  }
+  return result;
 };
 
 /**
@@ -173,21 +166,7 @@ braces.create = (input, options = {}) => {
 };
 
 /**
- * Create a regular expression from the given string `pattern`.
- *
- * ```js
- * const braces = require('braces');
- * console.log(braces.makeRe('foo/id-{200..300}'));
- * //=> /^(?:foo/id-(20[0-9]|2[1-9][0-9]|300))$/
- * ```
- * @param {String} `pattern` The pattern to convert to regex.
- * @param {Object} `options`
- * @return {RegExp}
- * @api public
+ * Expose "braces"
  */
-
-braces.makeRe = (pattern, options) => {
-  return toRegex(braces.compile(pattern, options), { strictErrors: false, ...options });
-};
 
 module.exports = braces;

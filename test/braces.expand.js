@@ -19,19 +19,24 @@ const equal = (input, expected = bash(input), options) => {
   assert.deepEqual(braces.expand(input, options), expected);
 };
 
-/**
- * Most of the unit tests from brace-expansion v1.1.6
- * https://github.com/juliangruber/brace-expansion
- */
-
 describe('unit tests from brace-expand', () => {
-  describe('expand', () => {
-    it('should expand an AST', () => {
-      let actual = expand(parse('a/{b,c}/d'));
-      assert.deepEqual(actual, ['a/b/d', 'a/c/d']);
+  describe('extglobs', () => {
+    it('should split on commas when braces are inside extglobs', () => {
+      equal('*(a|{b|c,d})', ['*(a|b|c)', '*(a|d)']);
     });
 
-    it('should support expanded nested empty sets', function() {
+    it('should not split on commas in extglobs when inside braces', () => {
+      equal('{a,@(b,c)}', ['a', '@(b,c)']);
+      equal('{a,*(b|c,d)}', ['a', '*(b|c,d)']);
+    });
+  });
+
+  describe('expand', () => {
+    it('should expand an AST', () => {
+      assert.deepEqual(expand(parse('a/{b,c}/d')), ['a/b/d', 'a/c/d']);
+    });
+
+    it('should support expanded nested empty sets', () => {
       equal('{\`foo,bar\`}', ['{`foo,bar`}'], { keepQuotes: true });
       equal('{\\`foo,bar\\`}', ['`foo', 'bar`'], { keepQuotes: true });
       equal('{`foo\,bar`}', ['{`foo,bar`}'], { keepQuotes: true });
@@ -73,7 +78,7 @@ describe('unit tests from brace-expand', () => {
       equal('{,{,a}b}', ['', 'b', 'ab']);
       equal('{,b}', ['', 'b']);
       equal('{,b{,a}}', ['', 'b', 'ba']);
-      equal('{b,{,a}}', ['b','',  'a']);
+      equal('{b,{,a}}', ['b', '', 'a']);
       equal('{,b}{,d}', ['', 'd', 'b', 'bd']);
       equal('{a,b}{,d}', ['a', 'ad', 'b', 'bd']);
     });
@@ -84,7 +89,7 @@ describe('unit tests from brace-expand', () => {
    * https://github.com/juliangruber/brace-expansion
    */
 
-  describe.skip('brace expansion unit tests from brace-expand', () => {
+  describe('brace expansion unit tests from brace-expand', () => {
     describe('sequences', () => {
       it('numeric sequences', () => {
         equal('a{1..2}b{2..3}c', ['a1b2c', 'a1b3c', 'a2b2c', 'a2b3c']);
@@ -141,7 +146,7 @@ describe('unit tests from brace-expand', () => {
     describe('nested', () => {
       it('should support nested sets', () => {
         equal('{a,b{1..3},c}', ['a', 'b1', 'b2', 'b3', 'c']);
-        equal('{{A..E},{a..e}}', ['a', 'b', 'c', 'd', 'e', 'A', 'B', 'C', 'D', 'E']);
+        equal('{{A..E},{a..e}}', ['A', 'B', 'C', 'D', 'E', 'a', 'b', 'c', 'd', 'e']);
         equal('ppp{,config,oe{,conf}}', ['ppp', 'pppconfig', 'pppoe', 'pppoeconf']);
       });
     });

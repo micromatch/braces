@@ -5,6 +5,13 @@ const assert = require('assert').strict;
 const parse = require('../lib/parse');
 
 describe('braces.parse()', () => {
+  describe('errors', () => {
+    it('should throw an error when string exceeds max safe length', () => {
+      let MAX_LENGTH = 1024 * 64;
+      assert.throws(() => parse('.'.repeat(MAX_LENGTH + 2)));
+    });
+  });
+
   describe('valid', () => {
     it('should return an AST', () => {
       let ast = parse('a/{b,c}/d');
