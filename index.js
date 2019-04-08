@@ -20,21 +20,25 @@ const parse = require('./lib/parse');
  */
 
 const braces = (input, options = {}) => {
-  let result = [];
+  let output = [];
 
   if (Array.isArray(input)) {
-    for (let i = 0; i < input.length; i++) {
-      result.push(...braces.create(input[i], options));
+    for (let pattern of input) {
+      let result = braces.create(pattern, options);
+      if (Array.isArray(result)) {
+        output.push(...result);
+      } else {
+        output.push(result);
+      }
     }
   } else {
-    result = braces.create(input, options);
+    output = [].concat(braces.create(input, options));
   }
 
-  if (options && options.nodupes === true) {
-    result = [...new Set(result)];
+  if (options && options.expand === true && options.nodupes === true) {
+    output = [...new Set(output)];
   }
-
-  return result;
+  return output;
 };
 
 /**
@@ -91,7 +95,7 @@ braces.stringify = (input, options = {}) => {
 
 braces.compile = (input, options = {}) => {
   if (typeof input === 'string') {
-    return compile(braces.parse(input, options), options);
+    input = braces.parse(input, options);
   }
   return compile(input, options);
 };
@@ -120,10 +124,16 @@ braces.expand = (input, options = {}) => {
 
   let result = expand(input, options);
 
+  // filter out empty strings if specified
+  if (options.noempty === true) {
+    result = result.filter(Boolean);
+  }
+
   // filter out duplicates if specified
   if (options.nodupes === true) {
     result = [...new Set(result)];
   }
+
   return result;
 };
 
@@ -148,21 +158,9 @@ braces.create = (input, options = {}) => {
     return [input];
   }
 
-  let result = options.expand !== true
+ return options.expand !== true
     ? braces.compile(input, options)
     : braces.expand(input, options);
-
-  // filter out empty strings if specified
-  if (options.noempty === true) {
-    result = result.filter(Boolean);
-  }
-
-  // filter out duplicates if specified
-  if (options.nodupes === true) {
-    result = [...new Set(result)];
-  }
-
-  return result;
 };
 
 /**

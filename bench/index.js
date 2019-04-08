@@ -50,22 +50,42 @@ bench.skip = name => {
   return skip;
 };
 
-bench('expand - set')
-  .add('   braces', () => braces.compile('foo/{a,b,c}/bar'))
+bench('expand - range (expanded)')
+  .add('   braces', () => braces.expand('foo/{1..250}/bar'))
+  .add('minimatch', () => minimatch.braceExpand('foo/{1..250}/bar'))
+  .run();
+
+bench('expand - range (optimized for regex)')
+  .add('   braces', () => braces.compile('foo/{1..250}/bar'))
+  .add('minimatch', () => minimatch.makeRe('foo/{1..250}/bar'))
+  .run();
+
+bench('expand - nested ranges (expanded)')
+  .add('   braces', () => braces.expand('foo/{a,b,{1..250}}/bar'))
+  .add('minimatch', () => minimatch.braceExpand('foo/{a,b,{1..250}}/bar'))
+  .run();
+
+bench('expand - nested ranges (optimized for regex)')
+  .add('   braces', () => braces.compile('foo/{a,b,{1..250}}/bar'))
+  .add('minimatch', () => minimatch.makeRe('foo/{a,b,{1..250}}/bar'))
+  .run();
+
+bench('expand - set (expanded)')
+  .add('   braces', () => braces.expand('foo/{a,b,c}/bar'))
   .add('minimatch', () => minimatch.braceExpand('foo/{a,b,c}/bar'))
   .run();
 
-bench('expand - range')
-  .add('   braces', () => braces.compile('foo/{a..z}/bar'))
-  .add('minimatch', () => minimatch.braceExpand('foo/{a..z}/bar'))
+bench('expand - set (optimized for regex)')
+  .add('   braces', () => braces.compile('foo/{a,b,c,d,e}/bar'))
+  .add('minimatch', () => minimatch.makeRe('foo/{a,b,c,d,e}/bar'))
   .run();
 
-bench('expand - nested sets')
-  .add('   braces', () => braces.compile('foo/{a,b,{x,y,z}}/bar'))
+bench('expand - nested sets (expanded)')
+  .add('   braces', () => braces.expand('foo/{a,b,{x,y,z}}/bar'))
   .add('minimatch', () => minimatch.braceExpand('foo/{a,b,{x,y,z}}/bar'))
   .run();
 
-bench('expand - nested ranges')
-  .add('   braces', () => braces.compile('foo/{a,b,{1..25}}/bar'))
-  .add('minimatch', () => minimatch.braceExpand('foo/{a,b,{1..25}}/bar'))
+bench('expand - nested sets (optimized for regex)')
+  .add('   braces', () => braces.compile('foo/{a,b,c,d,e,{x,y,z}}/bar'))
+  .add('minimatch', () => minimatch.makeRe('foo/{a,b,c,d,e,{x,y,z}}/bar'))
   .run();

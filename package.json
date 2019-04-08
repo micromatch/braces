@@ -28,11 +28,14 @@
     "test": "mocha",
     "benchmark": "node benchmark"
   },
+  "dependencies": {
+    "fill-range": "^7.0.1"
+  },
   "devDependencies": {
     "ansi-colors": "^3.2.4",
     "bash-path": "^2.0.1",
     "gulp-format-md": "^2.0.0",
-    "mocha": "^6.0.2"
+    "mocha": "^6.1.1"
   },
   "keywords": [
     "alpha",
@@ -69,18 +72,6 @@
     },
     "plugins": [
       "gulp-format-md"
-    ],
-    "related": {
-      "list": [
-        "expand-brackets",
-        "extglob",
-        "fill-range",
-        "micromatch",
-        "nanomatch"
-      ]
-    }
-  },
-  "dependencies": {
-    "fill-range": "^6.0.0"
+    ]
   }
 }
