@@ -289,7 +289,7 @@ describe('bash tests', () => {
       equal('a/**/c/{d,e}/f*.{md,txt}', ['a/**/c/d/f*.md', 'a/**/c/d/f*.txt', 'a/**/c/e/f*.md', 'a/**/c/e/f*.txt']);
     });
 
-    it('should expand with extglobs.', () => {
+    it('should expand with brackets.', () => {
       equal('a/b/{d,e,[1-5]}/*.js', ['a/b/d/*.js', 'a/b/e/*.js', 'a/b/[1-5]/*.js']);
     });
   });
