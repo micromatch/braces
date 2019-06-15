@@ -164,5 +164,17 @@ describe('unit tests from brace-expand', () => {
       });
     });
   });
+
+  describe('additional brace expansion test', () => {
+    describe('sequences', () => {
+      it('zero-padded numeric sequences', () => {
+        equal('{008..012}', ['008', '009', '010', '011', '012']);
+      });
+
+      it('zero-padded numeric sequences with increments', () => {
+        equal('{008..012..2}', ['008', '010', '012']);
+      });
+    });
+  });
 });
 

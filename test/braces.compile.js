@@ -43,6 +43,22 @@ describe('braces.compile()', () => {
       assert.equal(compile(parse('{a..e..x..z}')), '{a..e..x..z}');
       assert.equal(compile(parse('{a..e..x..z}'), { escapeInvalid: true }), '\\{a..e..x..z\\}');
     });
+
+    it('should compile very simple numeric ranges', () => {
+      assert.equal(compile(parse('{1..5}')), '([1-5])');
+    });
+
+    it('should compile numeric ranges with increments', () => {
+      assert.equal(compile(parse('{1..5..2}')), '(1|3|5)');
+    });
+
+    it('should compile zero-padded numeric ranges', () => {
+      assert.equal(compile(parse('{01..05}')), '(0[1-5])');
+    });
+
+    it('should compile zero-padded numeric ranges with increments', () => {
+      assert.equal(compile(parse('{01..05..2}')), '(01|03|05)');
+    });
   });
 
   describe('invalid', () => {
