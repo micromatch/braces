@@ -287,13 +287,13 @@ console.log(braces('a/b{1,3}/{x,y,z}', {quantifiers: true, expand: true}));
 //=> [ 'a/b{1,3}/x', 'a/b{1,3}/y', 'a/b{1,3}/z' ]
 ```
 
-### options.unescape
+### options.keepEscaping
 
 **Type**: `Boolean`
 
 **Default**: `undefined`
 
-**Description**: Strip backslashes that were used for escaping from the result.
+**Description**: Do not strip backslashes that were used for escaping from the result.
 
 ## What is "brace expansion"?
 
