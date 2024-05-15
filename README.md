@@ -186,6 +186,18 @@ console.log(braces.expand('a{b}c'));
 console.log(braces('a/{b,c}/d', { maxLength: 3 }));  //=> throws an error
 ```
 
+### options.maxSymbols
+
+**Type**: `Number`
+
+**Default**: `1024`
+
+**Description**: Limit the count of unique symbols the input string. 
+
+```js
+console.log(braces('a/{b,c}/d', { maxSymbols: 2 }));  //=> throws an error
+```
+
 ### options.expand
 
 **Type**: `Boolean`
