@@ -10,6 +10,16 @@ describe('braces.parse()', () => {
       let MAX_LENGTH = 1024 * 64;
       assert.throws(() => parse('.'.repeat(MAX_LENGTH + 2)));
     });
+    it('should throw an error when symbols exceeds max symbols count default', () => {
+      let SYMBOLS= 1024;
+      assert.throws(() => parse('.'.repeat(MAX_SYMBOLS * 2)));
+    });
+    it('should throw an error when symbols exceeds max symbols count ', () => {
+      let SYMBOLS= 2;
+      assert.throws(() => parse('...', {
+        maxSymbols: 2,
+      }));
+    });
   });
 
   describe('valid', () => {
