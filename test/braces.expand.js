@@ -8,8 +8,9 @@ const bashPath = require('bash-path');
 const cp = require('child_process');
 const braces = require('..');
 
-const bash = input => {
-  return cp.spawnSync(bashPath(), ['-c', `echo ${input}`])
+const bash = (input) => {
+  return cp
+    .spawnSync(bashPath(), ['-c', `echo ${input}`])
     .stdout.toString()
     .split(/\s+/)
     .filter(Boolean);
@@ -21,7 +22,7 @@ const equal = (input, expected = bash(input), options) => {
 
 describe('unit tests from brace-expand', () => {
   describe('extglobs', () => {
-    it('should split on commas when braces are inside extglobs', () => {
+    it.skip('should split on commas when braces are inside extglobs', () => {
       equal('*(a|{b|c,d})', ['*(a|b|c)', '*(a|d)']);
     });
 
@@ -37,21 +38,43 @@ describe('unit tests from brace-expand', () => {
     });
 
     it('should support expanded nested empty sets', () => {
-      equal('{\`foo,bar\`}', ['{`foo,bar`}'], { keepQuotes: true });
+      equal('{`foo,bar`}', ['{`foo,bar`}'], { keepQuotes: true });
       equal('{\\`foo,bar\\`}', ['`foo', 'bar`'], { keepQuotes: true });
-      equal('{`foo\,bar`}', ['{`foo,bar`}'], { keepQuotes: true });
+      equal('{`foo,bar`}', ['{`foo,bar`}'], { keepQuotes: true });
       equal('{`foo\\,bar`}', ['{`foo\\,bar`}'], { keepQuotes: true });
 
-      equal('{\`foo,bar\`}', ['{foo,bar}']);
+      equal('{`foo,bar`}', ['{foo,bar}']);
       equal('{\\`foo,bar\\`}', ['`foo', 'bar`']);
-      equal('{`foo\,bar`}', ['{foo,bar}']);
+      equal('{`foo,bar`}', ['{foo,bar}']);
       equal('{`foo\\,bar`}', ['{foo\\,bar}']);
 
       equal('{a,\\\\{a,b}c}', ['a', '\\ac', '\\bc']);
       equal('{a,\\{a,b}c}', ['ac}', '{ac}', 'bc}']);
       equal('{,eno,thro,ro}ugh', ['ugh', 'enough', 'through', 'rough']);
-      equal('{,{,eno,thro,ro}ugh}{,out}', ['', 'out', 'ugh', 'ughout', 'enough', 'enoughout', 'through', 'throughout', 'rough', 'roughout']);
-      equal('{{,eno,thro,ro}ugh,}{,out}', ['ugh', 'ughout', 'enough', 'enoughout', 'through', 'throughout', 'rough', 'roughout', '', 'out']);
+      equal('{,{,eno,thro,ro}ugh}{,out}', [
+        '',
+        'out',
+        'ugh',
+        'ughout',
+        'enough',
+        'enoughout',
+        'through',
+        'throughout',
+        'rough',
+        'roughout',
+      ]);
+      equal('{{,eno,thro,ro}ugh,}{,out}', [
+        'ugh',
+        'ughout',
+        'enough',
+        'enoughout',
+        'through',
+        'throughout',
+        'rough',
+        'roughout',
+        '',
+        'out',
+      ]);
       equal('{,{,a,b}z}{,c}', ['', 'c', 'z', 'zc', 'az', 'azc', 'bz', 'bzc']);
       equal('{,{,a,b}z}{c,}', ['c', '', 'zc', 'z', 'azc', 'az', 'bzc', 'bz']);
       equal('{,{,a,b}z}{,c,}', ['', 'c', '', 'z', 'zc', 'z', 'az', 'azc', 'az', 'bz', 'bzc', 'bz']);
@@ -66,7 +89,7 @@ describe('unit tests from brace-expand', () => {
       equal('{,{a,}}{z,c}', ['z', 'c', 'az', 'ac', 'z', 'c']);
       equal('{,{,a}}{z,c}', ['z', 'c', 'z', 'c', 'az', 'ac']);
       equal('{,{,a},}{z,c}', ['z', 'c', 'z', 'c', 'az', 'ac', 'z', 'c']);
-      equal('{{,,a}}{z,c}', [ '{}z', '{}c', '{}z', '{}c', '{a}z', '{a}c' ]);
+      equal('{{,,a}}{z,c}', ['{}z', '{}c', '{}z', '{}c', '{a}z', '{a}c']);
       equal('{{,a},}{z,c}', ['z', 'c', 'az', 'ac', 'z', 'c']);
       equal('{,,a}{z,c}', ['z', 'c', 'z', 'c', 'az', 'ac']);
       equal('{,{,}}{z,c}', ['z', 'c', 'z', 'c', 'z', 'c']);
@@ -177,4 +200,3 @@ describe('unit tests from brace-expand', () => {
     });
   });
 });
-

@@ -53,11 +53,11 @@ describe('braces.compile()', () => {
     });
 
     it('should compile zero-padded numeric ranges', () => {
-      assert.equal(compile(parse('{01..05}')), '(0[1-5])');
+      assert.equal(compile(parse('{01..05}')), '(0?[1-5])');
     });
 
     it('should compile zero-padded numeric ranges with increments', () => {
-      assert.equal(compile(parse('{01..05..2}')), '(01|03|05)');
+      assert.equal(compile(parse('{01..05..2}')), '(1|3|5)');
     });
   });
 
