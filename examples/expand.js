@@ -1,6 +1,5 @@
 
 const colors = require('ansi-colors');
-const parse = require('./parse');
 const color = (arr, c) => arr.map(s => c(s)).join(', ');
 const cp = require('child_process');
 const braces = input => {
@@ -19,6 +18,6 @@ const braces = input => {
 const fixture = 'a{,b}c';
 console.log();
 console.log(' FIXTURE:', colors.magenta(fixture));
-console.log('  ACTUAL:', color(expand(parse(fixture)), colors.yellow));
+// console.log('  ACTUAL:', color(expand(parse(fixture)), colors.yellow));
 console.log('EXPECTED:', color(braces(fixture), colors.blue));
 console.log();

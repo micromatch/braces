@@ -29,7 +29,7 @@
     "benchmark": "node benchmark"
   },
   "dependencies": {
-    "fill-range": "^7.0.1"
+    "fill-range": "^7.1.1"
   },
   "devDependencies": {
     "ansi-colors": "^3.2.4",

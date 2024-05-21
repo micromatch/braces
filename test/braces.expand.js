@@ -8,7 +8,7 @@ const bashPath = require('bash-path');
 const cp = require('child_process');
 const braces = require('..');
 
-const bash = (input) => {
+const bash = input => {
   return cp
     .spawnSync(bashPath(), ['-c', `echo ${input}`])
     .stdout.toString()
@@ -22,7 +22,7 @@ const equal = (input, expected = bash(input), options) => {
 
 describe('unit tests from brace-expand', () => {
   describe('extglobs', () => {
-    it.skip('should split on commas when braces are inside extglobs', () => {
+    it('should split on commas when braces are inside extglobs', () => {
       equal('*(a|{b|c,d})', ['*(a|b|c)', '*(a|d)']);
     });
 
@@ -61,7 +61,7 @@ describe('unit tests from brace-expand', () => {
         'through',
         'throughout',
         'rough',
-        'roughout',
+        'roughout'
       ]);
       equal('{{,eno,thro,ro}ugh,}{,out}', [
         'ugh',
@@ -73,7 +73,7 @@ describe('unit tests from brace-expand', () => {
         'rough',
         'roughout',
         '',
-        'out',
+        'out'
       ]);
       equal('{,{,a,b}z}{,c}', ['', 'c', 'z', 'zc', 'az', 'azc', 'bz', 'bzc']);
       equal('{,{,a,b}z}{c,}', ['c', '', 'zc', 'z', 'azc', 'az', 'bzc', 'bz']);

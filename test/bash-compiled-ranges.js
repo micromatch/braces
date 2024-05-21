@@ -187,9 +187,9 @@ describe('bash ranges - braces.compile()', () => {
       return;
     }
 
-    let options = { ...arr[1] };
-    let pattern = arr[0];
-    let expected = arr[2];
+    const options = { ...arr[1] };
+    const pattern = arr[0];
+    const expected = arr[2];
 
     if (options.skip === true) {
       return;

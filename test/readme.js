@@ -9,8 +9,8 @@ describe('Examples from README.md', () => {
     it('Compiled', () => {
       assert.deepEqual(braces('a/{x,y,z}/b'), ['a/(x|y|z)/b']);
       assert.deepEqual(braces(['a/{01..20}/b', 'a/{1..5}/b']), [
-        'a/(0?[1-9]|1[0-9]|20)/b',
-        'a/([1-5])/b',
+        'a/(0[1-9]|1[0-9]|20)/b',
+        'a/([1-5])/b'
       ]);
     });
 
@@ -26,7 +26,7 @@ describe('Examples from README.md', () => {
         '07',
         '08',
         '09',
-        '10',
+        '10'
       ]);
     });
   });
@@ -41,10 +41,8 @@ describe('Examples from README.md', () => {
 
     it('zero-padding examples', () => {
       // supports zero-padded ranges
-      assert.deepEqual(braces('a/{01..03}/b'), ['a/(0?[1-3])/b']);
-      assert.deepEqual(braces('a/{001..300}/b'), [
-        'a/(0{0,2}[1-9]|0?[1-9][0-9]|[12][0-9]{2}|300)/b',
-      ]);
+      assert.deepEqual(braces('a/{01..03}/b'), ['a/(0[1-3])/b']);
+      assert.deepEqual(braces('a/{001..300}/b'), ['a/(00[1-9]|0[1-9][0-9]|[12][0-9]{2}|300)/b']);
     });
   });
 });

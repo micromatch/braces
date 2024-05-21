@@ -11,7 +11,7 @@ const braces = require('..');
  */
 
 const cycle = (e, newline) => {
-  process.stdout.write(`\u001b[G  ${e.target}${newline ? `\n` : ''}`);
+  process.stdout.write(`\u001b[G  ${e.target}${newline ? '\n' : ''}`);
 };
 
 const bench = (name, options) => {

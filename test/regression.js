@@ -166,7 +166,7 @@ describe('bash tests', () => {
 
     it('should handle spaces', () => {
       equal('a{ ,c{d, },h}x', ['a x', 'acdx', 'ac x', 'ahx']);
-      equal('a{ ,c{d, },h} ', [ 'a  ', 'acd ', 'ac  ', 'ah ' ]);
+      equal('a{ ,c{d, },h} ', ['a  ', 'acd ', 'ac  ', 'ah ']);
 
       // see https://github.com/jonschlinkert/micromatch/issues/66
       equal('/Users/tobiasreich/Sites/aaa/bbb/ccc 2016/src/**/[^_]*.{html,ejs}', [

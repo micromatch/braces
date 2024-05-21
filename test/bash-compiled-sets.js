@@ -163,13 +163,13 @@ describe('bash sets - braces.compile()', () => {
     ['/Users/tobiasreich/Sites/aaa/bbb/ccc 2016/src/**/[^_]*.{html,ejs}', {}, '/Users/tobiasreich/Sites/aaa/bbb/ccc 2016/src/**/[^_]*.(html|ejs)']
   ];
 
-  let seen = new Map();
-  let dupes = [];
+  const seen = new Map();
+  const dupes = [];
 
   for (let i = 0; i < fixtures.length; i++) {
-    let fixture = fixtures[i];
+    const fixture = fixtures[i];
 
-    let key = fixture[0] + String(fixture[1].bash);
+    const key = fixture[0] + String(fixture[1].bash);
     if (seen.has(key)) {
       dupes.push(i + 21, fixture[0]);
     } else {
@@ -183,9 +183,9 @@ describe('bash sets - braces.compile()', () => {
       return;
     }
 
-    let options = { ...arr[1] };
-    let pattern = arr[0];
-    let expected = arr[2];
+    const options = { ...arr[1] };
+    const pattern = arr[0];
+    const expected = arr[2];
 
     if (options.skip === true) {
       return;
