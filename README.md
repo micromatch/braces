@@ -178,7 +178,7 @@ console.log(braces.expand('a{b}c'));
 
 **Type**: `Number`
 
-**Default**: `65,536`
+**Default**: `10,000`
 
 **Description**: Limit the length of the input string. Useful when the input string is generated or your application allows users to pass a string, et cetera.
 
