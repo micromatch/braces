@@ -178,24 +178,12 @@ console.log(braces.expand('a{b}c'));
 
 **Type**: `Number`
 
-**Default**: `65,536`
+**Default**: `10,000`
 
 **Description**: Limit the length of the input string. Useful when the input string is generated or your application allows users to pass a string, et cetera.
 
 ```js
 console.log(braces('a/{b,c}/d', { maxLength: 3 })); //=> throws an error
-```
-
-### options.maxSymbols
-
-**Type**: `Number`
-
-**Default**: `1024`
-
-**Description**: Limit the count of unique symbols the input string.
-
-```js
-console.log(braces('a/{b,c}/d', { maxSymbols: 2 })); //=> throws an error
 ```
 
 ### options.expand
