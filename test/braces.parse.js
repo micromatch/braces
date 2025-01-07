@@ -16,7 +16,7 @@ describe('braces.parse()', () => {
     it('should return an AST', () => {
       const ast = parse('a/{b,c}/d');
       const brace = ast.nodes.find(node => node.type === 'brace');
-      assert(brace);
+      assert.ok(brace);
       assert.equal(brace.nodes.length, 5);
     });
 
@@ -30,7 +30,7 @@ describe('braces.parse()', () => {
       const ast = parse('a/{a,b,[{c,d}]}/e');
       const brace = ast.nodes[2];
       const bracket = brace.nodes.find(node => node.value[0] === '[');
-      assert(bracket);
+      assert.ok(bracket);
       assert.equal(bracket.value, '[{c,d}]');
     });
   });
