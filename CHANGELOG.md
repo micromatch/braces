@@ -34,11 +34,12 @@ Changelog entries are classified using the following labels _(from [keep-a-chang
 
 ## [3.0.0] - 2018-04-08
 
-v3.0 is a complete refactor, resulting in a faster, smaller codebase, with fewer deps, and a more accurate parser and compiler. 
+v3.0 is a complete refactor, resulting in a faster, smaller codebase, with fewer deps, and a more accurate parser and compiler.
 
 **Breaking Changes**
 
 - The undocumented `.makeRe` method was removed
+- Require Node.js >= 8.3
 
 **Non-breaking changes**
 
