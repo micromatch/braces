@@ -25,7 +25,7 @@
     "node": ">=8"
   },
   "scripts": {
-    "test": "mocha",
+    "test": "mocha -r ./test/mocha-initialization.js",
     "benchmark": "node benchmark"
   },
   "dependencies": {
