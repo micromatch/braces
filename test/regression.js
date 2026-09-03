@@ -434,4 +434,15 @@ describe('range expansion', () => {
     equal('{1..ff..2}', ['{1..ff..2}']);
     equal('{1..ff}', ['{1..ff}']);
   });
+
+  it('should not throw on malformed nested brace/paren patterns (#60)', () => {
+    // These used to throw "Cannot read properties of undefined (reading
+    // 'push')" from expand.js's walk(): a paren node's parent chain can
+    // include a 'brace' ancestor that walk() never actually visited (the
+    // parser left it out of the tree it hands back for input this
+    // broken), so that ancestor's .queue was never initialized.
+    equal('{{*(()', ['{{*(']);
+    equal('{{{', ['{{{']);
+    equal('((()', ['((()']);
+  });
 });
