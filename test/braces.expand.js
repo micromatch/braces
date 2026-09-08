@@ -200,3 +200,16 @@ describe('unit tests from brace-expand', () => {
     });
   });
 });
+
+describe('parsed range reuse', () => {
+  it('preserves ranges for subsequent expansion and stringification', () => {
+    for (const pattern of ['x{1..3}', 'x{a,b}{1..3}', '{a..c}', '{3..1}']) {
+      const ast = braces.parse(pattern);
+      const expected = braces.expand(pattern);
+      assert.deepEqual(braces.expand(ast), expected);
+      assert.equal(braces.stringify(ast), pattern);
+      assert.deepEqual(braces.expand(ast), expected);
+      assert.equal(braces.compile(ast), braces.compile(pattern));
+    }
+  });
+});
