@@ -186,6 +186,19 @@ console.log(braces.expand('a{b}c'));
 console.log(braces('a/{b,c}/d', { maxLength: 3 })); //=> throws an error
 ```
 
+### options.maxDepth
+
+**Type**: `Number`
+
+**Default**: `1,000`
+
+**Description**: Limit brace nesting depth. Deeply nested patterns can overflow the call stack in the recursive AST walkers even when under `maxLength`; this guard rejects them early during parse (see [#70](https://github.com/micromatch/braces/issues/70)).
+
+```js
+console.log(braces('{'.repeat(1001) + 'a' + '}'.repeat(1001))); //=> throws an error
+console.log(braces('{{{a}}}', { maxDepth: 2 })); //=> throws an error
+```
+
 ### options.expand
 
 **Type**: `Boolean`
