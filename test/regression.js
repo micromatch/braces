@@ -3,12 +3,40 @@
 require('mocha');
 const assert = require('assert').strict;
 const braces = require('..');
+const { MAX_DEPTH } = require('../lib/constants');
 
 const equal = (input, expected, options) => {
   assert.deepEqual(braces.expand(input, options), expected);
 };
 
 describe('braces tests from 1.8.5', () => {
+  it('should reject patterns and ASTs nested beyond the maximum depth', () => {
+    const maxPattern = '{'.repeat(MAX_DEPTH) + 'a,b' + '}'.repeat(MAX_DEPTH);
+    const pattern = '{'.repeat(MAX_DEPTH + 1) + 'a,b' + '}'.repeat(MAX_DEPTH + 1);
+    const ast = { type: 'root', nodes: [] };
+    let parent = ast;
+
+    for (let i = 0; i <= MAX_DEPTH; i++) {
+      const node = { type: 'paren', nodes: [], parent };
+      parent.nodes.push(node);
+      parent = node;
+    }
+
+    parent.nodes.push({ type: 'text', value: 'x', parent });
+
+    for (const fn of [braces.parse, braces.compile, braces.expand, braces.stringify]) {
+      assert.doesNotThrow(() => fn(maxPattern));
+    }
+
+    assert.throws(() => braces.parse(pattern), RangeError);
+    assert.throws(() => braces.compile(pattern), RangeError);
+    assert.throws(() => braces.expand(pattern), RangeError);
+    assert.throws(() => braces.stringify(pattern), RangeError);
+    assert.throws(() => braces.compile(ast), RangeError);
+    assert.throws(() => braces.expand(ast), RangeError);
+    assert.throws(() => braces.stringify(ast), RangeError);
+  });
+
   it('braces', () => {
     equal('ff{c,b,a}', ['ffc', 'ffb', 'ffa']);
     equal('f{d,e,f}g', ['fdg', 'feg', 'ffg']);

@@ -182,6 +182,8 @@ console.log(braces.expand('a{b}c'));
 
 **Description**: Limit the length of the input string. Useful when the input string is generated or your application allows users to pass a string, et cetera.
 
+Brace and parenthesis nesting is also limited to 1,000 levels to prevent excessive recursion while processing patterns.
+
 ```js
 console.log(braces('a/{b,c}/d', { maxLength: 3 })); //=> throws an error
 ```
