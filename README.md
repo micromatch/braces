@@ -172,6 +172,38 @@ console.log(braces.expand('a{b}c'));
 //=> ['a{b}c']
 ```
 
+## Nesting and AST safety limits
+
+The parser allows at most 128 nested brace/parenthesis containers, including
+unmatched opening delimiters. Escaped or quoted delimiters do not count.
+Before `compile`, `expand`, or `stringify` processes an AST, an iterative check
+limits child-edge depth to 128 (the root is at depth zero) and visits to 65,536,
+including repeated visits to shared nodes. This check also applies to direct
+imports from `lib/`. Child cycles are rejected; acyclic shared child objects are
+allowed. The parser's normal `parent` and `prev` backlinks are not child edges.
+Expansion derives its work queues from the actual child traversal and does not
+read `parent` metadata. External queues and cyclic or inconsistent parent links
+cannot provide expansion input. Standalone parenthesis subtrees and shared
+child objects therefore do not need matching parent links. Caller-provided
+parent queues are intentionally ignored instead of being consumed or mutated.
+This also handles reparented nodes from malformed patterns such as `{(a)`,
+which previously could fail with a `TypeError` from a stale parent queue.
+Expansion and compilation keep range arguments and children intact, so shared
+range subtrees retain their meaning and range ASTs can be processed again. This is
+not a promise that every AST property is immutable: work queues and other
+normalization metadata may still be updated.
+
+Exceeding a bound throws a `SyntaxError` with code `ERR_BRACES_COMPLEXITY`.
+These fixed limits cannot be raised or disabled through options. Because text
+and delimiter nodes add a child edge, 128 parsed containers can exceed the AST
+depth limit when later compiled, expanded, or stringified; 127 containers leave
+room for these terminal nodes.
+
+These checks bound nesting and AST traversal, not arbitrary AST property
+getters, array-valued text nodes, total expansion cardinality, or the execution
+time of regular expressions generated from patterns. The existing `maxLength`
+and `rangeLimit` options remain independent protections.
+
 ## Options
 
 ### options.maxLength
@@ -215,18 +247,25 @@ console.log(braces('a/{b,c}/d', { expand: true }));
 
 **Description**: To prevent malicious patterns from being passed by users, an error is thrown when `braces.expand()` is used or `options.expand` is true and the generated range will exceed the `rangeLimit`.
 
-You can customize `options.rangeLimit` or set it to `Inifinity` to disable this altogether.
+You can customize `options.rangeLimit` or set it to `Infinity` or `false` to disable the size limit.
+
+The limit counts each range inclusively, in either direction, including character
+ranges. Explicit pattern steps take precedence over `options.step`; negative
+steps use their absolute value and zero is normalized to one. Numeric range
+endpoints must be safe integers, even when the size limit is disabled, because
+larger numbers can stop making progress during generation. Invalid ranges and
+steps retain their normal fallback or `strictRanges` errors. This limit applies
+to individual ranges, not the combined cardinality of alternative products.
 
 **Examples**
 
 ```js
-// pattern exceeds the "rangeLimit", so it's optimized automatically
-console.log(braces.expand('{1..1000}'));
-//=> ['([1-9]|[1-9][0-9]{1,2}|1000)']
+// A range larger than the configured limit is rejected before generation.
+braces.expand('{1..1001}'); // throws RangeError (default limit: 1000)
 
-// pattern does not exceed "rangeLimit", so it's NOT optimized
-console.log(braces.expand('{1..100}'));
-//=> ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46', '47', '48', '49', '50', '51', '52', '53', '54', '55', '56', '57', '58', '59', '60', '61', '62', '63', '64', '65', '66', '67', '68', '69', '70', '71', '72', '73', '74', '75', '76', '77', '78', '79', '80', '81', '82', '83', '84', '85', '86', '87', '88', '89', '90', '91', '92', '93', '94', '95', '96', '97', '98', '99', '100']
+// A range exactly at the limit is allowed.
+console.log(braces.expand('{1..3}', { rangeLimit: 3 }));
+//=> ['1', '2', '3']
 ```
 
 ### options.transform
