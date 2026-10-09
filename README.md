@@ -186,6 +186,19 @@ console.log(braces.expand('a{b}c'));
 console.log(braces('a/{b,c}/d', { maxLength: 3 })); //=> throws an error
 ```
 
+
+### options.maxDepth
+
+**Type**: `Number`
+
+**Default**: `1000`
+
+Maximum nesting depth of braces and parentheses. Deeper input throws a `SyntaxError` instead of overflowing the call stack (CVE-2026-93687). Can only be lowered, not raised above the default.
+
+```js
+console.log(braces('{{{a,b}}}', { maxDepth: 2 })); //=> throws an error
+```
+
 ### options.expand
 
 **Type**: `Boolean`
