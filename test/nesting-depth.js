@@ -42,6 +42,26 @@ describe('nesting depth', () => {
       assert.deepEqual(braces.expand('{{a,\\}b},c}', { maxDepth: 1 }), ['{a,\\}b}', 'c']);
     });
 
+    it('should only close a literal group with its own delimiter type', () => {
+      assert.deepEqual(braces.expand('{{a),b},c}', { maxDepth: 1 }), ['{a),b}', 'c']);
+      assert.deepEqual(braces.expand('{(a},b),c}', { maxDepth: 1 }), ['(a},b)', 'c']);
+    });
+
+    it('should keep brackets and quotes intact beyond the limit', () => {
+      assert.deepEqual(braces.expand('{{[}],a},b}', { maxDepth: 1 }), ['{[}],a}', 'b']);
+      assert.deepEqual(braces.expand('{{a,"}"},b}', { maxDepth: 1 }), ['{a,"}"}', 'b']);
+    });
+
+    it('should treat an unclosed group beyond the limit as text to the end', () => {
+      assert.deepEqual(braces.expand('{{a(,b},c}', { maxDepth: 1 }), ['{{a(,b},c}']);
+      assert.deepEqual(braces.expand('{a,{b', { maxDepth: 1 }), ['{a,{b']);
+    });
+
+    it('should apply the same rules at the default limit', () => {
+      const wrap = str => '('.repeat(255) + str + ')'.repeat(255);
+      assert.deepEqual(braces.expand(wrap('{{a),b},c}')), [wrap('{a),b}'), wrap('c')]);
+    });
+
     it('should not allow the limit to be raised above the default', () => {
       assert.ok(Array.isArray(braces.expand(nested('{', '}', 4995), { maxDepth: Infinity })));
     });
