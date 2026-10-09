@@ -2,6 +2,7 @@
 
 require('mocha');
 const assert = require('assert').strict;
+const vm = require('vm');
 const expand = require('../lib/expand');
 const parse = require('../lib/parse');
 const bashPath = require('bash-path');
@@ -21,6 +22,44 @@ const equal = (input, expected = bash(input), options) => {
 };
 
 describe('unit tests from brace-expand', () => {
+  describe('errors', () => {
+    it('should reject deeply nested ASTs', () => {
+      let ast = { type: 'text', value: 'a' };
+      for (let i = 0; i < 101; i++) ast = { type: 'brace', nodes: [ast] };
+      ast = { type: 'root', nodes: [ast] };
+      assert.throws(() => expand(ast), /exceeds max depth/);
+    });
+
+    it('should expand patterns at the maximum nesting depth', () => {
+      const pattern = '{'.repeat(100) + 'a,b' + '}'.repeat(100);
+      assert.doesNotThrow(() => expand(parse(pattern)));
+      assert.throws(() => expand(parse('{a,b}'), { maxDepth: 0 }), /exceeds max depth/);
+    });
+
+    it('should reject a self-referencing AST parent', () => {
+      const ast = { type: 'paren', nodes: [{ type: 'text', value: 'a' }] };
+      ast.parent = ast;
+      assert.throws(
+        () => vm.runInNewContext('expand(ast)', { expand, ast }, { timeout: 250 }),
+        error => error instanceof RangeError && /parent chain contains a cycle/.test(error.message)
+      );
+    });
+
+    it('should reject a cycle involving multiple AST parents', () => {
+      const parent = { type: 'paren' };
+      const ast = { type: 'paren', parent, nodes: [{ type: 'text', value: 'a' }] };
+      parent.parent = ast;
+      assert.throws(
+        () => vm.runInNewContext('expand(ast)', { expand, ast }, { timeout: 250 }),
+        error => error instanceof RangeError && /parent chain contains a cycle/.test(error.message)
+      );
+    });
+
+    it('should expand parsed parentheses with ordinary parent links', () => {
+      assert.deepEqual(expand(parse('foo/({a,b})')), ['foo/(a)', 'foo/(b)']);
+    });
+  });
+
   describe('extglobs', () => {
     it('should split on commas when braces are inside extglobs', () => {
       equal('*(a|{b|c,d})', ['*(a|b|c)', '*(a|d)']);

@@ -10,6 +10,31 @@ describe('braces.parse()', () => {
       const MAX_LENGTH = 1024 * 64;
       assert.throws(() => parse('.'.repeat(MAX_LENGTH + 2)));
     });
+
+    it('should throw an error when nesting exceeds the maximum depth', () => {
+      assert.throws(
+        () => parse('{'.repeat(101) + 'a,b' + '}'.repeat(101)),
+        /exceeds max depth/
+      );
+      assert.throws(() => parse('('.repeat(101) + ')'.repeat(101)), /exceeds max depth/);
+    });
+
+    it('should accept patterns at the maximum nesting depth', () => {
+      assert.doesNotThrow(() => parse('{'.repeat(100) + 'a,b' + '}'.repeat(100)));
+      assert.doesNotThrow(() => parse('('.repeat(100) + 'a' + ')'.repeat(100)));
+    });
+
+    it('should support a lower maximum depth', () => {
+      assert.throws(() => parse('{{a,b},c}', { maxDepth: 1 }), /exceeds max depth/);
+      assert.doesNotThrow(() => parse('{{a,b},c}', { maxDepth: 2 }));
+    });
+
+    it('should enforce fractional maximum depth values', () => {
+      assert.doesNotThrow(() => parse('{a,b}', { maxDepth: 1.5 }));
+      assert.throws(() => parse('{{a,b},c}', { maxDepth: 1.5 }), /exceeds max depth/);
+      assert.doesNotThrow(() => parse('(a)', { maxDepth: 1.5 }));
+      assert.throws(() => parse('((a))', { maxDepth: 1.5 }), /exceeds max depth/);
+    });
   });
 
   describe('valid', () => {

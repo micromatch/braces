@@ -13,5 +13,6 @@ if (assert.strict === undefined) {
     equal: assert.equal,
     deepEqual: assert.deepEqual,
     throws: assert.throws,
+    doesNotThrow: assert.doesNotThrow,
   };
 }
