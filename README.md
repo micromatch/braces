@@ -191,9 +191,9 @@ console.log(braces('a/{b,c}/d', { maxLength: 3 })); //=> throws an error
 
 **Type**: `Number`
 
-**Default**: `1000`
+**Default**: `256`
 
-Maximum nesting depth of braces and parentheses. Deeper input throws a `SyntaxError` instead of overflowing the call stack (CVE-2026-93687). Can only be lowered, not raised above the default.
+Maximum nesting depth of braces and parentheses. Deeper input throws a `SyntaxError` instead of overflowing the call stack (CVE-2026-93687). The same limit applies when `compile`, `expand` or `stringify` are given an AST that was built by hand. Can only be lowered, not raised above the default.
 
 ```js
 console.log(braces('{{{a,b}}}', { maxDepth: 2 })); //=> throws an error
