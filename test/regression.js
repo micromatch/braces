@@ -435,3 +435,27 @@ describe('range expansion', () => {
     equal('{1..ff}', ['{1..ff}']);
   });
 });
+
+
+describe('maximum nesting depth (DoS prevention)', () => {
+  it('should throw a SyntaxError on patterns that exceed the max nesting depth', () => {
+    const pattern = '{a,'.repeat(2000) + 'b' + '}'.repeat(2000);
+    assert.throws(() => braces(pattern), /exceeds the maximum nesting depth/);
+    assert.throws(() => braces.expand(pattern), /exceeds the maximum nesting depth/);
+  });
+
+  it('should not throw on patterns within the default depth limit', () => {
+    const pattern = '{a,'.repeat(50) + 'b' + '}'.repeat(50);
+    assert.doesNotThrow(() => braces(pattern));
+  });
+
+  it('should honor a custom options.maxDepth', () => {
+    assert.throws(() => braces('{a,{b,c}}', { maxDepth: 1 }), /exceeds the maximum nesting depth/);
+    assert.doesNotThrow(() => braces('{a,{b,c}}', { maxDepth: 5 }));
+  });
+
+  it('should still expand normally after adding the depth guard', () => {
+    equal('{a,{b,c}}', ['a', 'b', 'c']);
+    equal('a/{b,c}/d', ['a/b/d', 'a/c/d']);
+  });
+});
